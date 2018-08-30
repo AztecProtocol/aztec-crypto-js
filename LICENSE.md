@@ -1,0 +1,1 @@
+(c) Copyright CreditMint 2018 all rights reserved.

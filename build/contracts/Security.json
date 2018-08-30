@@ -1,0 +1,778 @@
+{
+  "contractName": "Security",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "parent",
+          "type": "address"
+        },
+        {
+          "components": [
+            {
+              "name": "r",
+              "type": "uint256"
+            },
+            {
+              "name": "s",
+              "type": "uint256"
+            },
+            {
+              "name": "v",
+              "type": "uint8"
+            }
+          ],
+          "name": "signature",
+          "type": "tuple"
+        }
+      ],
+      "name": "isWhitelisted",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506101fb806100206000396000f300608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680638ff63fd614610046575b600080fd5b34801561005257600080fd5b5061006d6004803603610068919081019061010f565b61006f565b005b5050565b600061007f8235610198565b905092915050565b60006060828403121561009957600080fd5b6100a3606061014b565b905060006100b3848285016100e7565b60008301525060206100c7848285016100e7565b60208301525060406100db848285016100fb565b60408301525092915050565b60006100f382356101aa565b905092915050565b600061010782356101b4565b905092915050565b6000806080838503121561012257600080fd5b600061013085828601610073565b925050602061014185828601610087565b9150509250929050565b6000604051905081810181811067ffffffffffffffff8211171561016e57600080fd5b8060405250919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006101a382610178565b9050919050565b6000819050919050565b600060ff821690509190505600a265627a7a72305820d349f9fdd3778bbb105097032d624e77b3cdeacc651d3f9fdf17ec2c9cdafea66c6578706572696d656e74616cf50037",
+  "deployedBytecode": "0x608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680638ff63fd614610046575b600080fd5b34801561005257600080fd5b5061006d6004803603610068919081019061010f565b61006f565b005b5050565b600061007f8235610198565b905092915050565b60006060828403121561009957600080fd5b6100a3606061014b565b905060006100b3848285016100e7565b60008301525060206100c7848285016100e7565b60208301525060406100db848285016100fb565b60408301525092915050565b60006100f382356101aa565b905092915050565b600061010782356101b4565b905092915050565b6000806080838503121561012257600080fd5b600061013085828601610073565b925050602061014185828601610087565b9150509250929050565b6000604051905081810181811067ffffffffffffffff8211171561016e57600080fd5b8060405250919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006101a382610178565b9050919050565b6000819050919050565b600060ff821690509190505600a265627a7a72305820d349f9fdd3778bbb105097032d624e77b3cdeacc651d3f9fdf17ec2c9cdafea66c6578706572696d656e74616cf50037",
+  "sourceMap": "467:573:4:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;467:573:4;;;;;;;",
+  "deployedSourceMap": "467:573:4:-;;;;;;;;;;;;;;;;;;;;;;;;942:96;;8:9:-1;5:2;;;30:1;27;20:12;5:2;942:96:4;;;;;;;;;;;;;;;;;;;;;;:::o;5:164:-1:-;;95:69;156:6;143:20;95:69;;;86:78;;80:89;;;;;213:605;;333:4;321:9;316:3;312:19;308:30;305:2;;;351:1;348;341:12;305:2;369:20;384:4;369:20;;;360:29;;436:1;467:49;512:3;503:6;492:9;488:22;467:49;;;461:3;454:5;450:15;443:74;399:129;575:2;608:49;653:3;644:6;633:9;629:22;608:49;;;601:4;594:5;590:16;583:75;538:131;716:2;749:47;792:3;783:6;772:9;768:22;749:47;;;742:4;735:5;731:16;724:73;679:129;299:519;;;;;825:118;;892:46;930:6;917:20;892:46;;;883:55;;877:66;;;;;950:114;;1015:44;1051:6;1038:20;1015:44;;;1006:53;;1000:64;;;;;1071:475;;;1246:3;1234:9;1225:7;1221:23;1217:33;1214:2;;;1263:1;1260;1253:12;1214:2;1298:1;1315:76;1383:7;1374:6;1363:9;1359:22;1315:76;;;1305:86;;1277:120;1428:2;1446:84;1522:7;1513:6;1502:9;1498:22;1446:84;;;1436:94;;1407:129;1208:338;;;;;;1553:256;;1615:2;1609:9;1599:19;;1653:4;1645:6;1641:17;1752:6;1740:10;1737:22;1716:18;1704:10;1701:34;1698:62;1695:2;;;1773:1;1770;1763:12;1695:2;1793:10;1789:2;1782:22;1593:216;;;;;1816:128;;1896:42;1889:5;1885:54;1874:65;;1868:76;;;;1951:128;;2043:31;2068:5;2043:31;;;2032:42;;2026:53;;;;2086:79;;2155:5;2144:16;;2138:27;;;;2172:88;;2250:4;2243:5;2239:16;2228:27;;2222:38;;;",
+  "source": "pragma solidity ^0.4.23;\npragma experimental ABIEncoderV2;\n\n/// @title Library to validate that entities interfacing with our smart contracts are authorized\n/// @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n/// @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.\n\ncontract ParentInterface {\n    function hasWhitelistToken(address) public view returns(bool) {}\n}\n\ncontract Security {\n\n    address owner;\n\n    struct ECDSASignature {\n        uint r;\n        uint s;\n        uint8 v;\n    }\n    // 'ecdsarecover' can be used, alongside valid signatures,\n    // to validate that the 'order' was consented to by buyer and seller\n    // https://ethereum.stackexchange.com/questions/710/how-can-i-verify-a-cryptographic-signature-that-was-produced-by-an-ethereum-addr\n    /// @param parent : the smart contract that is using SecurityLibrary\n\n    function isWhitelisted(ParentInterface parent, ECDSASignature memory signature) {\n        \n    }\n}\n",
+  "sourcePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
+  "ast": {
+    "absolutePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
+    "exportedSymbols": {
+      "ParentInterface": [
+        702
+      ],
+      "Security": [
+        720
+      ]
+    },
+    "id": 721,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 692,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".23"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:4"
+      },
+      {
+        "id": 693,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title Library to validate that entities interfacing with our smart contracts are authorized\n @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.",
+        "fullyImplemented": true,
+        "id": 702,
+        "linearizedBaseContracts": [
+          702
+        ],
+        "name": "ParentInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 700,
+              "nodeType": "Block",
+              "src": "461:2:4",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 701,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "hasWhitelistToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 696,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 695,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 701,
+                  "src": "426:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 694,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "426:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "425:9:4"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 699,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 698,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 701,
+                  "src": "455:4:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 697,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "455:4:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "454:6:4"
+            },
+            "scope": 702,
+            "src": "399:64:4",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 721,
+        "src": "368:97:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 720,
+        "linearizedBaseContracts": [
+          720
+        ],
+        "name": "Security",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 704,
+            "name": "owner",
+            "nodeType": "VariableDeclaration",
+            "scope": 720,
+            "src": "492:13:4",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 703,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "492:7:4",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "canonicalName": "Security.ECDSASignature",
+            "id": 711,
+            "members": [
+              {
+                "constant": false,
+                "id": 706,
+                "name": "r",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "544:6:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 705,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "544:4:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 708,
+                "name": "s",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "560:6:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 707,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "560:4:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 710,
+                "name": "v",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "576:7:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint8",
+                  "typeString": "uint8"
+                },
+                "typeName": {
+                  "id": 709,
+                  "name": "uint8",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "576:5:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "ECDSASignature",
+            "nodeType": "StructDefinition",
+            "scope": 720,
+            "src": "512:78:4",
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 718,
+              "nodeType": "Block",
+              "src": "1022:16:4",
+              "statements": []
+            },
+            "documentation": "@param parent : the smart contract that is using SecurityLibrary",
+            "id": 719,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "isWhitelisted",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 716,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 713,
+                  "name": "parent",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "965:22:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ParentInterface_$702",
+                    "typeString": "contract ParentInterface"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 712,
+                    "name": "ParentInterface",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 702,
+                    "src": "965:15:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_ParentInterface_$702",
+                      "typeString": "contract ParentInterface"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 715,
+                  "name": "signature",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "989:31:4",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ECDSASignature_$711_memory_ptr",
+                    "typeString": "struct Security.ECDSASignature"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 714,
+                    "name": "ECDSASignature",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 711,
+                    "src": "989:14:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ECDSASignature_$711_storage_ptr",
+                      "typeString": "struct Security.ECDSASignature"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "964:57:4"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 717,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1022:0:4"
+            },
+            "scope": 720,
+            "src": "942:96:4",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 721,
+        "src": "467:573:4"
+      }
+    ],
+    "src": "0:1041:4"
+  },
+  "legacyAST": {
+    "absolutePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
+    "exportedSymbols": {
+      "ParentInterface": [
+        702
+      ],
+      "Security": [
+        720
+      ]
+    },
+    "id": 721,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 692,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".23"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:4"
+      },
+      {
+        "id": 693,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "25:33:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": "@title Library to validate that entities interfacing with our smart contracts are authorized\n @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.",
+        "fullyImplemented": true,
+        "id": 702,
+        "linearizedBaseContracts": [
+          702
+        ],
+        "name": "ParentInterface",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 700,
+              "nodeType": "Block",
+              "src": "461:2:4",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 701,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "hasWhitelistToken",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 696,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 695,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 701,
+                  "src": "426:7:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 694,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "426:7:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "425:9:4"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 699,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 698,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 701,
+                  "src": "455:4:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 697,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "455:4:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "454:6:4"
+            },
+            "scope": 702,
+            "src": "399:64:4",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 721,
+        "src": "368:97:4"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 720,
+        "linearizedBaseContracts": [
+          720
+        ],
+        "name": "Security",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 704,
+            "name": "owner",
+            "nodeType": "VariableDeclaration",
+            "scope": 720,
+            "src": "492:13:4",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_address",
+              "typeString": "address"
+            },
+            "typeName": {
+              "id": 703,
+              "name": "address",
+              "nodeType": "ElementaryTypeName",
+              "src": "492:7:4",
+              "typeDescriptions": {
+                "typeIdentifier": "t_address",
+                "typeString": "address"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "canonicalName": "Security.ECDSASignature",
+            "id": 711,
+            "members": [
+              {
+                "constant": false,
+                "id": 706,
+                "name": "r",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "544:6:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 705,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "544:4:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 708,
+                "name": "s",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "560:6:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 707,
+                  "name": "uint",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "560:4:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 710,
+                "name": "v",
+                "nodeType": "VariableDeclaration",
+                "scope": 711,
+                "src": "576:7:4",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint8",
+                  "typeString": "uint8"
+                },
+                "typeName": {
+                  "id": 709,
+                  "name": "uint8",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "576:5:4",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  }
+                },
+                "value": null,
+                "visibility": "internal"
+              }
+            ],
+            "name": "ECDSASignature",
+            "nodeType": "StructDefinition",
+            "scope": 720,
+            "src": "512:78:4",
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 718,
+              "nodeType": "Block",
+              "src": "1022:16:4",
+              "statements": []
+            },
+            "documentation": "@param parent : the smart contract that is using SecurityLibrary",
+            "id": 719,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "isWhitelisted",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 716,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 713,
+                  "name": "parent",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "965:22:4",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ParentInterface_$702",
+                    "typeString": "contract ParentInterface"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 712,
+                    "name": "ParentInterface",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 702,
+                    "src": "965:15:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_ParentInterface_$702",
+                      "typeString": "contract ParentInterface"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 715,
+                  "name": "signature",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 719,
+                  "src": "989:31:4",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ECDSASignature_$711_memory_ptr",
+                    "typeString": "struct Security.ECDSASignature"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 714,
+                    "name": "ECDSASignature",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 711,
+                    "src": "989:14:4",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ECDSASignature_$711_storage_ptr",
+                      "typeString": "struct Security.ECDSASignature"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "964:57:4"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 717,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1022:0:4"
+            },
+            "scope": 720,
+            "src": "942:96:4",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 721,
+        "src": "467:573:4"
+      }
+    ],
+    "src": "0:1041:4"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.23+commit.124ca40d.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-08-30T13:02:27.721Z"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "smart-contracts",
+  "version": "0.0.1",
+  "description": "CreditMint's smart contracts repository",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test",
+    "doxity": "./node_modules/@digix/doxity-solc/lib/bin/doxity.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CreditMint/smart-contracts.git"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/CreditMint/smart-contracts/issues"
+  },
+  "homepage": "https://github.com/CreditMint/smart-contracts#readme",
+  "devDependencies": {
+    "@digix/doxity-solc": "git+https://github.com/DigixGlobal/doxity.git#doxity-latest"
+  }
+}
