@@ -35,6 +35,7 @@ const toBytes32 = (input, padding = 'left') => { // assumes hex format
 
 ecdsaApi.signMessage = ({
     callingAddress,
+    sender,
 }) => {
     const signatureMessage = `0x${toBytes32(Number(callingAddress))}`;
     const signature = web3.eth.sign(sender, signatureMessage);

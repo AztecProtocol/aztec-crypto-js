@@ -1,6 +1,8 @@
 /* global artifacts, assert, contract, beforeEach, it:true */
 const SecurityTest = artifacts.require('./contracts/Security/SecurityTest');
 
+const ecdsaApi = require('../helpers/ecdsaApi');
+
 contract('Security', (accounts) => {
     let contract;
     beforeEach(async () => {
@@ -18,7 +20,8 @@ contract('Security', (accounts) => {
 
     it('succesfully validates an ecdsa signature', async () => {
         const signature = ecdsaApi.signMessage({
-            callingAddress: address[0],
+            callingAddress: accounts[1],
+            sender: accounts[0],
         });
         // we call this function using address[1], but signed by address[0]
         const isWhitelisted = await contract.validateWhitelist(
@@ -26,7 +29,7 @@ contract('Security', (accounts) => {
             signature.s,
             signature.v,
             {
-                from: address[1],
+                from: accounts[1],
             },
         );
         assert.equal(isWhitelisted, 1);
