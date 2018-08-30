@@ -1,9 +1,5 @@
 pragma solidity ^0.4.23;
 
-/// @dev Normally functions that contain Structs as input parameters can only be called by
-/// @dev Using the experimental abi encoder allows external transactions to also call these functions
-pragma experimental ABIEncoderV2;
-
 
 import "./Security.sol";
 
@@ -37,13 +33,9 @@ contract SecurityTest {
     /// @dev explicitly set.
     /// @dev so unless an address in the mapping is explicitly set to true, whitelist[address] will return false
     /// @dev `whitelist` is a *storage* variable. Changes to it are permanent and therefore expensive in terms of gas
-    mapping(address => bool) whitelist;
-
-    struct ECDSASignature {
-        uint r;
-        uint s;
-        uint8 v;
-    }
+    /// @notice making `whitelist` *public* causes the compiler to create a helper function `whitelist(address key)` that takes in an address
+    /// @notice key and returns the bool value
+    mapping(address => bool) public whitelist;
 
     /// @dev as a simple test, let's only add one address to the whitelist; the address that created this smart contract
     constructor() {
@@ -51,7 +43,13 @@ contract SecurityTest {
     }
 
     /// @dev this is the function our test will call
-    function validateWhitelist(ParentInterface parent, ECDSASignature memory signature) public view returns(bool) {
+    function validateWhitelist(uint r, uint s, uint8 v) public view returns(bool) {
+        // Structs and arrays, unlike other variable types, are stored in memory and not on the stack.
+        // The actual variable `signature` is a reference to the memory location that holds the struct data
+        // We declare `signature` to be a memory pointer, the default declaration is to be a storage pointer
+        // which is bad in this case! Storage variables cost 20,000 gas to write to because storage variables need to be written
+        // into the Ethereum blockchain's state tree. Memory variables aren't permanent and cost about 6 gas to write to.
+        Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
         address sender = address(msg.sender);
         return sender.isWhitelisted(signature);
     }
