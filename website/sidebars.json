@@ -1,10 +1,35 @@
 {
   "docs": {
-    "Docusaurus": ["doc1"],
-    "First Category": ["doc2"],
-    "Second Category": ["doc3"]
+    "Docusaurus": [
+      "doc1"
+    ],
+    "First Category": [
+      "doc2"
+    ],
+    "Second Category": [
+      "doc3"
+    ]
   },
   "docs-other": {
-    "First Category": ["doc4", "doc5"]
+    "First Category": [
+      "doc4",
+      "doc5"
+    ]
+  },
+  "docs-api": {
+    "LIB / AZTEC / OLD": [
+      "lib_AZTEC_old_NIZKEth_NizkEth",
+      "lib_AZTEC_old_NIZK_Nizk",
+      "lib_AZTEC_old_NIZK_NizkInterface",
+      "lib_AZTEC_old_NIZK_NizkInterfaceLibrary"
+    ],
+    "LIB / SECURITY": [
+      "lib_Security_Security",
+      "lib_Security_SecurityTest",
+      "lib_Security_Security_ParentInterface"
+    ],
+    "UNCATEGORIZED": [
+      "Migrations"
+    ]
   }
 }
