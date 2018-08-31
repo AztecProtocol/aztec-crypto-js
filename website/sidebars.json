@@ -17,6 +17,9 @@
     ]
   },
   "docs-api": {
+    "EXCHANGE": [
+      "exchange_Exchange"
+    ],
     "LIB / AZTEC / OLD": [
       "lib_AZTEC_old_NIZKEth_NizkEth",
       "lib_AZTEC_old_NIZK_Nizk",
@@ -25,8 +28,10 @@
     ],
     "LIB / SECURITY": [
       "lib_Security_Security",
-      "lib_Security_SecurityTest",
-      "lib_Security_Security_ParentInterface"
+      "lib_Security_SecurityTest"
+    ],
+    "TOKENS": [
+      "tokens_erc20_ERC20"
     ],
     "UNCATEGORIZED": [
       "Migrations"
