@@ -33,12 +33,14 @@ const toBytes32 = (input, padding = 'left') => { // assumes hex format
     return s;
 };
 
+ecdsaApi.hashString = input => web3.sha3(toBytes32(input), { encoding: 'hex' });
+
 ecdsaApi.signMessage = ({
     callingAddress,
     sender,
 }) => {
-    const signatureMessage = `0x${toBytes32(Number(callingAddress))}`;
-    const signature = web3.eth.sign(sender, signatureMessage);
+    const signatureMessage = ecdsaApi.hashString(callingAddress);
+    const signature = web3.eth.sign(sender, signatureMessage/*`0x${toBytes32(callingAddress)}`*/);
     return {
         r: signature.slice(0, 66), // first 2 chars are '0x'
         s: `0x${signature.slice(66, 130)}`,

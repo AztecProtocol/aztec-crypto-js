@@ -38,12 +38,12 @@ contract SecurityTest {
     mapping(address => bool) public whitelist;
 
     /// @dev as a simple test, let's only add one address to the whitelist; the address that created this smart contract
-    constructor() {
+    constructor() public {
         whitelist[msg.sender] = true;
     }
 
     /// @dev this is the function our test will call
-    function validateWhitelist(uint r, uint s, uint8 v) public view returns(bool) {
+    function validateWhitelist(bytes32 r, bytes32 s, uint8 v) public view returns(bool) {
         // Structs and arrays, unlike other variable types, are stored in memory and not on the stack.
         // The actual variable `signature` is a reference to the memory location that holds the struct data
         // We declare `signature` to be a memory pointer, the default declaration is to be a storage pointer
@@ -51,6 +51,7 @@ contract SecurityTest {
         // into the Ethereum blockchain's state tree. Memory variables aren't permanent and cost about 6 gas to write to.
         Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
         address sender = address(msg.sender);
-        return sender.isWhitelisted(signature);
+        address sig = Security.getSignatureAddress(signature);
+        return whitelist[Security.getSignatureAddress(signature)];
     }
 }

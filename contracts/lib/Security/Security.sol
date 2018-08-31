@@ -1,13 +1,5 @@
 pragma solidity ^0.4.23;
 
-/// @title Library to validate that entities interfacing with our smart contracts are authorized
-/// @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling
-/// @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.
-
-contract ParentInterface {
-    function whitelist(address) public view returns(bool) {}
-}
-
 /// @dev libraries are functionally similar to contracts, with some key differences
 /// libraries cannot have their own storage variables (they have no persistant state)
 /// They are designed to have their methods called by other contracts or libraries
@@ -28,25 +20,26 @@ library Security {
     /// @dev we defnie the ECDSASignature struct, which contains the variables used to validate an
     /// @dev ECDSA signature. See https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm
     struct ECDSASignature {
-        uint r;
-        uint s;
+        bytes32 r;
+        bytes32 s;
         uint8 v;
     }
+    event Debug2(bytes32 message);
+    event Debug3(address signingAddr);
 
     // 'ecdsarecover' can be used, alongside valid signatures,
     // to validate that the 'order' was consented to by buyer and seller
     // https://ethereum.stackexchange.com/questions/710/how-can-i-verify-a-cryptographic-signature-that-was-produced-by-an-ethereum-addr
-    /// @param parent : the smart contract that is using SecurityLibrary
     /// @return a boolean depending on if signer of signature is part of whitelist
     /// @dev The 'message' of the signature needs to be the address of the whoever called the parent contract
     /// cast `parent` to a ParentInterface contract type, so that we can call the
     /// `isWhitelisted` method. If this method does not exist the function should throw
-    function isWhitelisted(address parent, ECDSASignature memory signature) internal view returns(bool) {
-        ParentInterface _parent = ParentInterface(parent);
-        bytes32 message = keccak256(abi.encodePacked(msg.sender));
-        address signer;
-        return _parent.whitelist(signer);
+    function getSignatureAddress(ECDSASignature memory signature) internal view returns(address) {
+        bytes32 message = keccak256("\x19Ethereum Signed Message:\n32", keccak256(bytes32(msg.sender)));
+        address signingAddr = ecrecover(message, signature.v, signature.r, signature.s);
+        return signingAddr;
         // TODO: get ethereum address that signed ECDSASignature signature,
         // then call _parent.isWhitelisted with the signing address as the input parameter
     }
+  
 }

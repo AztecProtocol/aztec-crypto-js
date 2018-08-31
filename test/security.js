@@ -32,6 +32,7 @@ contract('Security', (accounts) => {
                 from: accounts[1],
             },
         );
+
         assert.equal(isWhitelisted, 1);
     });
 });
