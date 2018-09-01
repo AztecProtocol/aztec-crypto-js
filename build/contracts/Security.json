@@ -2,59 +2,48 @@
   "contractName": "Security",
   "abi": [
     {
-      "constant": false,
+      "anonymous": false,
       "inputs": [
         {
-          "name": "parent",
-          "type": "address"
-        },
-        {
-          "components": [
-            {
-              "name": "r",
-              "type": "uint256"
-            },
-            {
-              "name": "s",
-              "type": "uint256"
-            },
-            {
-              "name": "v",
-              "type": "uint8"
-            }
-          ],
-          "name": "signature",
-          "type": "tuple"
+          "indexed": false,
+          "name": "message",
+          "type": "bytes32"
         }
       ],
-      "name": "isWhitelisted",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
+      "name": "Debug2",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "signingAddr",
+          "type": "address"
+        }
+      ],
+      "name": "Debug3",
+      "type": "event"
     }
   ],
-  "bytecode": "0x608060405234801561001057600080fd5b506101fb806100206000396000f300608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680638ff63fd614610046575b600080fd5b34801561005257600080fd5b5061006d6004803603610068919081019061010f565b61006f565b005b5050565b600061007f8235610198565b905092915050565b60006060828403121561009957600080fd5b6100a3606061014b565b905060006100b3848285016100e7565b60008301525060206100c7848285016100e7565b60208301525060406100db848285016100fb565b60408301525092915050565b60006100f382356101aa565b905092915050565b600061010782356101b4565b905092915050565b6000806080838503121561012257600080fd5b600061013085828601610073565b925050602061014185828601610087565b9150509250929050565b6000604051905081810181811067ffffffffffffffff8211171561016e57600080fd5b8060405250919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006101a382610178565b9050919050565b6000819050919050565b600060ff821690509190505600a265627a7a72305820d349f9fdd3778bbb105097032d624e77b3cdeacc651d3f9fdf17ec2c9cdafea66c6578706572696d656e74616cf50037",
-  "deployedBytecode": "0x608060405260043610610041576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680638ff63fd614610046575b600080fd5b34801561005257600080fd5b5061006d6004803603610068919081019061010f565b61006f565b005b5050565b600061007f8235610198565b905092915050565b60006060828403121561009957600080fd5b6100a3606061014b565b905060006100b3848285016100e7565b60008301525060206100c7848285016100e7565b60208301525060406100db848285016100fb565b60408301525092915050565b60006100f382356101aa565b905092915050565b600061010782356101b4565b905092915050565b6000806080838503121561012257600080fd5b600061013085828601610073565b925050602061014185828601610087565b9150509250929050565b6000604051905081810181811067ffffffffffffffff8211171561016e57600080fd5b8060405250919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b60006101a382610178565b9050919050565b6000819050919050565b600060ff821690509190505600a265627a7a72305820d349f9fdd3778bbb105097032d624e77b3cdeacc651d3f9fdf17ec2c9cdafea66c6578706572696d656e74616cf50037",
-  "sourceMap": "467:573:4:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;467:573:4;;;;;;;",
-  "deployedSourceMap": "467:573:4:-;;;;;;;;;;;;;;;;;;;;;;;;942:96;;8:9:-1;5:2;;;30:1;27;20:12;5:2;942:96:4;;;;;;;;;;;;;;;;;;;;;;:::o;5:164:-1:-;;95:69;156:6;143:20;95:69;;;86:78;;80:89;;;;;213:605;;333:4;321:9;316:3;312:19;308:30;305:2;;;351:1;348;341:12;305:2;369:20;384:4;369:20;;;360:29;;436:1;467:49;512:3;503:6;492:9;488:22;467:49;;;461:3;454:5;450:15;443:74;399:129;575:2;608:49;653:3;644:6;633:9;629:22;608:49;;;601:4;594:5;590:16;583:75;538:131;716:2;749:47;792:3;783:6;772:9;768:22;749:47;;;742:4;735:5;731:16;724:73;679:129;299:519;;;;;825:118;;892:46;930:6;917:20;892:46;;;883:55;;877:66;;;;;950:114;;1015:44;1051:6;1038:20;1015:44;;;1006:53;;1000:64;;;;;1071:475;;;1246:3;1234:9;1225:7;1221:23;1217:33;1214:2;;;1263:1;1260;1253:12;1214:2;1298:1;1315:76;1383:7;1374:6;1363:9;1359:22;1315:76;;;1305:86;;1277:120;1428:2;1446:84;1522:7;1513:6;1502:9;1498:22;1446:84;;;1436:94;;1407:129;1208:338;;;;;;1553:256;;1615:2;1609:9;1599:19;;1653:4;1645:6;1641:17;1752:6;1740:10;1737:22;1716:18;1704:10;1701:34;1698:62;1695:2;;;1773:1;1770;1763:12;1695:2;1793:10;1789:2;1782:22;1593:216;;;;;1816:128;;1896:42;1889:5;1885:54;1874:65;;1868:76;;;;1951:128;;2043:31;2068:5;2043:31;;;2032:42;;2026:53;;;;2086:79;;2155:5;2144:16;;2138:27;;;;2172:88;;2250:4;2243:5;2239:16;2228:27;;2222:38;;;",
-  "source": "pragma solidity ^0.4.23;\npragma experimental ABIEncoderV2;\n\n/// @title Library to validate that entities interfacing with our smart contracts are authorized\n/// @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n/// @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.\n\ncontract ParentInterface {\n    function hasWhitelistToken(address) public view returns(bool) {}\n}\n\ncontract Security {\n\n    address owner;\n\n    struct ECDSASignature {\n        uint r;\n        uint s;\n        uint8 v;\n    }\n    // 'ecdsarecover' can be used, alongside valid signatures,\n    // to validate that the 'order' was consented to by buyer and seller\n    // https://ethereum.stackexchange.com/questions/710/how-can-i-verify-a-cryptographic-signature-that-was-produced-by-an-ethereum-addr\n    /// @param parent : the smart contract that is using SecurityLibrary\n\n    function isWhitelisted(ParentInterface parent, ECDSASignature memory signature) {\n        \n    }\n}\n",
+  "bytecode": "0x604c602c600b82828239805160001a60731460008114601c57601e565bfe5b5030600052607381538281f30073000000000000000000000000000000000000000030146080604052600080fd00a165627a7a723058202beaae3e4c85d3f0ae7101785eb0e8225540b56230d07ea7b1dfbf175df98c6e0029",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fd00a165627a7a723058202beaae3e4c85d3f0ae7101785eb0e8225540b56230d07ea7b1dfbf175df98c6e0029",
+  "sourceMap": "1413:1524:12:-;;132:2:-1;166:7;155:9;146:7;137:37;252:7;246:14;243:1;238:23;232:4;229:33;270:1;265:20;;;;222:63;;265:20;274:9;222:63;;298:9;295:1;288:20;328:4;319:7;311:22;352:7;343;336:24",
+  "deployedSourceMap": "1413:1524:12:-;;;;;;;;",
+  "source": "pragma solidity ^0.4.23;\n\n/// @dev libraries are functionally similar to contracts, with some key differences\n/// libraries cannot have their own storage variables (they have no persistant state)\n/// They are designed to have their methods called by other contracts or libraries\n/// There are two fundamental ways smart contracts can interface with a library\n/// The first is by referencing a 'library' smart contract instantiated at a specific address.\n/// The second is to incorporate a library's bytecode directly into a smart contract (done by the compiler)\n/// The former is useful for complex methods \\ as it means multiple smart contracts can reference a single\n/// library and reduce the amount of raw bytecode that needs to be  deployed on-chain\n/// The latter is useful for small helper functions, where the gas cost of calling an external smart contract\n/// would be excessive. This is done by declaring a library function to be `internal`. This notifies the  \n/// Solidity compiler to incorporate the function's bytecode in any contract that uses the library.\n/// @notice It costs 700 gas to call an external library instantiated at a specific smart contract address.\n/// When creating a smart contract, it costs 200 gas per byte of bytecode the contract contains.\n/// Whether a library's methods should be internal or not depends on which of the above two\n/// is worth minimizing for a given method.\nlibrary Security {\n\n    /// @dev we defnie the ECDSASignature struct, which contains the variables used to validate an\n    /// @dev ECDSA signature. See https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm\n    struct ECDSASignature {\n        bytes32 r;\n        bytes32 s;\n        uint8 v;\n    }\n    event Debug2(bytes32 message);\n    event Debug3(address signingAddr);\n\n    // 'ecdsarecover' can be used, alongside valid signatures,\n    // to validate that the 'order' was consented to by buyer and seller\n    // https://ethereum.stackexchange.com/questions/710/how-can-i-verify-a-cryptographic-signature-that-was-produced-by-an-ethereum-addr\n    /// @return a boolean depending on if signer of signature is part of whitelist\n    /// @dev The 'message' of the signature needs to be the address of the whoever called the parent contract\n    /// cast `parent` to a ParentInterface contract type, so that we can call the\n    /// `isWhitelisted` method. If this method does not exist the function should throw\n    function getSignatureAddress(ECDSASignature memory signature) internal view returns(address) {\n        bytes32 message = keccak256(\"\\x19Ethereum Signed Message:\\n32\", keccak256(bytes32(msg.sender)));\n        address signingAddr = ecrecover(message, signature.v, signature.r, signature.s);\n        return signingAddr;\n        // TODO: get ethereum address that signed ECDSASignature signature,\n        // then call _parent.isWhitelisted with the signing address as the input parameter\n    }\n  \n}\n",
   "sourcePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
   "ast": {
     "absolutePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
     "exportedSymbols": {
-      "ParentInterface": [
-        702
-      ],
       "Security": [
-        720
+        700
       ]
     },
-    "id": 721,
+    "id": 701,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 692,
+        "id": 650,
         "literals": [
           "solidity",
           "^",
@@ -62,186 +51,46 @@
           ".23"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:4"
-      },
-      {
-        "id": 693,
-        "literals": [
-          "experimental",
-          "ABIEncoderV2"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "25:33:4"
+        "src": "0:24:12"
       },
       {
         "baseContracts": [],
         "contractDependencies": [],
-        "contractKind": "contract",
-        "documentation": "@title Library to validate that entities interfacing with our smart contracts are authorized\n @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.",
+        "contractKind": "library",
+        "documentation": "@dev libraries are functionally similar to contracts, with some key differences\n libraries cannot have their own storage variables (they have no persistant state)\n They are designed to have their methods called by other contracts or libraries\n There are two fundamental ways smart contracts can interface with a library\n The first is by referencing a 'library' smart contract instantiated at a specific address.\n The second is to incorporate a library's bytecode directly into a smart contract (done by the compiler)\n The former is useful for complex methods \\ as it means multiple smart contracts can reference a single\n library and reduce the amount of raw bytecode that needs to be  deployed on-chain\n The latter is useful for small helper functions, where the gas cost of calling an external smart contract\n would be excessive. This is done by declaring a library function to be `internal`. This notifies the  \n Solidity compiler to incorporate the function's bytecode in any contract that uses the library.\n @notice It costs 700 gas to call an external library instantiated at a specific smart contract address.\n When creating a smart contract, it costs 200 gas per byte of bytecode the contract contains.\n Whether a library's methods should be internal or not depends on which of the above two\n is worth minimizing for a given method.",
         "fullyImplemented": true,
-        "id": 702,
+        "id": 700,
         "linearizedBaseContracts": [
-          702
-        ],
-        "name": "ParentInterface",
-        "nodeType": "ContractDefinition",
-        "nodes": [
-          {
-            "body": {
-              "id": 700,
-              "nodeType": "Block",
-              "src": "461:2:4",
-              "statements": []
-            },
-            "documentation": null,
-            "id": 701,
-            "implemented": true,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "hasWhitelistToken",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 696,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 695,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 701,
-                  "src": "426:7:4",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 694,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "426:7:4",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "425:9:4"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 699,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 698,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 701,
-                  "src": "455:4:4",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 697,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "455:4:4",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "454:6:4"
-            },
-            "scope": 702,
-            "src": "399:64:4",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "public"
-          }
-        ],
-        "scope": 721,
-        "src": "368:97:4"
-      },
-      {
-        "baseContracts": [],
-        "contractDependencies": [],
-        "contractKind": "contract",
-        "documentation": null,
-        "fullyImplemented": true,
-        "id": 720,
-        "linearizedBaseContracts": [
-          720
+          700
         ],
         "name": "Security",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "constant": false,
-            "id": 704,
-            "name": "owner",
-            "nodeType": "VariableDeclaration",
-            "scope": 720,
-            "src": "492:13:4",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_address",
-              "typeString": "address"
-            },
-            "typeName": {
-              "id": 703,
-              "name": "address",
-              "nodeType": "ElementaryTypeName",
-              "src": "492:7:4",
-              "typeDescriptions": {
-                "typeIdentifier": "t_address",
-                "typeString": "address"
-              }
-            },
-            "value": null,
-            "visibility": "internal"
-          },
-          {
             "canonicalName": "Security.ECDSASignature",
-            "id": 711,
+            "id": 657,
             "members": [
               {
                 "constant": false,
-                "id": 706,
+                "id": 652,
                 "name": "r",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "544:6:4",
+                "scope": 657,
+                "src": "1675:9:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_uint256",
-                  "typeString": "uint256"
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
                 },
                 "typeName": {
-                  "id": 705,
-                  "name": "uint",
+                  "id": 651,
+                  "name": "bytes32",
                   "nodeType": "ElementaryTypeName",
-                  "src": "544:4:4",
+                  "src": "1675:7:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   }
                 },
                 "value": null,
@@ -249,25 +98,25 @@
               },
               {
                 "constant": false,
-                "id": 708,
+                "id": 654,
                 "name": "s",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "560:6:4",
+                "scope": 657,
+                "src": "1694:9:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_uint256",
-                  "typeString": "uint256"
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
                 },
                 "typeName": {
-                  "id": 707,
-                  "name": "uint",
+                  "id": 653,
+                  "name": "bytes32",
                   "nodeType": "ElementaryTypeName",
-                  "src": "560:4:4",
+                  "src": "1694:7:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   }
                 },
                 "value": null,
@@ -275,11 +124,11 @@
               },
               {
                 "constant": false,
-                "id": 710,
+                "id": 656,
                 "name": "v",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "576:7:4",
+                "scope": 657,
+                "src": "1713:7:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -287,10 +136,10 @@
                   "typeString": "uint8"
                 },
                 "typeName": {
-                  "id": 709,
+                  "id": 655,
                   "name": "uint8",
                   "nodeType": "ElementaryTypeName",
-                  "src": "576:5:4",
+                  "src": "1713:5:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint8",
                     "typeString": "uint8"
@@ -302,79 +151,536 @@
             ],
             "name": "ECDSASignature",
             "nodeType": "StructDefinition",
-            "scope": 720,
-            "src": "512:78:4",
+            "scope": 700,
+            "src": "1643:84:12",
             "visibility": "public"
           },
           {
-            "body": {
-              "id": 718,
-              "nodeType": "Block",
-              "src": "1022:16:4",
-              "statements": []
-            },
-            "documentation": "@param parent : the smart contract that is using SecurityLibrary",
-            "id": 719,
-            "implemented": true,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "isWhitelisted",
-            "nodeType": "FunctionDefinition",
+            "anonymous": false,
+            "documentation": null,
+            "id": 661,
+            "name": "Debug2",
+            "nodeType": "EventDefinition",
             "parameters": {
-              "id": 716,
+              "id": 660,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 713,
-                  "name": "parent",
+                  "id": 659,
+                  "indexed": false,
+                  "name": "message",
                   "nodeType": "VariableDeclaration",
-                  "scope": 719,
-                  "src": "965:22:4",
+                  "scope": 661,
+                  "src": "1745:15:12",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ParentInterface_$702",
-                    "typeString": "contract ParentInterface"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 712,
-                    "name": "ParentInterface",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 702,
-                    "src": "965:15:4",
+                    "id": 658,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1745:7:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ParentInterface_$702",
-                      "typeString": "contract ParentInterface"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
-                },
+                }
+              ],
+              "src": "1744:17:12"
+            },
+            "src": "1732:30:12"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 665,
+            "name": "Debug3",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 664,
+              "nodeType": "ParameterList",
+              "parameters": [
                 {
                   "constant": false,
-                  "id": 715,
+                  "id": 663,
+                  "indexed": false,
+                  "name": "signingAddr",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 665,
+                  "src": "1780:19:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 662,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1780:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1779:21:12"
+            },
+            "src": "1767:34:12"
+          },
+          {
+            "body": {
+              "id": 698,
+              "nodeType": "Block",
+              "src": "2536:396:12",
+              "statements": [
+                {
+                  "assignments": [
+                    673
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 673,
+                      "name": "message",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 699,
+                      "src": "2546:15:12",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      },
+                      "typeName": {
+                        "id": 672,
+                        "name": "bytes32",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2546:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 683,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "19457468657265756d205369676e6564204d6573736167653a0a3332",
+                        "id": 675,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2574:34:12",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_178a2411ab6fbc1ba11064408972259c558d0e82fd48b0aba3ad81d14f065e73",
+                          "typeString": "literal_string \"\u0019Ethereum Signed Message:\n32\""
+                        },
+                        "value": "\u0019Ethereum Signed Message:\n32"
+                      },
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 678,
+                                  "name": "msg",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 882,
+                                  "src": "2628:3:12",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_magic_message",
+                                    "typeString": "msg"
+                                  }
+                                },
+                                "id": 679,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "sender",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": null,
+                                "src": "2628:10:12",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              ],
+                              "id": 677,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "2620:7:12",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_bytes32_$",
+                                "typeString": "type(bytes32)"
+                              },
+                              "typeName": "bytes32"
+                            },
+                            "id": 680,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "2620:19:12",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          ],
+                          "id": 676,
+                          "name": "keccak256",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 876,
+                          "src": "2610:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
+                            "typeString": "function () pure returns (bytes32)"
+                          }
+                        },
+                        "id": 681,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2610:30:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_stringliteral_178a2411ab6fbc1ba11064408972259c558d0e82fd48b0aba3ad81d14f065e73",
+                          "typeString": "literal_string \"\u0019Ethereum Signed Message:\n32\""
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 674,
+                      "name": "keccak256",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 876,
+                      "src": "2564:9:12",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
+                        "typeString": "function () pure returns (bytes32)"
+                      }
+                    },
+                    "id": 682,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2564:77:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2546:95:12"
+                },
+                {
+                  "assignments": [
+                    685
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 685,
+                      "name": "signingAddr",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 699,
+                      "src": "2651:19:12",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      },
+                      "typeName": {
+                        "id": 684,
+                        "name": "address",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2651:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 695,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 687,
+                        "name": "message",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 673,
+                        "src": "2683:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 688,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2692:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 689,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "v",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 656,
+                        "src": "2692:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 690,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2705:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 691,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "r",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 652,
+                        "src": "2705:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 692,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2718:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 693,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "s",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 654,
+                        "src": "2718:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 686,
+                      "name": "ecrecover",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 874,
+                      "src": "2673:9:12",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_ecrecover_pure$_t_bytes32_$_t_uint8_$_t_bytes32_$_t_bytes32_$returns$_t_address_$",
+                        "typeString": "function (bytes32,uint8,bytes32,bytes32) pure returns (address)"
+                      }
+                    },
+                    "id": 694,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2673:57:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2651:79:12"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 696,
+                    "name": "signingAddr",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 685,
+                    "src": "2747:11:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 671,
+                  "id": 697,
+                  "nodeType": "Return",
+                  "src": "2740:18:12"
+                }
+              ]
+            },
+            "documentation": "@return a boolean depending on if signer of signature is part of whitelist\n @dev The 'message' of the signature needs to be the address of the whoever called the parent contract\n cast `parent` to a ParentInterface contract type, so that we can call the\n `isWhitelisted` method. If this method does not exist the function should throw",
+            "id": 699,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getSignatureAddress",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 668,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 667,
                   "name": "signature",
                   "nodeType": "VariableDeclaration",
-                  "scope": 719,
-                  "src": "989:31:4",
+                  "scope": 699,
+                  "src": "2472:31:12",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_ECDSASignature_$711_memory_ptr",
+                    "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
                     "typeString": "struct Security.ECDSASignature"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 714,
+                    "id": 666,
                     "name": "ECDSASignature",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 711,
-                    "src": "989:14:4",
+                    "referencedDeclaration": 657,
+                    "src": "2472:14:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_ECDSASignature_$711_storage_ptr",
+                      "typeIdentifier": "t_struct$_ECDSASignature_$657_storage_ptr",
                       "typeString": "struct Security.ECDSASignature"
                     }
                   },
@@ -382,43 +688,67 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "964:57:4"
+              "src": "2471:33:12"
             },
             "payable": false,
             "returnParameters": {
-              "id": 717,
+              "id": 671,
               "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1022:0:4"
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 670,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 699,
+                  "src": "2527:7:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 669,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2527:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2526:9:12"
             },
-            "scope": 720,
-            "src": "942:96:4",
-            "stateMutability": "nonpayable",
+            "scope": 700,
+            "src": "2443:489:12",
+            "stateMutability": "view",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "internal"
           }
         ],
-        "scope": 721,
-        "src": "467:573:4"
+        "scope": 701,
+        "src": "1413:1524:12"
       }
     ],
-    "src": "0:1041:4"
+    "src": "0:2938:12"
   },
   "legacyAST": {
     "absolutePath": "/mnt/c/Users/zacha/CreditMint/Projects/smart-contracts/contracts/lib/Security/Security.sol",
     "exportedSymbols": {
-      "ParentInterface": [
-        702
-      ],
       "Security": [
-        720
+        700
       ]
     },
-    "id": 721,
+    "id": 701,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 692,
+        "id": 650,
         "literals": [
           "solidity",
           "^",
@@ -426,186 +756,46 @@
           ".23"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:4"
-      },
-      {
-        "id": 693,
-        "literals": [
-          "experimental",
-          "ABIEncoderV2"
-        ],
-        "nodeType": "PragmaDirective",
-        "src": "25:33:4"
+        "src": "0:24:12"
       },
       {
         "baseContracts": [],
         "contractDependencies": [],
-        "contractKind": "contract",
-        "documentation": "@title Library to validate that entities interfacing with our smart contracts are authorized\n @dev Security.sol is called from other smart contracts, and is used to validate that an entity calling\n @dev functions on the other smart contract is authorized to do so, by checking an ECDSA signature.",
+        "contractKind": "library",
+        "documentation": "@dev libraries are functionally similar to contracts, with some key differences\n libraries cannot have their own storage variables (they have no persistant state)\n They are designed to have their methods called by other contracts or libraries\n There are two fundamental ways smart contracts can interface with a library\n The first is by referencing a 'library' smart contract instantiated at a specific address.\n The second is to incorporate a library's bytecode directly into a smart contract (done by the compiler)\n The former is useful for complex methods \\ as it means multiple smart contracts can reference a single\n library and reduce the amount of raw bytecode that needs to be  deployed on-chain\n The latter is useful for small helper functions, where the gas cost of calling an external smart contract\n would be excessive. This is done by declaring a library function to be `internal`. This notifies the  \n Solidity compiler to incorporate the function's bytecode in any contract that uses the library.\n @notice It costs 700 gas to call an external library instantiated at a specific smart contract address.\n When creating a smart contract, it costs 200 gas per byte of bytecode the contract contains.\n Whether a library's methods should be internal or not depends on which of the above two\n is worth minimizing for a given method.",
         "fullyImplemented": true,
-        "id": 702,
+        "id": 700,
         "linearizedBaseContracts": [
-          702
-        ],
-        "name": "ParentInterface",
-        "nodeType": "ContractDefinition",
-        "nodes": [
-          {
-            "body": {
-              "id": 700,
-              "nodeType": "Block",
-              "src": "461:2:4",
-              "statements": []
-            },
-            "documentation": null,
-            "id": 701,
-            "implemented": true,
-            "isConstructor": false,
-            "isDeclaredConst": true,
-            "modifiers": [],
-            "name": "hasWhitelistToken",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 696,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 695,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 701,
-                  "src": "426:7:4",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
-                  },
-                  "typeName": {
-                    "id": 694,
-                    "name": "address",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "426:7:4",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "425:9:4"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 699,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 698,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 701,
-                  "src": "455:4:4",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 697,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "455:4:4",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "454:6:4"
-            },
-            "scope": 702,
-            "src": "399:64:4",
-            "stateMutability": "view",
-            "superFunction": null,
-            "visibility": "public"
-          }
-        ],
-        "scope": 721,
-        "src": "368:97:4"
-      },
-      {
-        "baseContracts": [],
-        "contractDependencies": [],
-        "contractKind": "contract",
-        "documentation": null,
-        "fullyImplemented": true,
-        "id": 720,
-        "linearizedBaseContracts": [
-          720
+          700
         ],
         "name": "Security",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "constant": false,
-            "id": 704,
-            "name": "owner",
-            "nodeType": "VariableDeclaration",
-            "scope": 720,
-            "src": "492:13:4",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_address",
-              "typeString": "address"
-            },
-            "typeName": {
-              "id": 703,
-              "name": "address",
-              "nodeType": "ElementaryTypeName",
-              "src": "492:7:4",
-              "typeDescriptions": {
-                "typeIdentifier": "t_address",
-                "typeString": "address"
-              }
-            },
-            "value": null,
-            "visibility": "internal"
-          },
-          {
             "canonicalName": "Security.ECDSASignature",
-            "id": 711,
+            "id": 657,
             "members": [
               {
                 "constant": false,
-                "id": 706,
+                "id": 652,
                 "name": "r",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "544:6:4",
+                "scope": 657,
+                "src": "1675:9:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_uint256",
-                  "typeString": "uint256"
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
                 },
                 "typeName": {
-                  "id": 705,
-                  "name": "uint",
+                  "id": 651,
+                  "name": "bytes32",
                   "nodeType": "ElementaryTypeName",
-                  "src": "544:4:4",
+                  "src": "1675:7:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   }
                 },
                 "value": null,
@@ -613,25 +803,25 @@
               },
               {
                 "constant": false,
-                "id": 708,
+                "id": 654,
                 "name": "s",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "560:6:4",
+                "scope": 657,
+                "src": "1694:9:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_uint256",
-                  "typeString": "uint256"
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
                 },
                 "typeName": {
-                  "id": 707,
-                  "name": "uint",
+                  "id": 653,
+                  "name": "bytes32",
                   "nodeType": "ElementaryTypeName",
-                  "src": "560:4:4",
+                  "src": "1694:7:12",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   }
                 },
                 "value": null,
@@ -639,11 +829,11 @@
               },
               {
                 "constant": false,
-                "id": 710,
+                "id": 656,
                 "name": "v",
                 "nodeType": "VariableDeclaration",
-                "scope": 711,
-                "src": "576:7:4",
+                "scope": 657,
+                "src": "1713:7:12",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -651,10 +841,10 @@
                   "typeString": "uint8"
                 },
                 "typeName": {
-                  "id": 709,
+                  "id": 655,
                   "name": "uint8",
                   "nodeType": "ElementaryTypeName",
-                  "src": "576:5:4",
+                  "src": "1713:5:12",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint8",
                     "typeString": "uint8"
@@ -666,79 +856,536 @@
             ],
             "name": "ECDSASignature",
             "nodeType": "StructDefinition",
-            "scope": 720,
-            "src": "512:78:4",
+            "scope": 700,
+            "src": "1643:84:12",
             "visibility": "public"
           },
           {
-            "body": {
-              "id": 718,
-              "nodeType": "Block",
-              "src": "1022:16:4",
-              "statements": []
-            },
-            "documentation": "@param parent : the smart contract that is using SecurityLibrary",
-            "id": 719,
-            "implemented": true,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "isWhitelisted",
-            "nodeType": "FunctionDefinition",
+            "anonymous": false,
+            "documentation": null,
+            "id": 661,
+            "name": "Debug2",
+            "nodeType": "EventDefinition",
             "parameters": {
-              "id": 716,
+              "id": 660,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 713,
-                  "name": "parent",
+                  "id": 659,
+                  "indexed": false,
+                  "name": "message",
                   "nodeType": "VariableDeclaration",
-                  "scope": 719,
-                  "src": "965:22:4",
+                  "scope": 661,
+                  "src": "1745:15:12",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_ParentInterface_$702",
-                    "typeString": "contract ParentInterface"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 712,
-                    "name": "ParentInterface",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 702,
-                    "src": "965:15:4",
+                    "id": 658,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1745:7:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_ParentInterface_$702",
-                      "typeString": "contract ParentInterface"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
-                },
+                }
+              ],
+              "src": "1744:17:12"
+            },
+            "src": "1732:30:12"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 665,
+            "name": "Debug3",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 664,
+              "nodeType": "ParameterList",
+              "parameters": [
                 {
                   "constant": false,
-                  "id": 715,
+                  "id": 663,
+                  "indexed": false,
+                  "name": "signingAddr",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 665,
+                  "src": "1780:19:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 662,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1780:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1779:21:12"
+            },
+            "src": "1767:34:12"
+          },
+          {
+            "body": {
+              "id": 698,
+              "nodeType": "Block",
+              "src": "2536:396:12",
+              "statements": [
+                {
+                  "assignments": [
+                    673
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 673,
+                      "name": "message",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 699,
+                      "src": "2546:15:12",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      },
+                      "typeName": {
+                        "id": 672,
+                        "name": "bytes32",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2546:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 683,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "19457468657265756d205369676e6564204d6573736167653a0a3332",
+                        "id": 675,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "2574:34:12",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_178a2411ab6fbc1ba11064408972259c558d0e82fd48b0aba3ad81d14f065e73",
+                          "typeString": "literal_string \"\u0019Ethereum Signed Message:\n32\""
+                        },
+                        "value": "\u0019Ethereum Signed Message:\n32"
+                      },
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "expression": {
+                                  "argumentTypes": null,
+                                  "id": 678,
+                                  "name": "msg",
+                                  "nodeType": "Identifier",
+                                  "overloadedDeclarations": [],
+                                  "referencedDeclaration": 882,
+                                  "src": "2628:3:12",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_magic_message",
+                                    "typeString": "msg"
+                                  }
+                                },
+                                "id": 679,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "memberName": "sender",
+                                "nodeType": "MemberAccess",
+                                "referencedDeclaration": null,
+                                "src": "2628:10:12",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_address",
+                                  "typeString": "address"
+                                }
+                              ],
+                              "id": 677,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "nodeType": "ElementaryTypeNameExpression",
+                              "src": "2620:7:12",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_bytes32_$",
+                                "typeString": "type(bytes32)"
+                              },
+                              "typeName": "bytes32"
+                            },
+                            "id": 680,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "typeConversion",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "2620:19:12",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          ],
+                          "id": 676,
+                          "name": "keccak256",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 876,
+                          "src": "2610:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
+                            "typeString": "function () pure returns (bytes32)"
+                          }
+                        },
+                        "id": 681,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "2610:30:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_stringliteral_178a2411ab6fbc1ba11064408972259c558d0e82fd48b0aba3ad81d14f065e73",
+                          "typeString": "literal_string \"\u0019Ethereum Signed Message:\n32\""
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 674,
+                      "name": "keccak256",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 876,
+                      "src": "2564:9:12",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_sha3_pure$__$returns$_t_bytes32_$",
+                        "typeString": "function () pure returns (bytes32)"
+                      }
+                    },
+                    "id": 682,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2564:77:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2546:95:12"
+                },
+                {
+                  "assignments": [
+                    685
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 685,
+                      "name": "signingAddr",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 699,
+                      "src": "2651:19:12",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      },
+                      "typeName": {
+                        "id": 684,
+                        "name": "address",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "2651:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 695,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 687,
+                        "name": "message",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 673,
+                        "src": "2683:7:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 688,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2692:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 689,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "v",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 656,
+                        "src": "2692:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 690,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2705:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 691,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "r",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 652,
+                        "src": "2705:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 692,
+                          "name": "signature",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 667,
+                          "src": "2718:9:12",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
+                            "typeString": "struct Security.ECDSASignature memory"
+                          }
+                        },
+                        "id": 693,
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "s",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": 654,
+                        "src": "2718:11:12",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 686,
+                      "name": "ecrecover",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 874,
+                      "src": "2673:9:12",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_ecrecover_pure$_t_bytes32_$_t_uint8_$_t_bytes32_$_t_bytes32_$returns$_t_address_$",
+                        "typeString": "function (bytes32,uint8,bytes32,bytes32) pure returns (address)"
+                      }
+                    },
+                    "id": 694,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2673:57:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "2651:79:12"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 696,
+                    "name": "signingAddr",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 685,
+                    "src": "2747:11:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 671,
+                  "id": 697,
+                  "nodeType": "Return",
+                  "src": "2740:18:12"
+                }
+              ]
+            },
+            "documentation": "@return a boolean depending on if signer of signature is part of whitelist\n @dev The 'message' of the signature needs to be the address of the whoever called the parent contract\n cast `parent` to a ParentInterface contract type, so that we can call the\n `isWhitelisted` method. If this method does not exist the function should throw",
+            "id": 699,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getSignatureAddress",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 668,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 667,
                   "name": "signature",
                   "nodeType": "VariableDeclaration",
-                  "scope": 719,
-                  "src": "989:31:4",
+                  "scope": 699,
+                  "src": "2472:31:12",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_struct$_ECDSASignature_$711_memory_ptr",
+                    "typeIdentifier": "t_struct$_ECDSASignature_$657_memory_ptr",
                     "typeString": "struct Security.ECDSASignature"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 714,
+                    "id": 666,
                     "name": "ECDSASignature",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 711,
-                    "src": "989:14:4",
+                    "referencedDeclaration": 657,
+                    "src": "2472:14:12",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_ECDSASignature_$711_storage_ptr",
+                      "typeIdentifier": "t_struct$_ECDSASignature_$657_storage_ptr",
                       "typeString": "struct Security.ECDSASignature"
                     }
                   },
@@ -746,27 +1393,54 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "964:57:4"
+              "src": "2471:33:12"
             },
             "payable": false,
             "returnParameters": {
-              "id": 717,
+              "id": 671,
               "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "1022:0:4"
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 670,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 699,
+                  "src": "2527:7:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 669,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2527:7:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2526:9:12"
             },
-            "scope": 720,
-            "src": "942:96:4",
-            "stateMutability": "nonpayable",
+            "scope": 700,
+            "src": "2443:489:12",
+            "stateMutability": "view",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "internal"
           }
         ],
-        "scope": 721,
-        "src": "467:573:4"
+        "scope": 701,
+        "src": "1413:1524:12"
       }
     ],
-    "src": "0:1041:4"
+    "src": "0:2938:12"
   },
   "compiler": {
     "name": "solc",
@@ -774,5 +1448,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-08-30T13:02:27.721Z"
+  "updatedAt": "2018-09-01T11:10:37.562Z"
 }
