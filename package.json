@@ -22,5 +22,8 @@
   "homepage": "https://github.com/CreditMint/smart-contracts#readme",
   "devDependencies": {
     "@digix/doxity-solc": "git+https://github.com/DigixGlobal/doxity.git#doxity-latest"
+  },
+  "dependencies": {
+    "npm": "^6.4.1"
   }
 }
