@@ -4,6 +4,7 @@
 const Web3 = require('web3');
 
 const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
+const BN = require('bn.js');
 
 const ecdsaApi = {};
 
@@ -33,6 +34,14 @@ const toBytes32 = (input, padding = 'left') => { // assumes hex format
     return s;
 };
 
+ecdsaApi.encodeAndHash = (...args) => {
+    let r = '';
+    args.forEach((arg) => {
+        r = `${r}${toBytes32(arg)}`;
+    });
+    return web3.sha3(`0x${r}`, { encoding: 'hex' });
+}
+
 ecdsaApi.hashString = input => web3.sha3(toBytes32(input), { encoding: 'hex' });
 
 ecdsaApi.signMessage = ({
@@ -40,6 +49,24 @@ ecdsaApi.signMessage = ({
     sender,
 }) => {
     const signatureMessage = ecdsaApi.hashString(callingAddress);
+    const signature = web3.eth.sign(sender, signatureMessage/*`0x${toBytes32(callingAddress)}`*/);
+    return {
+        r: signature.slice(0, 66), // first 2 chars are '0x'
+        s: `0x${signature.slice(66, 130)}`,
+        v: Number(signature.slice(130, 132)) + 27, // https://github.com/ethereum/wiki/wiki/JavaScript-API#web3ethsign
+    };
+};
+
+ecdsaApi.signMessageComplex = ({
+    callingAddress,
+    value,
+    nonce,
+    sender,
+}) => {
+    message = `${callingAddress}${value}${nonce}`
+    const valueHex = new BN(value || 0).toString(16);
+    const nonceHex = new BN(nonce || 0).toString(16);
+    const signatureMessage = ecdsaApi.encodeAndHash(callingAddress, valueHex, nonceHex);
     const signature = web3.eth.sign(sender, signatureMessage/*`0x${toBytes32(callingAddress)}`*/);
     return {
         r: signature.slice(0, 66), // first 2 chars are '0x'

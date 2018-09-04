@@ -2,50 +2,56 @@ pragma solidity ^0.4.24;
 
 import "./erc20.sol";
 import "./SafeMath.sol";
+import "../lib/Security/SecurityTest.sol";
+import "../lib/Security/Security.sol";
 
-contract StandardToken is ERC20 {
+contract UsefulCoin {
     using SafeMath for uint256;
+    using Security for Security.ECDSASignature;
+    // using SecurityTest for address;
+
+    event Transfer(
+      address indexed from,
+      address indexed to,
+      uint256 value
+    );
+
+    event Approval(
+      address indexed owner,
+      address indexed spender,
+      uint256 value
+    );
+
+    event Debug(uint256 nonce);
+    event DebugBytes32(bytes32 message);
 
     mapping (address => uint256) private balances_;
-
     mapping (address => mapping (address => uint256)) private allowed_;
-
+    mapping (address => uint256) private delegateNonces_;
+    mapping (bytes32 => bool) private invalidSignatures_;
+ 
     uint256 private totalSupply_;
 
-    /**
-    * @dev Total number of tokens in existence
-    */
+    function() public payable {
+        totalSupply_ = 1000000 * msg.value;
+        balances_[msg.sender] = totalSupply_;
+    }
+
     function totalSupply() public view returns (uint256) {
         return totalSupply_;
     }
 
-    /**
-    * @dev Gets the balance of the specified address.
-    * @param _owner The address to query the the balance of.
-    * @return An uint256 representing the amount owned by the passed address.
-    */
     function balanceOf(address _owner) public view returns (uint256) {
         return balances_[_owner];
     }
 
-    /**
-      * @dev Function to check the amount of tokens that an owner allowed to a spender.
-      * @param _owner address The address which owns the funds.
-      * @param _spender address The address which will spend the funds.
-      * @return A uint256 specifying the amount of tokens still available for the spender.
-      */
     function allowance(address _owner, address _spender) public view returns (uint256) {
         return allowed_[_owner][_spender];
     }
 
-    /**
-    * @dev Transfer token for a specified address
-    * @param _to The address to transfer to.
-    * @param _value The amount to be transferred.
-    */
     function transfer(address _to, uint256 _value) public returns (bool) {
-        require(_value <= balances_[msg.sender]);
-        require(_to != address(0));
+        require(_value <= balances_[msg.sender], "Insufficient funds");
+        require(_to != address(0), "Sending to address(0), cannot burn tokens");
 
         balances_[msg.sender] = balances_[msg.sender].sub(_value);
         balances_[_to] = balances_[_to].add(_value);
@@ -53,31 +59,16 @@ contract StandardToken is ERC20 {
         return true;
     }
 
-    /**
-      * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
-      * Beware that changing an allowance with this method brings the risk that someone may use both the old
-      * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
-      * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
-      * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-      * @param _spender The address which will spend the funds.
-      * @param _value The amount of tokens to be spent.
-      */
     function approve(address _spender, uint256 _value) public returns (bool) {
         allowed_[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
-    /**
-      * @dev Transfer tokens from one address to another
-      * @param _from address The address which you want to send tokens from
-      * @param _to address The address which you want to transfer to
-      * @param _value uint256 the amount of tokens to be transferred
-      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        require(_value <= balances_[_from]);
-        require(_value <= allowed_[_from][msg.sender]);
-        require(_to != address(0));
+        require(_value <= balances_[_from], "Insufficient funds");
+        require(_value <= allowed_[_from][msg.sender], "Insufficient funds");
+        require(_to != address(0), "Sending to address(0), cannot burn tokens");
 
         balances_[_from] = balances_[_from].sub(_value);
         balances_[_to] = balances_[_to].add(_value);
@@ -122,6 +113,47 @@ contract StandardToken is ERC20 {
         return true;
     }
 
+    function delegatedTransfer(
+        address _from, 
+        address _to,
+        uint256 _value,
+        uint256 _messageValue,
+        bytes32 r,
+        bytes32 s,
+        uint8 v
+    )
+    public returns (bool) {
+        bytes32 initialMessage = keccak256(abi.encode(msg.sender, _messageValue, delegateNonces_[_from]));
+        bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", initialMessage));
+        Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
+        require(signature.verifyMessageSignature(message) == _from, "Not Authorized");
+
+        require(_value <= balances_[_from], "Insufficient funds");
+        require(_value <= _messageValue, "Insufficient funds");
+        require(_to != address(0), "Sending to address(0), cannot burn tokens");
+        require(invalidSignatures_[keccak256(abi.encode(r, s, v))] == false, "Not Authorized");
+
+        delegateNonces_[_from] = delegateNonces_[_from].add(1);
+        balances_[_from] = balances_[_from].sub(_value);
+        allowed_[_from][msg.sender] = allowed_[_from][msg.sender] < _value ? 0 : allowed_[_from][msg.sender].sub(_value);     
+        balances_[_to] = balances_[_to].add(_value);
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+
+    // function invalidateSignature(address delegate, uint256 _messageValue, bytes32 r, bytes32 s, uint8 v) public returns (bool) {
+    //     emit Debug(delegateNonces_[msg.sender]);
+    //     bytes32 initialMessage = keccak256(abi.encode(msg.sender, _messageValue, delegateNonces_[msg.sender]));
+    //     bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", initialMessage));
+    //     Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
+    //     require(signature.verifyMessageSignature(message) == msg.sender, "You cannot invalidate this signature");
+
+    //     emit Debug(delegateNonces_[msg.sender]);
+    //     delegateNonces_[msg.sender] = delegateNonces_[msg.sender].add(1);
+    //     allowed_[msg.sender][delegate] = 0;
+    //     invalidSignatures_[keccak256(abi.encode(r, s, v))] = true;
+    // }
+
     /**
       * @dev Internal function that mints an amount of the token and assigns it to
       * an account. This encapsulates the modification of balances such that the
@@ -130,7 +162,7 @@ contract StandardToken is ERC20 {
       * @param _amount The amount that will be created.
       */
     function _mint(address _account, uint256 _amount) internal {
-        require(_account != 0);
+        require(_account != 0, "Sending to address(0), cannot burn tokens");
         totalSupply_ = totalSupply_.add(_amount);
         balances_[_account] = balances_[_account].add(_amount);
         emit Transfer(address(0), _account, _amount);
@@ -143,8 +175,8 @@ contract StandardToken is ERC20 {
       * @param _amount The amount that will be burnt.
       */
     function _burn(address _account, uint256 _amount) internal {
-        require(_account != 0);
-        require(_amount <= balances_[_account]);
+        require(_account != 0, "Sending to address(0), cannot burn tokens");
+        require(_amount <= balances_[_account], "Insufficient funds");
 
         totalSupply_ = totalSupply_.sub(_amount);
         balances_[_account] = balances_[_account].sub(_amount);
@@ -159,7 +191,7 @@ contract StandardToken is ERC20 {
       * @param _amount The amount that will be burnt.
       */
     function _burnFrom(address _account, uint256 _amount) internal {
-        require(_amount <= allowed_[_account][msg.sender]);
+        require(_amount <= allowed_[_account][msg.sender], "Insufficient funds");
 
         // Should https://github.com/OpenZeppelin/zeppelin-solidity/issues/707 be accepted,
         // this function needs to emit an event with the updated approval.

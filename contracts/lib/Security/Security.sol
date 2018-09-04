@@ -24,8 +24,6 @@ library Security {
         bytes32 s;
         uint8 v;
     }
-    event Debug2(bytes32 message);
-    event Debug3(address signingAddr);
 
     // 'ecdsarecover' can be used, alongside valid signatures,
     // to validate that the 'order' was consented to by buyer and seller
@@ -41,5 +39,11 @@ library Security {
         // TODO: get ethereum address that signed ECDSASignature signature,
         // then call _parent.isWhitelisted with the signing address as the input parameter
     }
-  
+
+    function verifyMessageSignature(ECDSASignature memory signature, bytes32 message) internal pure returns(address) {
+        address signingAddr = ecrecover(message, signature.v, signature.r, signature.s);
+        return signingAddr;
+        // TODO: get ethereum address that signed ECDSASignature signature,
+        // then call _parent.isWhitelisted with the signing address as the input parameter
+    }
 }
