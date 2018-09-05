@@ -22,7 +22,7 @@ contract UsefulCoin {
       uint256 value
     );
 
-    event Debug(uint256 nonce);
+    event DebugUint(uint256 num);
     event DebugBytes32(bytes32 message);
 
     mapping (address => uint256) private balances_;
@@ -123,10 +123,8 @@ contract UsefulCoin {
         uint8 v
     )
     public returns (bool) {
-        bytes32 initialMessage = keccak256(abi.encode(msg.sender, _messageValue, delegateNonces_[_from]));
-        bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", initialMessage));
         Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
-        require(signature.verifyMessageSignature(message) == _from, "Not Authorized");
+        require(signature.verifyMessageSignature(msg.sender, _messageValue, delegateNonces_[_from]) == _from, "Not Authorised");
 
         require(_value <= balances_[_from], "Insufficient funds");
         require(_value <= _messageValue, "Insufficient funds");
@@ -141,18 +139,18 @@ contract UsefulCoin {
         return true;
     }
 
-    // function invalidateSignature(address delegate, uint256 _messageValue, bytes32 r, bytes32 s, uint8 v) public returns (bool) {
-    //     emit Debug(delegateNonces_[msg.sender]);
-    //     bytes32 initialMessage = keccak256(abi.encode(msg.sender, _messageValue, delegateNonces_[msg.sender]));
-    //     bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", initialMessage));
-    //     Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
-    //     require(signature.verifyMessageSignature(message) == msg.sender, "You cannot invalidate this signature");
+    function invalidateSignature(address delegate, uint256 _messageValue, bytes32 r, bytes32 s, uint8 v) public returns (bool) {
+        Security.ECDSASignature memory signature = Security.ECDSASignature(r, s, v);
+        require(
+            signature.verifyMessageSignature(delegate, _messageValue, delegateNonces_[msg.sender]) == msg.sender,
+            "Not authorised to invalidate this signature"
+        );
 
-    //     emit Debug(delegateNonces_[msg.sender]);
-    //     delegateNonces_[msg.sender] = delegateNonces_[msg.sender].add(1);
-    //     allowed_[msg.sender][delegate] = 0;
-    //     invalidSignatures_[keccak256(abi.encode(r, s, v))] = true;
-    // }
+        delegateNonces_[msg.sender] = delegateNonces_[msg.sender].add(1);
+        allowed_[msg.sender][delegate] = 0;
+        invalidSignatures_[keccak256(abi.encode(r, s, v))] = true;
+        return true;
+    }
 
     /**
       * @dev Internal function that mints an amount of the token and assigns it to
