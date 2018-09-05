@@ -40,10 +40,15 @@ library Security {
         // then call _parent.isWhitelisted with the signing address as the input parameter
     }
 
-    function verifyMessageSignature(ECDSASignature memory signature, bytes32 message) internal pure returns(address) {
+    function verifyMessageSignature(
+        ECDSASignature memory signature,
+        address delegate,
+        uint256 _messageValue,
+        uint256 nonce
+    ) internal pure returns(address) {
+        bytes32 initialMessage = keccak256(abi.encode(delegate, _messageValue, nonce));
+        bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", initialMessage));
         address signingAddr = ecrecover(message, signature.v, signature.r, signature.s);
         return signingAddr;
-        // TODO: get ethereum address that signed ECDSASignature signature,
-        // then call _parent.isWhitelisted with the signing address as the input parameter
     }
 }
