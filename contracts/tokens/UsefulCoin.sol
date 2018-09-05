@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "./erc20.sol";
-import "./SafeMath.sol";
+import "../contractHelpers/SafeMath.sol";
 import "../lib/Security/SecurityTest.sol";
 import "../lib/Security/Security.sol";
 
 contract UsefulCoin {
     using SafeMath for uint256;
     using Security for Security.ECDSASignature;
-    // using SecurityTest for address;
 
     event Transfer(
       address indexed from,
