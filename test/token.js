@@ -6,7 +6,7 @@ const exceptions = require('./exceptions');
 
 const ethToCoin = 1000000;
 
-contract.only('Token', (accounts) => {
+contract('Token', (accounts) => {
     let usefulCoin;
     let securityTest;
     beforeEach(async () => {
