@@ -23,6 +23,8 @@ contract UsefulCoin {
 
     event DebugUint(uint256 num);
     event DebugBytes32(bytes32 message);
+    event DebugAddUsefulCoin(address add);
+    event DebugAddUCIsEqual(address add);
 
     mapping (address => uint256) private balances_;
     mapping (address => mapping (address => uint256)) private allowed_;
@@ -31,7 +33,7 @@ contract UsefulCoin {
  
     uint256 private totalSupply_;
 
-    function() public payable {
+    constructor() public payable {
         totalSupply_ = 1000000 * msg.value;
         balances_[msg.sender] = totalSupply_;
     }
