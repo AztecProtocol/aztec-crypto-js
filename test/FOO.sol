@@ -6,18 +6,31 @@ contract FOO {
         uint256 x;
         uint256 y;
     }
+    Coordinates[] coords;
     event Debug(uint num);
-    function loopCoords(Coordinates[] coords) public returns (bool) {
+
+    function loopCoords0() public returns (bool) {
         for (uint i = 0; i < coords.length; i++) {
-            emit Debug(i);
+            emit Debug(coords[i].x);
+            emit Debug(coords[i].y);
         }
         return true;
     }
-    function justCoord(Coordinates coord) public {
-        emit Debug(coord.x);
-        emit Debug(coord.y);
+
+    function loopCoords1(Coordinates[] coords1) public returns (bool) {
+        for (uint i = 0; i < coords1.length; i++) {
+            emit Debug(coords1[i].x);
+            emit Debug(coords1[i].y);
+        }
+        return true;
     }
-    function coordMaker(uint x_coord, uint y_coord) public returns (Coordinates) {
-        return {x: x_coord, y: y_coord};
+
+    function singleCoord(uint index) public {
+        emit Debug(coords[index].x);
+        emit Debug(coords[index].y);
+    }
+
+    function coordMaker(uint x_coord, uint y_coord) public {
+        coords.push(Coordinates(x_coord, y_coord));
     }
 }
