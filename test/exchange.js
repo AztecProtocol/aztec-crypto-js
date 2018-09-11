@@ -9,7 +9,6 @@ const ecdsaApi = require('../helpers/ecdsaApi');
 const exceptions = require('./exceptions');
 const coordsContract = artifacts.require('./FOO.sol');
 
-// https://ethereum.stackexchange.com/questions/8650/is-there-a-maximum-number-of-entries-for-a-mapping
 contract.only('Token', (accounts) => {
     let arethaFrankloans;
     let andollarsPaak;
