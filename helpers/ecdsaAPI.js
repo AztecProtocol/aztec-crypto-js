@@ -63,7 +63,6 @@ ecdsaApi.signMessageComplex = ({
     nonce,
     sender,
 }) => {
-    message = `${callingAddress}${value}${nonce}`
     const valueHex = new BN(value || 0).toString(16);
     const nonceHex = new BN(nonce || 0).toString(16);
     const signatureMessage = ecdsaApi.encodeAndHash(callingAddress, valueHex, nonceHex);
