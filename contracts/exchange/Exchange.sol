@@ -121,49 +121,28 @@ contract Exchange {
     }
 
     function _fillOrder(Order order) internal returns (bool) {
-        addToken(order.makerToken);
-        addToken(order.takerToken);
-        if (!order.fillingPartial) _newOrder(order);
-        else {
+        UsefulCoin takerToken = UsefulCoin(order.takerToken);
+        UsefulCoin makerToken = UsefulCoin(order.makerToken);
+        uint256 boundedTakerToken = order.takerTokenSupplied;
+        uint256 makerToTransfer = order.makerTokenAmount.mul(boundedTakerToken.div(order.takerTokenRequested));
+        if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
+
+        if (!order.fillingPartial) {
+            takerToken.delegatedTransfer(
+                order.taker, order.maker,
+                boundedTakerToken, order.takerTokenRequested,
+                order.takerSignature.r, order.takerSignature.s, order.takerSignature.v);
+            makerToken.delegatedTransfer(
+                order.maker, order.taker,
+                makerToTransfer, order.makerTokenAmount,
+                order.makerSignature.r, order.makerSignature.s, order.makerSignature.v);
+        } else {
             require(partialFills[order.orderHash], "The partial order you are trying to fill is invalid");
             require(!cancelledOrders[order.orderHash], "This partial order has been cancelled");
-            UsefulCoin takerToken = UsefulCoin(order.takerToken);
-            UsefulCoin makerToken = UsefulCoin(order.makerToken);
-            uint256 makerToTransfer = order.makerTokenAmount*(boundedTakerToken/order.takerTokenRequested);
-            uint256 boundedTakerToken = order.takerTokenSupplied;
-            if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
-        
             takerToken.transferFrom(order.taker, order.maker, boundedTakerToken);
             makerToken.transferFrom(order.maker, order.taker, makerToTransfer);
             delete partialFills[order.orderHash];
-            partialFills[keccak256(
-                abi.encode(
-                    order.maker, order.makerToken, order.takerToken,
-                    order.makerTokenAmount - makerToTransfer,
-                    order.takerTokenRequested - order.takerTokenSupplied
-            ))] = true;
         }
-        removeToken(order.makerToken);
-        removeToken(order.takerToken);
-        return true;
-    }
-
-    function _newOrder(Order order) internal returns (bool) {
-        UsefulCoin takerToken = UsefulCoin(order.takerToken);
-        UsefulCoin makerToken = UsefulCoin(order.makerToken);
-
-        uint256 makerToTransfer = order.makerTokenAmount*(boundedTakerToken/order.takerTokenRequested);
-        uint256 boundedTakerToken = order.takerTokenSupplied;
-        if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
-        
-        takerToken.delegatedTransfer(
-            order.taker, order.maker,
-            boundedTakerToken, order.takerTokenRequested,
-            order.takerSignature.r, order.takerSignature.s, order.takerSignature.v);
-        makerToken.delegatedTransfer(
-            order.maker, order.taker,
-            makerToTransfer, order.makerTokenAmount,
-            order.makerSignature.r, order.makerSignature.s, order.makerSignature.v);
 
         if (order.takerTokenSupplied < order.takerTokenRequested) {
             partialFills[keccak256(

@@ -33,7 +33,7 @@ contract.only('Token', (accounts) => {
         assert.equal(balance3.toString(10) , web3.toWei("4000000", "ether"));
     });
 
-    it('succesfully executes exchange of assets - non partial order', async () => {
+    it.only('succesfully executes exchange of assets - non partial order', async () => {
         const maker = accounts[0];
         const taker = accounts[1];
         const makerToken = arethaFrankloans.address;
@@ -96,12 +96,10 @@ contract.only('Token', (accounts) => {
         const orderAddresses = [maker, taker, arethaFrankloans.address, andollarsPaak.address];
         const orderValues = [makerValue, takerValue, takerValue];
         await dexchange.assembleOrder(
-            orderAddresses,
-            orderValues,
+            orderAddresses, orderValues,
             makerSignature.r, makerSignature.s, makerSignature.v,
             takerSignature.r, takerSignature.s, takerSignature.v,
-            false,
-            orderHash,
+            false, orderHash,
         );
         
         await exceptions.catchRevert(dexchange.fillOrdersTemp());
