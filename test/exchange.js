@@ -4,10 +4,8 @@ const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:9545'));
 
 const Exchange = artifacts.require('./contracts/exchange/Exchange');
 const UsefulCoin = artifacts.require('./contracts/tokens/UsefulCoin');
-const SecurityTest = artifacts.require('./contracts/Security/SecurityTest');
 const ecdsaApi = require('../helpers/ecdsaApi');
 const exceptions = require('./exceptions');
-const coordsContract = artifacts.require('./FOO.sol');
 
 contract.only('Token', (accounts) => {
     let arethaFrankloans;
@@ -15,19 +13,13 @@ contract.only('Token', (accounts) => {
     let witherBills;
     let smoniy;
     let dexchange;
-    let securityTest;
-    let coordsCon;
 
     beforeEach(async () => {
         arethaFrankloans = await UsefulCoin.new({ from: accounts[0], value: web3.toWei("1", "ether")});
         andollarsPaak = await UsefulCoin.new({ from: accounts[1], value: web3.toWei("2", "ether")});
         witherBills = await UsefulCoin.new({ from: accounts[2], value: web3.toWei("3", "ether")});
         smoniy = await UsefulCoin.new({ from: accounts[3], value: web3.toWei("4", "ether")});
-        securityTest = await SecurityTest.new({
-            from: accounts[0],
-        });
         dexchange = await Exchange.new();
-        coordsCon = await coordsContract.new();
     });
     
     it('initial balances are correct', async () => {
@@ -59,10 +51,9 @@ contract.only('Token', (accounts) => {
             sender: accounts[1],
         });
         const orderHash = ecdsaApi.encodeAndHash(makerSignature, takerSignature);
-
         const orderAddresses = [maker, taker, arethaFrankloans.address, andollarsPaak.address];
-        const orderValues = [makerValue, takerValue, takerValue];
-        await dexchange.assembleOrder(
+        const orderValues = [makerValue, takerValue, takerValue, takerValue];
+        const orderIndex = await dexchange.assembleOrder(
             orderAddresses,
             orderValues,
             makerSignature.r, makerSignature.s, makerSignature.v,
@@ -81,9 +72,6 @@ contract.only('Token', (accounts) => {
         assert.equal(balance1.toString(10), web3.toWei("700000", "ether"));
         assert.equal(balance2.toString(10), web3.toWei("1500000", "ether"));
         assert.equal(balance3.toString(10), web3.toWei("500000", "ether"));
-
-        // const orders = [order0];
-        // await dexchange.fillOrders(orders);
         assert.isTrue(false);
     });
 
