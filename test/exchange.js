@@ -118,6 +118,8 @@ contract.only('Token', (accounts) => {
         assert.equal(balance2.toString(10), web3.toWei("1000000", "ether")); // 0 + 1,000,000
         assert.equal(balance3.toString(10), web3.toWei("1000000", "ether")); // 2,000,000 - 1,000,000
 
+        await arethaFrankloans.approve(dexchange.address, makerValue2, { from: maker });
+        await andollarsPaak.approve(dexchange.address, takerValue3, { from: taker });
         await dexchange.assembleOrder(
             orderAddresses, orderValues2,
             0, 0, 0,
