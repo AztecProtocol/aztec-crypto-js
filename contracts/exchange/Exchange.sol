@@ -154,7 +154,13 @@ contract Exchange {
         return true;
     }
 
-    function cancelPartial(bytes32 orderHash) public returns (bool) {
+    function cancelPartial(
+        address maker,
+        address makerToken, address takerToken,
+        uint256 remainingMakerToken, uint256 remainingTakerToken
+    ) public returns (bool) {
+        require(maker == msg.sender, "Only order maker can cancel a partial order.");
+        bytes32 orderHash = keccak256(abi.encode(maker, makerToken, takerToken, remainingMakerToken, remainingTakerToken));
         delete partialFills[orderHash];
         cancelledOrders[orderHash] = true;
         return true;
