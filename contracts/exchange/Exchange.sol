@@ -158,10 +158,8 @@ contract Exchange {
         return true;
     }
 
-    function cancelOrder(address tokenAdd, ECDSASignature signature, uint256 _messageValue) public returns (bool) {
-        UsefulCoin token = UsefulCoin(tokenAdd);
-        token.invalidateSignature(address(this), _messageValue, signature.r, signature.s, signature.v);
-        cancelledOrders[keccak256(abi.encode(address(this), _messageValue, signature))] = true;
+    function cancelOrder(bytes32 sigR, bytes32 sigS, uint8 sigV, uint256 _messageValue) public returns (bool) {
+        cancelledOrders[keccak256(abi.encode(address(this), _messageValue, ECDSASignature(sigR, sigS, sigV)))] = true;
         return true;
     }
 
