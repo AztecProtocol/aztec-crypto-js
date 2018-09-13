@@ -27,7 +27,7 @@ contract Exchange {
         uint256 takerTokenSupplied; // the taker might not completely fill the maker's order
         ECDSASignature makerSignature;
         ECDSASignature takerSignature;
-        bool fillingPartial; // is this order filling an order that has already been partially filled?
+        bool fillingExistingPartial; // is this order filling an order that has already been partially filled?
         bytes32 orderHash; // a hash of all the order parameters
     }
     
@@ -53,12 +53,13 @@ contract Exchange {
     /// @dev Assembles an Order struct
     /// @param orderAddresses is [maker, taker, makerToken, takerToken]
     /// @param orderValues is [makerTokenAmount, takerTokenRequested, takerTokenSupplied]
+    /// @param fillingExistingPartial false if creating new full or partial order, true if filling an already existing partial order
     function assembleOrder(
         address[4] orderAddresses,
         uint256[3] orderValues,
         bytes32 makerSignatureR, bytes32 makerSignatureS, uint8 makerSignatureV,
         bytes32 takerSignatureR, bytes32 takerSignatureS, uint8 takerSignatureV,
-        bool fillingPartial,
+        bool fillingExistingPartial,
         bytes32 orderHash
     ) public returns (uint256) {
         Order memory currOrder = Order({
@@ -71,7 +72,7 @@ contract Exchange {
             takerTokenSupplied: orderValues[2],
             makerSignature: ECDSASignature(makerSignatureR, makerSignatureS, makerSignatureV),
             takerSignature: ECDSASignature(takerSignatureR, takerSignatureS, takerSignatureV),
-            fillingPartial: fillingPartial,
+            fillingExistingPartial: fillingExistingPartial,
             orderHash: orderHash
         });
         allOrders.push(currOrder);
@@ -86,12 +87,13 @@ contract Exchange {
         tokenRegistry[tokenAddress] = false;
     }
  
+    // /// @param fillingExistingPartial false if creating new full or partial order, true if filling an already existing partial order
     // function fillOrders(
     //     address[][] allOrderAddresses,
     //     uint256[][] allOrderValues,
     //     bytes32[] allMakerSignatureR, bytes32[] allMakerSignatureS, uint8[] allMakerSignatureV,
     //     bytes32[] allTakerSignatureR, bytes32[] allTakerSignatureS, uint8[] allTakerSignatureV,
-    //     bool[] allFillingPartial,
+    //     bool[] allfillingExistingPartial,
     //     bytes32[] allOrderHash
     // ) public returns (bool) {
     //     emit DebugUint256(3); //allOrderAddresses[0].length);
@@ -107,33 +109,31 @@ contract Exchange {
     //     //             takerTokenSupplied: allOrderValues[i][2],
     //     //             makerSignature: ECDSASignature(allMakerSignatureR[i], allMakerSignatureS[i], allMakerSignatureV[i]),
     //     //             takerSignature: ECDSASignature(allTakerSignatureR[i], allTakerSignatureS[i], allTakerSignatureV[i]),
-    //     //             fillingPartial: allFillingPartial[i],
+    //     //             fillingExistingPartial: allfillingExistingPartial[i],
     //     //             orderHash: allOrderHash[i]
     //     //         }));
     //     // }
     // }
 
-    function fillOrdersTemp() public returns (bool) {
-        uint256 numOrders = allOrders.length;
-        for (uint256 i = 0; i < numOrders; i++) {
-            _fillOrder(allOrders[i]);
-        }
+    function fillOrdersTemp(uint256 index) public returns (bool) {
+        _fillOrder(allOrders[index]);
     }
 
     function _fillOrder(Order order) internal returns (bool) {
         UsefulCoin takerToken = UsefulCoin(order.takerToken);
         UsefulCoin makerToken = UsefulCoin(order.makerToken);
         uint256 boundedTakerToken = order.takerTokenSupplied;
-        uint256 makerToTransfer = order.makerTokenAmount.mul(boundedTakerToken.div(order.takerTokenRequested));
         if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
+        uint256 makerToTransfer = order.makerTokenAmount.mul(boundedTakerToken).div(order.takerTokenRequested);
         require(
             !cancelledOrders[keccak256(abi.encode(address(this), order.makerTokenAmount, order.makerSignature))] &&
             !cancelledOrders[keccak256(abi.encode(address(this), order.takerTokenRequested, order.takerSignature))],
             "This order has been cancelled.");
-        if (!order.fillingPartial) {
+
+        if (!order.fillingExistingPartial) {
             takerToken.delegatedTransfer(
                 order.taker, order.maker,
-                boundedTakerToken, order.takerTokenRequested,
+                boundedTakerToken, boundedTakerToken,
                 order.takerSignature.r, order.takerSignature.s, order.takerSignature.v);
             makerToken.delegatedTransfer(
                 order.maker, order.taker,
