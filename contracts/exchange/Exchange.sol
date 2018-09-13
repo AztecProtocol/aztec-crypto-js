@@ -126,7 +126,10 @@ contract Exchange {
         uint256 boundedTakerToken = order.takerTokenSupplied;
         uint256 makerToTransfer = order.makerTokenAmount.mul(boundedTakerToken.div(order.takerTokenRequested));
         if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
-
+        require(
+            !cancelledOrders[keccak256(abi.encode(address(this), order.makerTokenAmount, order.makerSignature))] &&
+            !cancelledOrders[keccak256(abi.encode(address(this), order.takerTokenRequested, order.takerSignature))],
+            "This order has been cancelled.");
         if (!order.fillingPartial) {
             takerToken.delegatedTransfer(
                 order.taker, order.maker,
@@ -155,11 +158,16 @@ contract Exchange {
         return true;
     }
 
-    function cancelOrder(address tokenAdd, ECDSASignature makerSignature, uint256 _messageValue) public returns (bool) {
+    function cancelOrder(address tokenAdd, ECDSASignature signature, uint256 _messageValue) public returns (bool) {
         UsefulCoin token = UsefulCoin(tokenAdd);
-        token.invalidateSignature(address(this), _messageValue, makerSignature.r, makerSignature.s, makerSignature.v);
-        // what to hash to add to cancelledOrders mapping
-        revert("Order has been cancelled.");
+        token.invalidateSignature(address(this), _messageValue, signature.r, signature.s, signature.v);
+        cancelledOrders[keccak256(abi.encode(address(this), _messageValue, signature))] = true;
+        return true;
+    }
+
+    function cancelPartial(bytes32 orderHash) public returns (bool) {
+        delete partialFills[orderHash];
+        cancelledOrders[orderHash] = true;
         return true;
     }
 }

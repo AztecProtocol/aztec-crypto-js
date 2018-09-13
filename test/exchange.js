@@ -33,7 +33,7 @@ contract.only('Token', (accounts) => {
         assert.equal(balance3.toString(10) , web3.toWei("4000000", "ether"));
     });
 
-    it.only('succesfully executes exchange of assets - non partial order', async () => {
+    it('succesfully executes exchange of assets - non partial order', async () => {
         const maker = accounts[0];
         const taker = accounts[1];
         const makerToken = arethaFrankloans.address;
