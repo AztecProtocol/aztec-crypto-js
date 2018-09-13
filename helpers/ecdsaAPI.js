@@ -74,4 +74,10 @@ ecdsaApi.signMessageComplex = ({
     };
 };
 
+ecdsaApi.encodeAndHashOrder = (maker, makerToken, takerToken, makerTokenAmount, takerTokenSupplied) => {
+    const makerTokenAmountHex = new BN(makerTokenAmount || 0).toString(16);
+    const takerTokenSuppliedHex = new BN(takerTokenSupplied || 0).toString(16);
+    return ecdsaApi.encodeAndHash(maker, makerToken, takerToken, makerTokenAmountHex, takerTokenSuppliedHex);
+}
+
 module.exports = ecdsaApi;
