@@ -21,11 +21,6 @@ contract UsefulCoin {
       uint256 value
     );
 
-    event DebugUint(uint256 num);
-    event DebugBytes32(bytes32 message);
-    event DebugAddUsefulCoin(address add);
-    event DebugAddUCIsEqual(address add);
-
     mapping (address => uint256) private balances_;
     mapping (address => mapping (address => uint256)) private allowed_;
     mapping (address => uint256) private delegateNonces_;

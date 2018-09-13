@@ -37,15 +37,6 @@ contract Exchange {
     address owner;
     Order[] allOrders;
 
-// ------------------------------------
-    // event DebugUint(uint val);
-    event DebugUint256(uint256 val);
-    event DebugBytes32(bytes32 val);
-    event DebugBool(bool val);
-    event DebugUint8(uint8 val);
-    event DebugAdd(address val);
-// ------------------------------------
-
     constructor() public {
         owner = msg.sender; // We will want to upgrade this to use a more distributed governance mechanic, but this will work fine for now
     }
