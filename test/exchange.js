@@ -33,7 +33,7 @@ contract.only('Token', (accounts) => {
         assert.equal(balance3.toString(10) , web3.toWei("4000000", "ether"));
     });
 
-    it('succesfully executes exchange of assets - non partial order', async () => {
+    it('succesfully executes a valid non-partial order', async () => {
         const maker = accounts[0];
         const taker = accounts[1];
         const makerToken = arethaFrankloans.address;
@@ -53,7 +53,7 @@ contract.only('Token', (accounts) => {
             sender: taker,
         });
 
-        const orderHash = ecdsaApi.encodeAndHash(maker, makerToken, takerToken, makerValue, takerValue);
+        const orderHash = ecdsaApi.encodeAndHashOrder(maker, makerToken, takerToken, makerValue, takerValue);
         const orderAddresses = [maker, taker, makerToken, takerToken];
         const orderValues = [makerValue, takerValue, takerValue];
         await dexchange.assembleOrder(
@@ -62,8 +62,7 @@ contract.only('Token', (accounts) => {
             takerSignature.r, takerSignature.s, takerSignature.v,
             false, orderHash,
         );
-        
-        await dexchange.fillOrdersTemp();
+        await dexchange.fillOrdersTemp(0);
         
         const balance0 = await arethaFrankloans.balanceOf(accounts[0]);
         const balance1 = await arethaFrankloans.balanceOf(accounts[1]);
@@ -75,9 +74,80 @@ contract.only('Token', (accounts) => {
         assert.equal(balance3.toString(10), web3.toWei("500000", "ether"));
     });
 
+    it('succesfully executes a valid partial order, same taker', async () => {
+        const maker = accounts[0];
+        const taker = accounts[1];
+        const makerToken = arethaFrankloans.address;
+        const takerToken = andollarsPaak.address;
+        const makerValue1 = web3.toWei("900000", "ether");
+        const makerValue2 = web3.toWei("300000", "ether");
+        const takerValue1 = web3.toWei("1500000", "ether");
+        const takerValue2 = web3.toWei("1000000", "ether");
+        const takerValue3 = web3.toWei("500000", "ether");
+        const makerSignature = ecdsaApi.signMessageComplex({
+            callingAddress: dexchange.address,
+            value: makerValue1,
+            nonce: 0,
+            sender: maker,
+        });
+        const takerSignature = ecdsaApi.signMessageComplex({
+            callingAddress: dexchange.address,
+            value: takerValue2,
+            nonce: 0,
+            sender: taker,
+        });
+        const orderHash1 = ecdsaApi.encodeAndHashOrder(maker, makerToken, takerToken, makerValue1, takerValue1);
+        const orderHash2 = ecdsaApi.encodeAndHashOrder(maker, makerToken, takerToken, makerValue2, takerValue3);
+        const orderAddresses = [maker, taker, makerToken, takerToken];
+        const orderValues1 = [makerValue1, takerValue1, takerValue2];
+        const orderValues2 = [makerValue2, takerValue3, takerValue3];
+        await dexchange.assembleOrder(
+            orderAddresses, orderValues1,
+            makerSignature.r, makerSignature.s, makerSignature.v,
+            takerSignature.r, takerSignature.s, takerSignature.v,
+            false, orderHash1,
+        );
+        await dexchange.fillOrdersTemp(0);
+        
+        let balance0 = await arethaFrankloans.balanceOf(accounts[0]);
+        let balance1 = await arethaFrankloans.balanceOf(accounts[1]);
+        let balance2 = await andollarsPaak.balanceOf(accounts[0]);
+        let balance3 = await andollarsPaak.balanceOf(accounts[1]);
+        assert.equal(balance0.toString(10), web3.toWei("400000", "ether")); // 100,000 - 60,000
+        assert.equal(balance1.toString(10), web3.toWei("600000", "ether")); // 0 + 60,000
+        assert.equal(balance2.toString(10), web3.toWei("1000000", "ether")); // 0 + 1,000,000
+        assert.equal(balance3.toString(10), web3.toWei("1000000", "ether")); // 2,000,000 - 1,000,000
+
+        await dexchange.assembleOrder(
+            orderAddresses, orderValues2,
+            0, 0, 0,
+            0, 0, 0,
+            true, orderHash2,
+        );
+        await dexchange.fillOrdersTemp(1);
+        
+        balance0 = await arethaFrankloans.balanceOf(accounts[0]);
+        balance1 = await arethaFrankloans.balanceOf(accounts[1]);
+        balance2 = await andollarsPaak.balanceOf(accounts[0]);
+        balance3 = await andollarsPaak.balanceOf(accounts[1]);
+        assert.equal(balance0.toString(10), web3.toWei("100000", "ether")); // 40,000 - 30,000
+        assert.equal(balance1.toString(10), web3.toWei("900000", "ether")); // 60,000 + 30,000
+        assert.equal(balance2.toString(10), web3.toWei("1500000", "ether")); // 1,000,000 + 500,000
+        assert.equal(balance3.toString(10), web3.toWei("500000", "ether")); // 1,000,000 - 500,000
+    });
+    
+    // it.only('succesfully executes a valid partial order, different takers', async () => {
+    // });
+    // it.only('succesfully executes a non-partial order cancellation', async () => {
+    // });
+    // it.only('succesfully executes a partial order cancellation', async () => {
+    // });
+    
     it('unauthorised order causes revert', async () => {
         const maker = accounts[0];
         const taker = accounts[1];
+        const makerToken = arethaFrankloans.address;
+        const takerToken = andollarsPaak.address;
         const makerValue = web3.toWei("700000", "ether");
         const takerValue = web3.toWei("1500000", "ether");
         const makerSignature = ecdsaApi.signMessageComplex({
@@ -92,8 +162,8 @@ contract.only('Token', (accounts) => {
             nonce: 0,
             sender: taker,
         });
-        const orderHash = ecdsaApi.encodeAndHash(makerSignature, takerSignature);
-        const orderAddresses = [maker, taker, arethaFrankloans.address, andollarsPaak.address];
+        const orderHash = ecdsaApi.encodeAndHashOrder(maker, makerToken, takerToken, makerValue, takerValue);
+        const orderAddresses = [maker, taker, makerToken, takerToken];
         const orderValues = [makerValue, takerValue, takerValue];
         await dexchange.assembleOrder(
             orderAddresses, orderValues,
@@ -102,7 +172,7 @@ contract.only('Token', (accounts) => {
             false, orderHash,
         );
         
-        await exceptions.catchRevert(dexchange.fillOrdersTemp());
+        await exceptions.catchRevert(dexchange.fillOrdersTemp(0));
     });
 
     // it.only('USING PROPER FILL ORDER succesfully executes exchange of assets - non partial order', async () => {
@@ -122,7 +192,7 @@ contract.only('Token', (accounts) => {
     //         nonce: 0,
     //         sender: accounts[1],
     //     });
-    //     const orderHash = ecdsaApi.encodeAndHash(makerSignature, takerSignature);
+    //     const orderHash = ecdsaApi.encodeAndHashOrder(makerSignature, takerSignature);
     //     const orderAddresses = [maker, taker, arethaFrankloans.address, andollarsPaak.address];
     //     const orderValues = [makerValue, takerValue, takerValue];
     //     await dexchange.assembleOrder(
@@ -141,7 +211,7 @@ contract.only('Token', (accounts) => {
     //     let allTakerSignatureR = []; 
     //     let allTakerSignatureS = []; 
     //     let allTakerSignatureV = [];
-    //     let allFillingPartial = [];
+    //     let allfillingExistingPartial = [];
     //     let allOrderHashes = [];
     //     for (let i = 0; i < numOrders; i++) {
     //         allOrderAddresses[i] = orderAddresses;
@@ -152,7 +222,7 @@ contract.only('Token', (accounts) => {
     //         allTakerSignatureR[i] = takerSignature.r;
     //         allTakerSignatureS[i] = takerSignature.s;
     //         allTakerSignatureV[i] = takerSignature.v;
-    //         allFillingPartial[i] = false;
+    //         allfillingExistingPartial[i] = false;
     //         allOrderHashes[i] = orderHash;
     //     }
 
@@ -160,7 +230,7 @@ contract.only('Token', (accounts) => {
     //         allOrderAddresses, allOrderValues, 
     //         allMakerSignatureR, allMakerSignatureS, allMakerSignatureV, 
     //         allTakerSignatureR, allTakerSignatureS, allTakerSignatureV,
-    //         allFillingPartial, allOrderHashes
+    //         allfillingExistingPartial, allOrderHashes
     //     );
         
     //     const balance0 = await arethaFrankloans.balanceOf(accounts[0]);
