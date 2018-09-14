@@ -35,7 +35,6 @@ contract Exchange {
     mapping(address => bool) tokenRegistry;
     mapping(bytes32 => bool) cancelledOrders;
     address owner;
-    Order[] allOrders;
 
     constructor() public {
         owner = msg.sender; // We will want to upgrade this to use a more distributed governance mechanic, but this will work fine for now
@@ -44,7 +43,6 @@ contract Exchange {
     /// @dev Assembles an Order struct
     /// @param orderAddresses is [maker, taker, makerToken, takerToken]
     /// @param orderValues is [makerTokenAmount, takerTokenRequested, takerTokenSupplied]
-    /// @param fillingExistingPartial false if creating new full or partial order, true if filling an already existing partial order
     function assembleOrder(
         address[4] orderAddresses,
         uint256[3] orderValues,
@@ -52,7 +50,7 @@ contract Exchange {
         bytes32 takerSignatureR, bytes32 takerSignatureS, uint8 takerSignatureV,
         bool fillingExistingPartial,
         bytes32 orderHash
-    ) public returns (uint256) {
+    ) public pure returns (Order) {
         Order memory currOrder = Order({
             maker: orderAddresses[0],
             taker: orderAddresses[1],
@@ -66,8 +64,7 @@ contract Exchange {
             fillingExistingPartial: fillingExistingPartial,
             orderHash: orderHash
         });
-        allOrders.push(currOrder);
-        return allOrders.length - 1;
+        return currOrder;
     }
 
     function addToken(address tokenAddress) public {
@@ -77,37 +74,24 @@ contract Exchange {
     function removeToken(address tokenAddress) public {
         tokenRegistry[tokenAddress] = false;
     }
- 
-    // /// @param fillingExistingPartial false if creating new full or partial order, true if filling an already existing partial order
-    // function fillOrders(
-    //     address[][] allOrderAddresses,
-    //     uint256[][] allOrderValues,
-    //     bytes32[] allMakerSignatureR, bytes32[] allMakerSignatureS, uint8[] allMakerSignatureV,
-    //     bytes32[] allTakerSignatureR, bytes32[] allTakerSignatureS, uint8[] allTakerSignatureV,
-    //     bool[] allfillingExistingPartial,
-    //     bytes32[] allOrderHash
-    // ) public returns (bool) {
-    //     emit DebugUint256(3); //allOrderAddresses[0].length);
-    //     // for (uint256 i = 0; i < allOrderHash.length; i++) {
-    //     //     _fillOrder(
-    //     //         Order({
-    //     //             maker: allOrderAddresses[i][0],
-    //     //             taker: allOrderAddresses[i][1],
-    //     //             makerToken: allOrderAddresses[i][2],
-    //     //             takerToken: allOrderAddresses[i][3],
-    //     //             makerTokenAmount: allOrderValues[i][0],
-    //     //             takerTokenRequested: allOrderValues[i][1],
-    //     //             takerTokenSupplied: allOrderValues[i][2],
-    //     //             makerSignature: ECDSASignature(allMakerSignatureR[i], allMakerSignatureS[i], allMakerSignatureV[i]),
-    //     //             takerSignature: ECDSASignature(allTakerSignatureR[i], allTakerSignatureS[i], allTakerSignatureV[i]),
-    //     //             fillingExistingPartial: allfillingExistingPartial[i],
-    //     //             orderHash: allOrderHash[i]
-    //     //         }));
-    //     // }
-    // }
 
-    function fillOrdersTemp(uint256 index) public returns (bool) {
-        _fillOrder(allOrders[index]);
+    function fillOrders(
+        address[4][] allOrderAddresses,
+        uint256[3][] allOrderValues,
+        bytes32[] allMakerSignatureR, bytes32[] allMakerSignatureS, uint8[] allMakerSignatureV,
+        bytes32[] allTakerSignatureR, bytes32[] allTakerSignatureS, uint8[] allTakerSignatureV,
+        bool[] allfillingExistingPartial,
+        bytes32[] allOrderHash
+    ) public returns (bool) {
+        for (uint256 i = 0; i < allOrderAddresses.length; i++) {
+            _fillOrder(
+                assembleOrder(
+                    allOrderAddresses[i], allOrderValues[i],
+                    allMakerSignatureR[i], allMakerSignatureS[i], allMakerSignatureV[i],
+                    allTakerSignatureR[i], allTakerSignatureS[i], allTakerSignatureV[i],
+                    allfillingExistingPartial[i], allOrderHash[i]
+                ));
+        }
     }
 
     function _fillOrder(Order order) internal returns (bool) {
@@ -122,14 +106,20 @@ contract Exchange {
             "This order has been cancelled.");
 
         if (!order.fillingExistingPartial) {
-            takerToken.delegatedTransfer(
-                order.taker, order.maker,
-                boundedTakerToken, boundedTakerToken,
-                order.takerSignature.r, order.takerSignature.s, order.takerSignature.v);
-            makerToken.delegatedTransfer(
-                order.maker, order.taker,
-                makerToTransfer, order.makerTokenAmount,
-                order.makerSignature.r, order.makerSignature.s, order.makerSignature.v);
+            require(
+                takerToken.delegatedTransfer(
+                    order.taker, order.maker,
+                    boundedTakerToken, boundedTakerToken,
+                    order.takerSignature.r, order.takerSignature.s, order.takerSignature.v
+                ),
+                "Invalid taker transaction");
+            require(
+                makerToken.delegatedTransfer(
+                    order.maker, order.taker,
+                    makerToTransfer, order.makerTokenAmount,
+                    order.makerSignature.r, order.makerSignature.s, order.makerSignature.v
+                ),
+                "Invalid taker transaction");
         } else {
             require(partialFills[order.orderHash], "The partial order you are trying to fill is invalid");
             require(!cancelledOrders[order.orderHash], "This partial order has been cancelled");
