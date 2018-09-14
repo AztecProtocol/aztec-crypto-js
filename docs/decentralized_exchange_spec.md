@@ -20,7 +20,7 @@ struct Order {
     uint takerTokenSupplied; // the taker might not completely fill the maker's order
     ECDSASig makerSignature;
     ECDSASig takerSignature;
-    bool fillingPartial; // is this order filling an order that has already been partially filled?
+    bool fillingExistingPartial; // is this order filling an order that has already been partially filled?
     bytes32 makerOrderHash; // a hash of all the maker order parameters
     bytes32 takerOrderHash; // a hash of all the maker order parameters
 }
