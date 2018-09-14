@@ -97,9 +97,8 @@ contract Exchange {
     function _fillOrder(Order order) internal returns (bool) {
         UsefulCoin takerToken = UsefulCoin(order.takerToken);
         UsefulCoin makerToken = UsefulCoin(order.makerToken);
-        uint256 boundedTakerToken = order.takerTokenSupplied;
-        if (order.takerTokenSupplied > order.takerTokenRequested) boundedTakerToken = order.takerTokenRequested;
-        uint256 makerToTransfer = order.makerTokenAmount.mul(boundedTakerToken).div(order.takerTokenRequested);
+        require(order.takerTokenSupplied <= order.takerTokenRequested, "Tokens provided by taker must be <= taker tokens requested");
+        uint256 makerToTransfer = order.makerTokenAmount.mul(order.takerTokenSupplied).div(order.takerTokenRequested);
         require(
             !cancelledOrders[keccak256(abi.encode(address(this), order.makerTokenAmount, order.makerSignature))] &&
             !cancelledOrders[keccak256(abi.encode(address(this), order.takerTokenRequested, order.takerSignature))],
@@ -109,7 +108,7 @@ contract Exchange {
             require(
                 takerToken.delegatedTransfer(
                     order.taker, order.maker,
-                    boundedTakerToken, boundedTakerToken,
+                    order.takerTokenSupplied, order.takerTokenSupplied,
                     order.takerSignature.r, order.takerSignature.s, order.takerSignature.v
                 ),
                 "Invalid taker transaction");
@@ -123,7 +122,7 @@ contract Exchange {
         } else {
             require(partialFills[order.orderHash], "The partial order you are trying to fill is invalid");
             require(!cancelledOrders[order.orderHash], "This partial order has been cancelled");
-            takerToken.transferFrom(order.taker, order.maker, boundedTakerToken);
+            takerToken.transferFrom(order.taker, order.maker, order.takerTokenSupplied);
             makerToken.transferFrom(order.maker, order.taker, makerToTransfer);
             delete partialFills[order.orderHash];
         }
