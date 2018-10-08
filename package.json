@@ -1,0 +1,33 @@
+{
+  "name": "smart-contracts",
+  "version": "1.0.0",
+  "description": "CreditMint Smart Contracts",
+  "main": "truffle-config.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "dependencies": {
+    "bn.js": "^4.11.8",
+    "elliptic": "^6.4.1",
+    "js-sha3": "^0.8.0",
+    "web3": "^1.0.0-beta.36"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  },
+  "scripts": {
+    "test": "mocha ./zk-crypto-js/ --trace-warnings --exit --colors --recursive --reporter spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CreditMint/smart-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CreditMint/smart-contracts/issues"
+  },
+  "homepage": "https://github.com/CreditMint/smart-contracts#readme"
+}
