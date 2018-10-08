@@ -13,3 +13,7 @@ website/i18n/*
 website/blog/*
 
 build/*
+
+bin/*
+
+build/*
