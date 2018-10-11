@@ -9,7 +9,7 @@ const exceptions = require('./exceptions');
 
 const { addOrderToAllOrders, transpose } = require('../helpers/testHelpers');
 
-contract.only('Token', (accounts) => {
+contract('Token', (accounts) => {
     let arethaFrankloans;
     let andollarsPaak;
     let witherBills;

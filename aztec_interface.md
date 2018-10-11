@@ -51,7 +51,6 @@ struct Point {
 An elliptic curve coordinate.
 
 ### ```Commitment```
-
 ```
 struct Commitment {
     Point gamma;
@@ -198,7 +197,7 @@ Each of these keys has their value set to ```true```. Individual AZTEC tokens ca
 
 ### ```clear(uint[] keys)```
 
-Sets ```validatedProofs[keccak256(key, msg.sender)]``` to false. Refunds ~ 10,000 gas per cleared storage variable. 
+Sets ```validatedProofs[keccak256(key, msg.sender)]``` to false. Refunds ~10,000 gas per cleared storage variable. 
 
 ---
 
@@ -222,6 +221,3 @@ This function signature is horrific, perhaps we can create something a bit...nea
 * (optional) call ```tradeValidator.clear``` to free up the two state variabales set in ```validateTrade``` and save some gas
 
 If any of the above calls fails, the transaction throws an error and no state changes are made.
-
-
-

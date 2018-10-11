@@ -22,6 +22,28 @@ contract ContractFactory {
     uint32 _storageVersion;
     uint32 _primaryDealVersion;
 
+    mapping(address => uint) foo;
+
+    function changeFoo(address bar) {
+        foo[bar]++;
+    }
+
+    function changeFooAssembly(address) {
+        assembly {
+            0x04 calldataload 0x00 mstore
+            foo_slot 0x20 mstore
+            0x40 0x00 keccak256
+            0x01 dup2 sload add
+            sstore
+        }
+    }
+
+    function() {
+        /*
+
+
+        */
+    }
     // TODO pretty sure the dispatcher can be managed from the primary deal, don't need the factory to specify it
     event CreatedPrimaryDeal(address primaryDeal);
     event UpdatedPrimaryDeal(address newTemplate, uint newVersion);

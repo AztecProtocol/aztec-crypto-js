@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.4.23;
 
 import "./erc20.sol";
 import "../contractHelpers/SafeMath.sol";

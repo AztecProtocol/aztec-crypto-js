@@ -127,7 +127,7 @@ contract Nizk {
                 mstore(add(m, 0x100), g2y_x_2)
                 mstore(add(m, 0x160), g2y_y_1)
                 mstore(add(m, 0x140), g2y_y_2)
-                let success := staticcall(not(0), 8, m, 0x180, m, 0x20)
+                let success := staticcall(gas, 8, m, 0x180, m, 0x20)
                 if or(iszero(success), iszero(mload(m))) {
                     mstore(0x00, 400)
                     revert(0x00, 0x20)
