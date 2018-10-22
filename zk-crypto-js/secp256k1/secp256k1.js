@@ -1,5 +1,5 @@
 const BN = require('bn.js');
-const EC = require('elliptic');
+const elliptic = require('elliptic');
 const crypto = require('crypto');
 
 const FIELD_MODULUS = new BN('fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f', 16);
@@ -14,16 +14,18 @@ const weierstrassBRed = (new BN(7).toRed(fieldReduction));
 const zeroRed = (new BN(0).toRed(fieldReduction));
 
 function Secp256k1() {
-    const curve = new EC.curve.short({
-        a: '0',
-        b: '7',
-        p: FIELD_MODULUS.toString(16),
-        n: GROUP_MODULUS,
-        g: [
-            '79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
-            '483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8'
-          ]
-    });
+    const curve = new elliptic.ec("secp256k1"); // eslint-disable-line
+
+    // const curve = new EC.curve.short({
+    //     a: '0',
+    //     b: '7',
+    //     p: FIELD_MODULUS.toString(16),
+    //     n: GROUP_MODULUS,
+    //     g: [
+    //         '79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
+    //         '483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8'
+    //       ]
+    // });
 
     curve.randomPoint = function () {
         function recurse() {
