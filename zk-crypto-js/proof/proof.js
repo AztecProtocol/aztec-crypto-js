@@ -3,6 +3,7 @@ const EC = require('elliptic');
 const crypto = require('crypto');
 const Web3 = require('web3');
 const utils = require('../utils/utils');
+const Hash = require('../utils/keccak');
 const { FIELD_MODULUS, GROUP_MODULUS, groupReduction } = require('../params');
 const curve = require('../curve/curve');
 const setup = require('../setup/setup');
@@ -10,49 +11,6 @@ const proof = {};
 
 const web3 = new Web3();
 
-function toBytes32(input, padding = 'left')  { // assumes hex format
-    let s = input;
-    if (s.length > 64) {
-        throw new Error(`string ${input} is more than 32 bytes long!`);
-    }
-    while (s.length < 64) {
-        if (padding === 'left') { // left pad to hash a number. Right pad to hash a string
-            s = `0${s}`;
-        } else {
-            s = `${s}0`;
-        }
-    }
-    return s;
-};
-
-function hashStrings(inputArr) {
-    if (!Array.isArray(inputArr)) {
-        throw new Error(`expected ${inputArr} to be of type 'array'`);
-    }
-    const input = `${inputArr.map((i) => {
-        const res = toBytes32(i);
-        return res;
-    }).join('')}`;
-    return web3.utils.sha3(`0x${input}`, 'hex').slice(2);
-};
-
-function Hash() {
-    this.data = [];
-};
-
-Hash.prototype.append = function append(point) {
-    this.data.push(toBytes32(point.x.fromRed().toString(16)));
-    this.data.push(toBytes32(point.y.fromRed().toString(16)));
-}
-
-Hash.prototype.keccak = function keccak() {
-    const result = hashStrings(this.data);
-    this.data = [result];
-}
-
-Hash.prototype.toGroupScalar = function toGroupScalar() {
-    return new BN(this.data[0], 16).toRed(groupReduction);
-}
 
 proof.generateCommitment = async (k) => {
     const kBn = new BN(k).toRed(groupReduction);
@@ -77,7 +35,7 @@ proof.constructCommitmentSet = async ({ kIn, kOut }) => {
 
 proof.constructCommit = ({ outputs, k }) => {
     const hashed = new Hash();
-    hashed.data = [toBytes32('0')];
+    hashed.data = [utils.toBytes32('0')];
     outputs.forEach((output) => {
         hashed.append(output.gamma);
         hashed.append(output.sigma);
@@ -125,7 +83,7 @@ proof.constructReveal = ({ inputs, k }) => {
 ///@dev basic script to construct a join split transaction
 proof.constructJoinSplit = ({ inputs, outputs }) => {
     const hashed = new Hash();
-    hashed.data = [toBytes32('0')];
+    hashed.data = [utils.toBytes32('0')];
     // hash commitments
     inputs.forEach((input) => {
         hashed.append(input.gamma);
@@ -196,13 +154,51 @@ proof.constructJoinSplit = ({ inputs, outputs }) => {
 proof.formatABI = ({ gamma, sigma, kBar, aBar }) => {
 
     return [
-        kBar.fromRed().toString(10),
-        aBar.fromRed().toString(10),
-        gamma.x.fromRed().toString(10),
-        gamma.y.fromRed().toString(10),
-        sigma.x.fromRed().toString(10),
-        sigma.y.fromRed().toString(10),
+        `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
+        `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
+        `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
+        `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
+        `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
+        `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
     ];
 };
+
+function ProofData({ inputNotes, outputNotes, k, challenge }) {
+    this.inputNotes = inputNotes;
+    this.outputNotes = outputNotes;
+    this.k = k;
+    this.challenge = challenge;
+}
+
+ProofData.prototype.toAbi = function toAbi() {
+    const inputFormatted = inputNotes.map(({ kBar, aBar, gamma, sigma }) => {
+        return [
+            `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
+        ];
+    });
+    const outputFormatted = outputNotes.map(({ kBar, aBar, gamma, sigma }) => {
+        return [
+            `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
+            `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
+        ];
+    });
+    const challengeFormatted = `0x${utils.toBytes32(challenge.toString(16))}`;
+    const kFormatted = `0x${utils.toBytes32(k.toString(16))}`;
+    return {
+        inputNotes: inputFormatted,
+        outputNotes: outputFormatted,
+        challenge: challengeFormatted,
+        k: kFormatted,
+    };
+}
 
 module.exports = proof;
