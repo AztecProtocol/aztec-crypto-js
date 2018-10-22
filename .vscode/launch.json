@@ -9,11 +9,12 @@
             "request": "launch",
             "name": "Mocha Tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "useWSL": true,
             "args": [
                 "-u", "tdd",
                 "--timeout", "999999",
                 "--colors", "--recursive",
-                "${workspaceFolder}/zk-crypto-js"
+                "zk-crypto-js/*"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }
