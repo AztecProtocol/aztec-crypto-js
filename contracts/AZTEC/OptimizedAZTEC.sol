@@ -5,9 +5,7 @@ contract OptimizedAZTECInterface {
     function validateJoinSplit(bytes32[6][] inputs, bytes32[6][] outputs, uint challenge, uint[4] t2) external view returns (bool) {}
     function validateCommit(bytes32[6][] outputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
     function validateJoinSplit(uint[6][] inputs, uint[6][] outputs, uint challenge, uint[4] t2) external view returns (bool) {}
-    function validateCommit(uint[6][] outputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {
-        return true;
-    }
+    function validateCommit(uint[6][] outputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
     function validateReveal(uint[6][] inputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
     // function validateJoinSplit(uint[6][] inputs, uint[6][] outputs, uint challenge, uint[4] t2) external returns (bool) {}
     // function validateCommit(uint[6][] outputs, uint challenge, uint k, uint[4] t2) external returns (bool) {}
@@ -95,8 +93,9 @@ contract OptimizedAZTEC {
                 validateJoinSplit()
             }
             default {
+                validateCommit() // TODO FIX THE INTERFACE! NASTY HACK
                 mstore(0x00, 404)
-                return(0x00, 0x20)
+                revert(0x00, 0x20)
             }
 
 

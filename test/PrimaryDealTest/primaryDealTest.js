@@ -75,7 +75,7 @@ contract.only('Primary Deal Test', (accounts) => {
 
     });
 
-    it.only('successfully initializes a deal', async () => {
+    it('successfully initializes a deal', async () => {
         const commitments = await aztecProof.constructCommitmentSet({
             kIn: [],
             kOut: fundAllocations,
