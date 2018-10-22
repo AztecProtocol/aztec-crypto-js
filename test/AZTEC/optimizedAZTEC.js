@@ -9,7 +9,7 @@ const { t2 } = require('../../zk-crypto-js/params');
 const { toBytes32 } = utils;
 
 OptimizedAZTEC.abi = OptimizedAZTECInterface.abi;
-contract.only('Optimized AZTEC', (accounts) => {
+contract('Optimized AZTEC', (accounts) => {
     let aztec;
     beforeEach(async () => {
         aztec = await OptimizedAZTEC.new(accounts[0]);
@@ -28,51 +28,11 @@ contract.only('Optimized AZTEC', (accounts) => {
             t2.y.c0.toString(10),
             t2.y.c1.toString(10),
         ];
-        // console.log('mstore(0x00, 0xabacadae)');
-        // console.log('mstore(0x04, 0xe0)');
-        // console.log('mstore(0x24, 0x280)');
-        // console.log(`mstore(0x44, ${challengeFormatted})`);
-        // let memcount = 100;
-        // for (let i = 0; i < t2Formatted.length; i++)
-        // {
-        //     console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
-        //     memcount += 32;
-        // }
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // memcount += 32;
-        // for (let i = 0; i < inputFormatted.length; i++)
-        // {
-        //     for (let j = 0; j < inputFormatted[i].length; j++)
-        //     {
-        //         console.log(`mstore(0x${memcount.toString(16)}, ${inputFormatted[i][j]})`);
-        //         memcount += 32;
-    
-        //     }
-        // }
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // memcount += 32;
-        // for (let i = 0; i < outputFormatted.length; i++)
-        // {
-        //     for (let j = 0; j < outputFormatted[i].length; j++)
-        //     {
-        //         console.log(`mstore(0x${memcount.toString(16)}, ${outputFormatted[i][j]})`);
-        //         memcount += 32;
-    
-        //     }
-        // }
-        // console.log('input formatted ');
-        // console.log(inputFormatted);
-        // console.log('output formatted');
-        // console.log(outputFormatted);
-        // console.log('challenge');
-        // console.log(challengeFormatted);
-        // console.log('t2 formatted');
-        // console.log(t2Formatted);
         const result = await aztec.validateJoinSplit(inputFormatted, outputFormatted, challengeFormatted, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });
-
+        printJoinSplitTrace({ challenge, t2Formatted, outputFormatted, inputFormatted });
         console.log('result = ', result);
         assert(result === true);
     });
@@ -90,41 +50,12 @@ contract.only('Optimized AZTEC', (accounts) => {
             t2.y.c0.toString(10),
             t2.y.c1.toString(10),
         ];
-        // console.log('mstore(0x00, 0xabacadae)');
-        // console.log('mstore(0x04, 0xe0)');
-        // console.log(`mstore(0x24, ${challenge.toString(16)})`);
-        // console.log(`mstore(0x44, ${k})`);
-        // let memcount = 100;
-        // for (let i = 0; i < t2Formatted.length; i++)
-        // {
-        //     console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
-        //     memcount += 32;
-        // }
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // memcount += 32;
-        // for (let i = 0; i < outputFormatted.length; i++)
-        // {
-        //     for (let j = 0; j < outputFormatted[i].length; j++)
-        //     {
-        //         console.log(`mstore(0x${memcount.toString(16)}, ${outputFormatted[i][j]})`);
-        //         memcount += 32;
-    
-        //     }
-        // }
-        // console.log('output formatted');
-        // console.log(outputFormatted);
-        // console.log('challenge');
-        // console.log(challengeFormatted);
-        // console.log('t2 formatted');
-        // console.log(t2Formatted);
-        // console.log('outputformatted = ', outputFormatted);
         const result = await aztec.validateCommit(outputFormatted, challengeFormatted, 31, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });
 
-        // console.log('result = ', result);
+        console.log('result = ', result);
         assert(result === true);
     });
 
@@ -142,41 +73,87 @@ contract.only('Optimized AZTEC', (accounts) => {
             t2.y.c0.toString(10),
             t2.y.c1.toString(10),
         ];
-        // console.log('mstore(0x00, 0xabacadae)');
-        // console.log('mstore(0x04, 0xe0)');
-        // console.log(`mstore(0x24, ${challenge.toString(16)})`);
-        // console.log(`mstore(0x44, ${k})`);
-        // let memcount = 100;
-        // for (let i = 0; i < t2Formatted.length; i++)
-        // {
-        //     console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
-        //     memcount += 32;
-        // }
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
-        // memcount += 32;
-        // for (let i = 0; i < outputFormatted.length; i++)
-        // {
-        //     for (let j = 0; j < outputFormatted[i].length; j++)
-        //     {
-        //         console.log(`mstore(0x${memcount.toString(16)}, ${outputFormatted[i][j]})`);
-        //         memcount += 32;
-    
-        //     }
-        // }
-        // console.log('output formatted');
-        // console.log(outputFormatted);
-        // console.log('challenge');
-        // console.log(challengeFormatted);
-        // console.log('t2 formatted');
-        // console.log(t2Formatted);
-        // console.log('outputformatted = ', outputFormatted);
+
         const result = await aztec.validateReveal(inputFormatted, challengeFormatted, 31, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });
 
-        // console.log('result = ', result);
+        console.log('result = ', result);
         assert(result === true);
     });
 });
+
+function printJoinSplitTrace({ challenge, t2Formatted, outputFormatted, inputFormatted }) {
+    console.log('mstore(0x00, 0x471f654200000000000000000000000000000000000000000000000000000000)');
+    console.log('mstore(0x04, 0xe0)');
+    console.log('mstore(0x24, 0x280)');
+    console.log(`mstore(0x44, 0x${challenge.toString(16)})`);
+    let memcount = 100;
+    for (let i = 0; i < t2Formatted.length; i++) {
+        console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
+        memcount += 32;
+    }
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    memcount += 32;
+    for (let i = 0; i < inputFormatted.length; i++) {
+        for (let j = 0; j < inputFormatted[i].length; j++) {
+            console.log(`mstore(0x${memcount.toString(16)}, ${inputFormatted[i][j]})`);
+            memcount += 32;
+
+        }
+    }
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    memcount += 32;
+    for (let i = 0; i < outputFormatted.length; i++) {
+        for (let j = 0; j < outputFormatted[i].length; j++) {
+            console.log(`mstore(0x${memcount.toString(16)}, ${outputFormatted[i][j]})`);
+            memcount += 32;
+
+        }
+    }
+}
+
+function printCommitTrace({ challenge, t2Formatted, outputFormatted, k }) {
+    console.log('mstore(0x00, 0x48036bf100000000000000000000000000000000000000000000000000000000)');
+    console.log('mstore(0x04, 0xe0)');
+    console.log(`mstore(0x24, 0x${challenge.toString(16)})`);
+    console.log(`mstore(0x44, ${k})`);
+    let memcount = 100;
+    for (let i = 0; i < t2Formatted.length; i++) {
+        console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
+        memcount += 32;
+    }
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    memcount += 32;
+    for (let i = 0; i < outputFormatted.length; i++) {
+        for (let j = 0; j < outputFormatted[i].length; j++) {
+            console.log(`mstore(0x${memcount.toString(16)}, ${outputFormatted[i][j]})`);
+            memcount += 32;
+
+        }
+    }
+}
+
+function printRevealTrace({ challenge, t2Formatted, inputFormatted, k }) {
+    console.log('mstore(0x00, 0x0x7dbb5f4700000000000000000000000000000000000000000000000000000000)');
+    console.log('mstore(0x04, 0xe0)');
+    console.log(`mstore(0x24, 0x${challenge.toString(16)})`);
+    console.log(`mstore(0x44, ${k})`);
+    let memcount = 100;
+    for (let i = 0; i < t2Formatted.length; i++) {
+        console.log(`mstore(0x${memcount.toString(16)}, ${t2Formatted[i]})`);
+        memcount += 32;
+    }
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    console.log(`mstore(0x${memcount.toString(16)}, 0x02)`);
+    memcount += 32;
+    for (let i = 0; i < inputFormatted.length; i++) {
+        for (let j = 0; j < inputFormatted[i].length; j++) {
+            console.log(`mstore(0x${memcount.toString(16)}, ${inputFormatted[i][j]})`);
+            memcount += 32;
+
+        }
+    }
+}
