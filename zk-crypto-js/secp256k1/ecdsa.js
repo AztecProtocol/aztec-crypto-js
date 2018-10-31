@@ -34,9 +34,9 @@ var fromPrivate = function fromPrivate(privateKey) {
 
 ecdsa.generateKeyPair = () => {
     const account = web3.eth.accounts.create();
-    const privateKey = new BN(account.privateKey.slice(2), 16);
+    const privateKey = `0x${utils.toBytes32(account.privateKey.slice(2))}`;
     const address = account.address;
-    const publicKey = curve.g.mul(privateKey);
+    const publicKey = secp256k1.g.mul(new BN(privateKey.slice(2), 16));
 
     return {
         publicKey,
@@ -46,20 +46,26 @@ ecdsa.generateKeyPair = () => {
 };
 
 ecdsa.signMessage = (hash, privateKey) => {
-    var signature = secp256k1.keyFromPrivate(Buffer.from(utils.toBytes32(privateKey.toString(16)), 'hex')).sign(hash, { canonical: true });
-    return {
-        v: 27 + Number(signature.recoveryParam),
-        r: signature.r,
-        s: signature.s,
-    };
+    var signature = secp256k1.keyFromPrivate(Buffer.from(privateKey.slice(2), 'hex')).sign(Buffer.from(hash.slice(2), 'hex'), { canonical: true });
+    var ecPublicKey = secp256k1.recoverPubKey(Buffer.from(hash.slice(2), 'hex'), { r: signature.r, s: signature.s }, signature.recoveryParam); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
+    return [
+        `0x${utils.toBytes32(Number(27 + Number(signature.recoveryParam)).toString(16))}`,
+        `${utils.bnToHex(signature.r)}`,
+        `${utils.bnToHex(signature.s)}`,
+    ];
 };
 
 ecdsa.verifyMessage = (hash, r, s, publicKey) => {
-    return secp256k1.verify(hash, { r, s }, publicKey);
+    const rBn = new BN(r.slice(2), 16);
+    const sBn = new BN(s.slice(2), 16);
+    return secp256k1.verify(hash.slice(2), { r: rBn, s: sBn }, publicKey);
 };
 
-ecdsa.recoverPublicKey = (hash, r, s, v) => {
-    var ecPublicKey = secp256k1.recoverPubKey(hash, { r, s }, v < 2 ? v : 1 - v % 2); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
+ecdsa.recoverPublicKey = (hash, r, s, vn) => {
+    const rBn = new BN(r.slice(2), 16);
+    const sBn = new BN(s.slice(2), 16);
+    const v = new BN(vn.slice(2), 16).toNumber();
+    var ecPublicKey = secp256k1.recoverPubKey(Buffer.from(utils.toBytes32(hash.slice(2)), 'hex'), { r: rBn, s: sBn }, v < 2 ? v : 1 - v % 2); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
     return ecPublicKey;
 }
 
@@ -73,7 +79,7 @@ ecdsa.web3Comparison = () => {
     const messageBuffer = Buffer.concat([preamble, initialBuffer]);
     const hashedMessage = web3.utils.sha3(messageBuffer);
 
-    const result = ecdsa.signMessage(new BN(hashedMessage.slice(2), 16), new BN(privateKey.slice(2), 16));
+    const result = ecdsa.signMessage(hashedMessage, privateKey);
 
     return ({ result, web3Sig });
 }

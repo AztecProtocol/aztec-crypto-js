@@ -1,5 +1,6 @@
 const BN = require('bn.js');
 
+
 const params = {};
 
 params.SIGNATURES_PER_FILE = 1024;
@@ -24,4 +25,32 @@ params.t2 = {
     }
 };
 
+params.t2Formatted = [
+    bnToHex(params.t2.x.c0),
+    bnToHex(params.t2.x.c1),
+    bnToHex(params.t2.y.c0),
+    bnToHex(params.t2.y.c1),
+];
+
+function bnToHex(bignum) {
+    if (!BN.isBN(bignum)) {
+        throw new Error(`expected ${bignum} to be of type BN`);
+    }
+    return `0x${toBytes32(bignum.toString(16))}`;
+};
+
+function toBytes32(input, padding = 'left')  { // assumes hex format
+    let s = input;
+    if (s.length > 64) {
+        throw new Error(`string ${input} is more than 32 bytes long!`);
+    }
+    while (s.length < 64) {
+        if (padding === 'left') { // left pad to hash a number. Right pad to hash a string
+            s = `0${s}`;
+        } else {
+            s = `${s}0`;
+        }
+    }
+    return s;
+};
 module.exports = params;

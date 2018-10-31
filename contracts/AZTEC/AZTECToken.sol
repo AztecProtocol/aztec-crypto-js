@@ -6,17 +6,15 @@ import "./OptimizedAztec.sol";
 contract AZTECTokenBase {
 
     mapping(bytes32 => bool) noteRegistry;
-    uint[4] setupPubKey;
+    bytes32[4] setupPubKey;
     address verifier;
-    event Debug2(uint[4] testing);
-    event DebugHash(bytes32);
-    constructor(uint[4] _setupPubKey, address _verifier) public {
+
+    constructor(bytes32[4] _setupPubKey, address _verifier) public {
         setupPubKey = _setupPubKey;
         verifier = _verifier;
-        emit Debug2(setupPubKey);
     }
 
-    function getNoteHash(uint gammaX, uint gammaY, uint sigmaX, uint sigmaY, address owner) internal pure returns (bytes32 r) {
+    function getNoteHash(bytes32 gammaX, bytes32 gammaY, bytes32 sigmaX, bytes32 sigmaY, address owner) internal pure returns (bytes32 r) {
         assembly {
             let m := mload(0x40)
             mstore(m, gammaX)
@@ -28,7 +26,7 @@ contract AZTECTokenBase {
         }
     }
 
-    function hashInputNotes(uint[3][] inputSignatures, uint[6][] inputNotes, uint challenge) view internal returns (bytes32[] memory) {
+    function hashInputNotes(uint[3][] inputSignatures, bytes32[6][] inputNotes, uint challenge) view internal returns (bytes32[] memory) {
         bytes32[] memory inputNoteHashes = new bytes32[](inputNotes.length);
         for (uint i = 0; i < inputNotes.length; i++) {
                 address owner = ECDSA.recover(bytes32(inputSignatures[i][0]), uint8(inputSignatures[i][1]), bytes32(inputSignatures[i][2]), bytes32(challenge));
@@ -39,7 +37,7 @@ contract AZTECTokenBase {
         return inputNoteHashes;
     }
 
-    function hashOutputNotes(address[] outputNoteOwners, uint[6][] outputNotes) view internal returns (bytes32[] memory) {
+    function hashOutputNotes(address[] outputNoteOwners, bytes32[6][] outputNotes) view internal returns (bytes32[] memory) {
         bytes32[] memory outputNoteHashes = new bytes32[](outputNotes.length);
         for (uint i = 0; i < outputNotes.length; i++) {
                 bytes32 outputNoteHash = getNoteHash(outputNotes[i][2], outputNotes[i][3], outputNotes[i][4], outputNotes[i][5], outputNoteOwners[i]);
@@ -49,7 +47,7 @@ contract AZTECTokenBase {
         return outputNoteHashes;
     }
 
-    function joinSplitTransaction(uint[3][] inputSignatures, address[] outputNoteOwners, uint[6][] inputNotes, uint[6][] outputNotes, uint challenge) external {
+    function joinSplitTransaction(uint[3][] inputSignatures, address[] outputNoteOwners, bytes32[6][] inputNotes, bytes32[6][] outputNotes, uint challenge) external {
         require(inputSignatures.length == inputNotes.length);
         bytes32[] memory inputNoteHashes = hashInputNotes(inputSignatures, inputNotes, challenge);
         bytes32[] memory outputNoteHashes = hashOutputNotes(outputNoteOwners, outputNotes);

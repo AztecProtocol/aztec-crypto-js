@@ -67,4 +67,11 @@ utils.toBytes32 = function toBytes32(input, padding = 'left')  { // assumes hex 
     return s;
 };
 
+utils.bnToHex = function bnToHex(bignum) {
+    if (!BN.isBN(bignum)) {
+        throw new Error(`expected ${bignum} to be of type BN`);
+    }
+    return `0x${utils.toBytes32(bignum.toString(16))}`;
+};
+
 module.exports = utils;

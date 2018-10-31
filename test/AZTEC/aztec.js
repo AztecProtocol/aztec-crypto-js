@@ -1,40 +1,61 @@
 /* global artifacts, assert, contract, beforeEach, it:true */
-const OptimizedAZTEC = artifacts.require('./contracts/AZTEC/OptimizedAZTEC');
-const OptimizedAZTECInterface = artifacts.require('./contracts/AZTEC/OptimizedAZTECInterface');
+const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
+const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 
-const aztecProof = require('../../zk-crypto-js/proof/proof');
+const aztecProof = require('../../zk-crypto-js/proof/proofOptimized');
 const utils = require('../../zk-crypto-js/utils/utils');
 const { t2Formatted } = require('../../zk-crypto-js/params');
 
 const { toBytes32 } = utils;
 
-OptimizedAZTEC.abi = OptimizedAZTECInterface.abi;
-contract('Optimized AZTEC', (accounts) => {
+AZTEC.abi = AZTECInterface.abi;
+contract.only('AZTEC', (accounts) => {
     let aztec;
     beforeEach(async () => {
-        aztec = await OptimizedAZTEC.new(accounts[0]);
+        aztec = await AZTEC.new(accounts[0]);
     });
 
+    it.only('succesfully validates an AZTEC JOIN-SPLIT zero-knowledge proof', async () => {
+        let gas = 0;
+        const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [11, 22 ], kOut: [ 5, 28 ]});
+        const { proofData, challenge } = aztecProof.constructModifiedJoinSplit(commitments, m, 0);
+     //    console.log('proofData = ', proofData);
+        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+            from: accounts[0],
+            gas: 4000000,
+        });
+        console.log('result = ', result);
+        // gas += Number(result.receipt.gasUsed);
+        // console.log('gas = ', gas);
+        // printJoinSplitTrace({ challenge, t2Formatted, outputFormatted, inputFormatted });
+        // console.log('result = ', result);
+        // console.log('result receipt = ', result.receipt);
+        assert(result === true);
+    });
 
     it('succesfully validates an AZTEC JOIN-SPLIT zero-knowledge proof', async () => {
+        let gas = 0;
         const commitments = await aztecProof.constructCommitmentSet({ kIn: [11, 22 ], kOut: [ 5, 28 ]});
         const { proofInputs, proofOutputs, challenge } = aztecProof.constructJoinSplit(commitments);
         const result = await aztec.validateJoinSplit(proofInputs, proofOutputs, challenge, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });
+        // gas += Number(result.receipt.gasUsed);
+        // console.log('gas = ', gas);
         // printJoinSplitTrace({ challenge, t2Formatted, outputFormatted, inputFormatted });
-        console.log('result = ', result);
+        // console.log('result = ', result);
+        // console.log('result receipt = ', result.receipt);
         assert(result === true);
     });
 
 
     it('succesfully validates an AZTEC COMMIT zero-knowledge proof', async () => {
-        const k = 31;
+        const k = 33;
         const commitments = await aztecProof.constructCommitmentSet({ kIn: [], kOut: [11, 22] });
         const { proofOutputs, challenge } = aztecProof.constructCommit({ outputs: commitments.outputs, k });
 
-        const result = await aztec.validateCommit(proofOutputs, challenge, 31, t2Formatted, {
+        const result = await aztec.validateCommit(proofOutputs, challenge, 33, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });
@@ -46,11 +67,11 @@ contract('Optimized AZTEC', (accounts) => {
 
 
     it('succesfully validates an AZTEC REVEAL zero-knowledge proof', async () => {
-        const k = 31;
+        const k = 33;
         const commitments = await aztecProof.constructCommitmentSet({ kIn: [11, 22], kOut: [] });
         const { proofInputs, challenge } = aztecProof.constructReveal({ inputs: commitments.inputs, k });
 
-        const result = await aztec.validateReveal(proofInputs, challenge, 31, t2Formatted, {
+        const result = await aztec.validateReveal(proofInputs, challengeFormatted, 33, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
         });

@@ -2,68 +2,20 @@ pragma solidity ^0.4.23;
 
 
 contract OptimizedAZTECInterface {
-    function validateJoinSplit(bytes32[6][] inputs, bytes32[6][] outputs, uint challenge, uint[4] t2) external view returns (bool) {}
-    function validateCommit(bytes32[6][] outputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
-    function validateJoinSplit(uint[6][] inputs, uint[6][] outputs, uint challenge, uint[4] t2) external view returns (bool) {}
-    function validateCommit(uint[6][] outputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
-    function validateReveal(uint[6][] inputs, uint challenge, uint k, uint[4] t2) external view returns (bool) {}
+    function validateCommit(bytes32[6][] outputs, uint challenge, uint k, bytes32[4] t2) external view returns (bool) {}
+    function validateJoinSplit(bytes32[6][] inputs, bytes32[6][] outputs, uint challenge, bytes32[4] t2) external view returns (bool) {}
+    function validateReveal(bytes32[6][] inputs, uint challenge, uint k, bytes32[4] t2) external view returns (bool) {}
     // function validateJoinSplit(uint[6][] inputs, uint[6][] outputs, uint challenge, uint[4] t2) external returns (bool) {}
     // function validateCommit(uint[6][] outputs, uint challenge, uint k, uint[4] t2) external returns (bool) {}
     // function validateReveal(uint[6][] inputs, uint challenge, uint k, uint[4] t2) external returns (bool) {}
 }
 
-contract Main {
-    constructor () public {
-        OptimizedAZTEC aztec = new OptimizedAZTEC();
-        assembly {
-mstore(0x00, 0x471f654200000000000000000000000000000000000000000000000000000000)
-mstore(0x04, 0xe0)
-mstore(0x24, 0x280)
-mstore(0x44, 0x56fffacfccdcc4c57c4c82b841e480c0c7c5c23c69495fb176d91381a73338e)
-mstore(0x64, 14950566033311135686370363156509914218680817943817569491591494889531912422969)
-mstore(0x84, 9610767485542423883105294407743945250667713657405871070087733105932454069792)
-mstore(0xa4, 9860756432720796732044151731608020682550918224148190991029235559105326198353)
-mstore(0xc4, 18783872390250408862708187214286825950859215155181481328910531821469087013995)
-mstore(0xe4, 0x02)
-mstore(0x104, 21575179089135001916908311426293331577365373317725054293216667819980257281239)
-mstore(0x124, 7514438951112905631433421991823715007137614279908867347432131496656706783231)
-mstore(0x144, 1199456416411753982418407040882695239073920500155804485342862343681046758232)
-mstore(0x164, 11618521201935976279249678372536363515132389821557364183300381941186746454162)
-mstore(0x184, 18373934955080290521740202773819444527706995516783571046631082570823535249025)
-mstore(0x1a4, 5720214218773369490718381848616093827011302872652919363444126668751273236943)
-mstore(0x1c4, 10036486297091687871414901466042288584059857894461485378269112259856191188931)
-mstore(0x1e4, 2436694986829181131914062492794271914203395594136177501764371693709660534253)
-mstore(0x204, 14542675448021396896883790572561596058039711628273518747890465312358765219837)
-mstore(0x224, 5850657371579040410560753115209280924036138891970342670851979984642095031848)
-mstore(0x244, 1490613306100038732966180962087619776245604271837035939995361716018915977751)
-mstore(0x264, 12933300084859964848543091076529428948834932471738254761805999076899602171444)
-mstore(0x284, 0x02)
-mstore(0x2a4, 4909401167906333701813070247492836310772104707626402926334752633191848929557)
-mstore(0x2c4, 3372567996473463913588578789083096687216739111425061590745317815305082576791)
-mstore(0x2e4, 9838217286281446887901649453713653297877676546907758002674399690835620839475)
-mstore(0x304, 17564410128931398429731657111537743421479183115000717849723361974140640853226)
-mstore(0x324, 18401346052905524059411089579438948304017452040699107897016927863482747379724)
-mstore(0x344, 11008394417245333062317262524998768449361614724695022080899038917922137955815)
-mstore(0x364, 2903440508984007780625650532772953735565167814733062479035601888324631390214)
-mstore(0x384, 20696577266289126492651258766635842692473391913649305910987867748858032099570)
-mstore(0x3a4, 2024888929239440434974851021897598793877708205793270977900892354799114343451)
-mstore(0x3c4, 19437863849353090611060505512286300788716104970327097658732760831662137659566)
-mstore(0x3e4, 2855236611283830864500065727068754543171244200470587965763035110538603237789)
-mstore(0x404, 6664049147270199990978452811917937843203698919816666068354261489834154524159)
-let success := staticcall(not(0), aztec, 0x00, 0x424, 0x500, 0x20)
-
-            return(0x00, 0x20)
-        }
-    }
-}
 /// @title Library to validate AZTEC zero-knowledge proofs
 /// @author CreditMint
 /// @dev All rights reserved. This is a technical demo! Use at your own risk!
 /// @notice Don't include this as an internal library. I use a static memory table to cache elliptic curve primitives and hashes.
 /// Calling this internally from another function will lead to memory mutation and undefined behaviour.
 /// The intended use case is to call this externally via `staticcall`. External calls to OptimizedAZTEC can be treated as pure functions as this contract contains no storage variables.
-
-
 contract OptimizedAZTEC {
     /// @dev OptimizedAztec will take any transaction sent to it and attempt to validate a zero knowledge proof.
     /// If input parameters don't conform to the interface of OptimizedAZTECInterface then the transaction will throw.
@@ -83,17 +35,16 @@ contract OptimizedAZTEC {
                 revert(0x00, 0x20)
             }
             switch div(calldataload(0), 0x100000000000000000000000000000000000000000000000000000000)
-            case 0x48036bf1 {       // "48036bf1": "validateCommit(uint256[6][],uint256,uint256,uint256[4])",
+            case 0xe8d9a416 {       // "48036bf1": "validateCommit(uint256[6][],uint256,uint256,uint256[4])",
                 validateCommit()
             }
-            case 0x7dbb5f47 {       // "validateReveal(uint256[6][],uint256,uint256,uint256[4])"
+            case 0xabfbb25a {       // "validateReveal(uint256[6][],uint256,uint256,uint256[4])"
                 validateReveal()
             }
-            case 0x471f6542 {       // "471f6542": "validateJoinSplit(uint256[6][],uint256[6][],uint256,uint256[4])",
+            case 0xd6504254 {       // "471f6542": "validateJoinSplit(uint256[6][],uint256[6][],uint256,uint256[4])",
                 validateJoinSplit()
             }
             default {
-                validateCommit() // TODO FIX THE INTERFACE! NASTY HACK
                 mstore(0x00, 404)
                 revert(0x00, 0x20)
             }

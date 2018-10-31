@@ -7,12 +7,12 @@ contract TestPrimaryDeal {
     address _aztecValidator;
     // address _storage;
     bool _initialized = false;
-    uint[4] _aztecKey;
+    bytes32[4] _aztecKey;
     address _borrower;
     mapping(bytes32 => uint) noteRegistry;
     mapping(bytes32 => bytes32) documents;
 
-    constructor(/*address storageAddress, */address aztecValidatorAddress, uint[4] aztecKey) public {
+    constructor(/*address storageAddress, */address aztecValidatorAddress, bytes32[4] aztecKey) public {
         _aztecValidator = aztecValidatorAddress;
        //  _storage = storageAddress;
         _aztecKey = aztecKey;
@@ -23,74 +23,64 @@ contract TestPrimaryDeal {
     event InstantiatedNote(address owner, bytes32 noteHash);
 
     function validateBorrowerSignature(
-        bytes32[4] borrowerSignature,
-        bytes32[4][] fundSignatures,
-        bytes32 transferCertificate,
-        bytes32 seniorFacilitiesAgreement,
-        bytes32 dealTerms,
+        bytes32[3] borrowerSignature,
+        bytes32[3][] fundSignatures,
+        bytes32 executionDocument,
         uint256 loanSize
     ) internal {
         bytes32 borrowerMessage = keccak256(abi.encode(
             fundSignatures,
-            transferCertificate,
-            seniorFacilitiesAgreement,
-            dealTerms,
+            executionDocument,
             loanSize
         ));
-        address recoveredAddress = ecrecover(
+        address borrowerAddress = ecrecover(
                 borrowerMessage,
-                uint8(borrowerSignature[1]),
-                bytes32(borrowerSignature[2]),
-                bytes32(borrowerSignature[3])
+                uint8(borrowerSignature[0]),
+                bytes32(borrowerSignature[1]),
+                bytes32(borrowerSignature[2])
             );
-        require(recoveredAddress == address(borrowerSignature[0]), "borrower signature invalid ");
-        emit Signed(recoveredAddress, borrowerMessage);
+        emit Signed(borrowerAddress, borrowerMessage);
     }
 
+    event Debug(bytes32 v, bytes32 r, bytes32 s);
+    event Debug2(address x);
     function validateSignatures(
-        bytes32[4][] fundSignatures,
+        bytes32[3][] fundSignatures,
         bytes32[6][] fundNotes,
-        bytes32 transferCertificate,
-        bytes32 seniorFacilitiesAgreement,
-        bytes32 dealTerms,
         uint256 loanSize
-    ) internal returns (bytes32[]) {
-        bytes32[] memory noteHashes = new bytes32[](fundSignatures.length);
+    ) internal returns (bytes32[2][]) {
+        bytes32[2][] memory noteHashes = new bytes32[2][](fundSignatures.length);
         for (uint i = 0; i < fundSignatures.length; i++) {
             bytes32 r = keccak256(abi.encode(
                 fundNotes[i][2],
                 fundNotes[i][3],
                 fundNotes[i][4],
                 fundNotes[i][5],
-                transferCertificate,
-                seniorFacilitiesAgreement,
-                dealTerms,
                 loanSize
             ));
-            address recoveredAddress = ecrecover(
+            address fundAddress = ecrecover(
                 r,
-                uint8(fundSignatures[i][1]),
-                bytes32(fundSignatures[i][2]),
-                bytes32(fundSignatures[i][3])
+                uint8(fundSignatures[i][0]),
+                bytes32(fundSignatures[i][1]),
+                bytes32(fundSignatures[i][2])
             );
-            noteHashes[i] = keccak256(abi.encode(
+
+            noteHashes[i][0] = keccak256(abi.encode(
                 fundNotes[i][2],
                 fundNotes[i][3],
                 fundNotes[i][4],
                 fundNotes[i][5]
             ));
-            require(recoveredAddress == address(fundSignatures[i][0]), "fund signature invalid!");
-            emit Signed(recoveredAddress, r);
+            noteHashes[i][1] = bytes32(fundAddress);
+            emit Signed(fundAddress, r);
         }
         return noteHashes;
     }
 
     function syndicate(
-        bytes32[4] borrowerSignature,
-        bytes32[4][] fundSignatures,
-        bytes32 transferCertificate,
-        bytes32 seniorFacilitiesAgreement,
-        bytes32 dealTerms, // TODO ADD PROPER TERMS
+        bytes32[3] borrowerSignature,
+        bytes32[3][] fundSignatures,
+        bytes32 executionDocument,
         bytes32[6][] fundNotes,
         uint challenge,
         uint loanSize
@@ -100,35 +90,28 @@ contract TestPrimaryDeal {
         validateBorrowerSignature(
             borrowerSignature,
             fundSignatures,
-            transferCertificate,
-            seniorFacilitiesAgreement,
-            dealTerms,
+            executionDocument,
             loanSize
         );
 
-        bytes32[] memory noteHashes = validateSignatures(
+        bytes32[2][] memory noteInfo = validateSignatures(
             fundSignatures,
             fundNotes,
-            transferCertificate,
-            seniorFacilitiesAgreement,
-            dealTerms,
             loanSize
         );
 
         if (OptimizedAZTECInterface(_aztecValidator).validateCommit(fundNotes, challenge, loanSize, _aztecKey)) {
             _initialized = true;
-            for (uint j = 0; j < noteHashes.length; j++) {
+            for (uint j = 0; j < noteInfo.length; j++) {
                 address owner = address(fundSignatures[j][0]);
                 uint noteFlags = uint(owner) | 0x8000000000000000000000000000000000000000000000000000000000000000;
-                noteRegistry[noteHashes[j]] = noteFlags;
-                emit InstantiatedNote(owner, noteHashes[j]);
+                noteRegistry[noteInfo[j][0]] = noteFlags;
+                emit InstantiatedNote(address(noteInfo[j][1]), noteInfo[j][0]);
             }
-            documents["transferCerficiate"] = transferCertificate;
-            documents["seniorFacilitiesAgreement"] = seniorFacilitiesAgreement;
+            documents["executionDocument"] = executionDocument;
             // Storage(_storage).setUInt("documents", "transferCertificate", uint(transferCertificate));
             // Storage(_storage).setUInt("documents", "seniorFacilitiesAgreement", uint(seniorFacilitiesAgreement));
-            emit StoredDocument(transferCertificate);
-            emit StoredDocument(seniorFacilitiesAgreement);
+            emit StoredDocument(executionDocument);
 
         } else {
             revert("proof invalid");

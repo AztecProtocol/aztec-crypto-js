@@ -10,15 +10,15 @@ contract AZTECTokenMintable is AZTECTokenBase {
     event DebugUint(uint);
     address initializer;
     constructor(
-        uint[4] _setupPubKey,
+        bytes32[4] _setupPubKey,
         address _verifier,
         address[] initialNoteOwners,
-        uint[] k,
-        uint[] a,
-        uint[] gammaX,
-        uint[] gammaY,
-        uint[] sigmaX,
-        uint[] sigmaY,
+        bytes32[] k,
+        bytes32[] a,
+        bytes32[] gammaX,
+        bytes32[] gammaY,
+        bytes32[] sigmaX,
+        bytes32[] sigmaY,
         uint challenge,
         uint totalSupply
         ) AZTECTokenBase(_setupPubKey, _verifier) public {
@@ -28,14 +28,10 @@ contract AZTECTokenMintable is AZTECTokenBase {
             (gammaX.length == gammaY.length) &&
             (sigmaX.length == sigmaY.length)
         );
-        uint[6][] memory initialNotes = new uint[6][](k.length);
+        bytes32[6][] memory initialNotes = new bytes32[6][](k.length);
         for (uint i = 0; i < k.length; i++) {
             initialNotes[i] = [ k[i], a[i], gammaX[i], gammaY[i], sigmaX[i], sigmaY[i] ];
-            emit DebugNote(initialNotes[i]);
-            // emit DebugNote([k[i], a[i], gammaX[i], gammaY[i], sigmaX[i], sigmaY[i]]);
         }
-        emit DebugUint(totalSupply);
-        emit DebugUint(challenge);
         bytes32[] memory inputNoteHashes = hashOutputNotes(initialNoteOwners, initialNotes);
         if (OptimizedAZTECInterface(verifier).validateCommit(initialNotes, challenge, totalSupply, setupPubKey)) {
             for (uint j = 0; j < inputNoteHashes.length; j++) {

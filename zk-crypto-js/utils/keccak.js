@@ -1,7 +1,7 @@
 const BN = require('bn.js');
 const Web3 = require('web3');
 
-const { toBytes32 } = require('./utils');
+const { bnToHex, toBytes32 } = require('./utils');
 const { groupReduction } = require('../params');
 
 const web3 = new Web3();
@@ -14,6 +14,7 @@ function hashStrings(inputArr) {
         const res = toBytes32(i);
         return res;
     }).join('')}`;
+    const result = web3.utils.sha3(`0x${input}`, 'hex').slice(2);
     return web3.utils.sha3(`0x${input}`, 'hex').slice(2);
 };
 
@@ -37,6 +38,10 @@ Hash.prototype.keccak = function keccak() {
 
 Hash.prototype.toGroupScalar = function toGroupScalar() {
     return new BN(this.data[0], 16).toRed(groupReduction);
+}
+
+Hash.prototype.toBytes32 = function toBytes32() {
+    return bnToHex(new BN(this.data[0], 16));
 }
 
 module.exports = Hash;

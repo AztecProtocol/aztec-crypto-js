@@ -62,22 +62,31 @@ proof.constructCommit = ({ outputs, k }) => {
     hashed.keccak();
     const challenge = hashed.toGroupScalar();
 
-    const finalOutput = outputBlindingFactors.map((blindingFactor, i) => {
+    const proofOutputs = outputBlindingFactors.map((blindingFactor, i) => {
         const kBar = (outputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
         const aBar = (outputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
-        return {
-            gamma: outputs[i].gamma,
-            sigma: outputs[i].sigma,
-            kBar,
-            aBar,
-        };
+        return [
+            utils.bnToHex(kBar.fromRed()),               // kBar
+            utils.bnToHex(aBar.fromRed()),               // aBar
+            utils.bnToHex(outputs[i].gamma.x.fromRed()), // gammaX
+            utils.bnToHex(outputs[i].gamma.y.fromRed()), // gammaY
+            utils.bnToHex(outputs[i].sigma.x.fromRed()), // sigmaX
+            utils.bnToHex(outputs[i].sigma.y.fromRed()), // sigmaY
+        ];
     });
-    return { outputs: finalOutput, challenge };
+
+    const noteOutputs = proofOutputs.map(p => [p[2], p[3], p[4], p[5]]);
+
+    return {
+        proofOutputs,
+        noteOutputs,
+        challenge: utils.bnToHex(challenge),
+    };
 };
 
 proof.constructReveal = ({ inputs, k }) => {
-    const { outputs, challenge } = proof.constructCommit({ outputs: inputs, k });
-    return { inputs: outputs, challenge };
+    const { proofOutputs, noteOutputs, challenge } = proof.constructCommit({ outputs: inputs, k });
+    return { proofInputs: proofOutputs, noteInputs: noteOutputs, challenge };
 };
 
 ///@dev basic script to construct a join split transaction
@@ -127,78 +136,42 @@ proof.constructJoinSplit = ({ inputs, outputs }) => {
     hashed.keccak();
     const challenge = hashed.toGroupScalar();
 
-    const finalInput = inputBlindingFactors.map((blindingFactor, i) => {
+    const proofInputs = inputBlindingFactors.map((blindingFactor, i) => {
         const kBar = (inputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
         const aBar = (inputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
-        return {
-            gamma: inputs[i].gamma,
-            sigma: inputs[i].sigma,
-            kBar,
-            aBar
-        };
+        return [
+            utils.bnToHex(kBar.fromRed()),              // kBar
+            utils.bnToHex(aBar.fromRed()),              // aBar
+            utils.bnToHex(inputs[i].gamma.x.fromRed()), // gammaX
+            utils.bnToHex(inputs[i].gamma.y.fromRed()), // gammaY
+            utils.bnToHex(inputs[i].sigma.x.fromRed()), // sigmaX
+            utils.bnToHex(inputs[i].sigma.y.fromRed()), // sigmaY
+        ];
     });
 
-    const finalOutput = outputBlindingFactors.map((blindingFactor, i) => {
+    const proofOutputs = outputBlindingFactors.map((blindingFactor, i) => {
         const kBar = (outputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
         const aBar = (outputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
-        return {
-            gamma: outputs[i].gamma,
-            sigma: outputs[i].sigma,
-            kBar,
-            aBar,
-        };
-    });
-    return { inputs: finalInput, outputs: finalOutput, challenge };
-};
-
-proof.formatABI = ({ gamma, sigma, kBar, aBar }) => {
-
-    return [
-        `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
-        `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
-        `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
-        `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
-        `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
-        `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
-    ];
-};
-
-function ProofData({ inputNotes, outputNotes, k, challenge }) {
-    this.inputNotes = inputNotes;
-    this.outputNotes = outputNotes;
-    this.k = k;
-    this.challenge = challenge;
-}
-
-ProofData.prototype.toAbi = function toAbi() {
-    const inputFormatted = inputNotes.map(({ kBar, aBar, gamma, sigma }) => {
         return [
-            `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
+            utils.bnToHex(kBar.fromRed()),               // kBar
+            utils.bnToHex(aBar.fromRed()),               // aBar
+            utils.bnToHex(outputs[i].gamma.x.fromRed()), // gammaX
+            utils.bnToHex(outputs[i].gamma.y.fromRed()), // gammaY
+            utils.bnToHex(outputs[i].sigma.x.fromRed()), // sigmaX
+            utils.bnToHex(outputs[i].sigma.y.fromRed()), // sigmaY
         ];
     });
-    const outputFormatted = outputNotes.map(({ kBar, aBar, gamma, sigma }) => {
-        return [
-            `0x${utils.toBytes32(kBar.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(aBar.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(gamma.x.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(gamma.y.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(sigma.x.fromRed().toString(16))}`,
-            `0x${utils.toBytes32(sigma.y.fromRed().toString(16))}`,
-        ];
-    });
-    const challengeFormatted = `0x${utils.toBytes32(challenge.toString(16))}`;
-    const kFormatted = `0x${utils.toBytes32(k.toString(16))}`;
+
+    const noteInputs = proofInputs.map(p => [p[2], p[3], p[4], p[5]]);
+    const noteOutputs = proofOutputs.map(p => [p[2], p[3], p[4], p[5]]);
+
     return {
-        inputNotes: inputFormatted,
-        outputNotes: outputFormatted,
-        challenge: challengeFormatted,
-        k: kFormatted,
+        proofInputs,
+        proofOutputs,
+        noteInputs,
+        noteOutputs,
+        challenge: utils.bnToHex(challenge),
     };
-}
+};
 
 module.exports = proof;
