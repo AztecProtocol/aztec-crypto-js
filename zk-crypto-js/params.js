@@ -32,6 +32,49 @@ params.t2Formatted = [
     bnToHex(params.t2.y.c1),
 ];
 
+params.AZTEC_RINKEBY_DOMAIN_PARAMS = {
+    name: 'AZTEC_RINKEBY_DOMAIN',
+    version: '0.1.0',
+    chainId: '4',
+    salt: '0x210db872dec2e06c375dd40a5a354307bb4ba52ba65bd84594554580ae6f0639',
+};//     verifyingContract: '0x0000000000000000000000000000000000000000',
+
+// 0x0000000000000000000000000000000000000000000000000000000000000060
+// 0x0000000000000000000000000000000000000000000000000000000000000140
+// 0x0000000000000000000000000000000000000000000000000000000000000000
+// 0x0000000000000000000000000000000000000000000000000000000000000002
+// 0x9635c0b00812ca5ac3c3e1a1e32931b025405a310decbf0ab767ea15f3b95a57
+// 0x8c19a23bd14e1fba3d86513dd2aafe88bb51549755e11e543ae95a98fd0dc729
+// 0x0000000000000000000000000c5e1c86eb4d04fd57ca62b500e6d430347338e8
+// 0xaafa01ee93f1c5792ac1d17702d9c51371aa8ca976071c0037825274b9f15b84
+// 0x1e1aa83207fa35abe461077b1551aca58e7346330fc2ccb48349303410e0f820
+// 0x0000000000000000000000005c36628cb1f6022bcf07b506ddb9e4f821cadfac
+// 0x0000000000000000000000000000000000000000000000000000000000000002
+// 0xad78531a45dc28baf28cc8dccfffa54acb2f6f5bbdaa0ed2c352712b4dfe778e
+// 0x25cd289c54b0f64fe281333ea3bdc9bc450af62c7895135bb84a2d1d9245fe4f
+// 0x0000000000000000000000009f278297b55ff368a347a5e4d21a85b5970e84e7
+// 0x2ac3a9e6cddfc37cbabdbb09cf8a9403415116c48caec1ba4ac77d9c5eaa4498
+// 0x8715657297e84f51b63cc75fd65a8122090c41d19867513e3ac0bd64549d8574
+// 0x0000000000000000000000002401fecb30a1cb359fe3e876ffb5943abb56a561
+
+params.AZTEC_NOTE_SIGNATURE = {
+    types: {
+        AZTEC_NOTE_SIGNATURE: [
+            { name: 'note', type: 'bytes32[4]' },
+            { name: 'challenge', type: 'uint256' },
+            { name: 'sender', type: 'address' },
+        ],
+        EIP712Domain: [
+            { "name": "name", "type": "string" },
+            { "name": "version", "type": "string" },
+            { "name": "chainId", "type": "uint256" },
+            { "name": "verifyingContract", "type": "address" },
+            { "name": "salt", "type": "bytes32" },
+        ],
+    },
+    primaryType: 'AZTEC_NOTE_SIGNATURE',
+};
+
 function bnToHex(bignum) {
     if (!BN.isBN(bignum)) {
         throw new Error(`expected ${bignum} to be of type BN`);

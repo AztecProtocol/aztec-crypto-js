@@ -10,9 +10,9 @@ const Web3 = require('web3');
 const web3 = new Web3();
 const elliptic =  require('elliptic');
 const secp256k1 = new elliptic.ec('secp256k1');
-describe.only('ecdsa.js tests', () => {
+describe('ecdsa.js tests', () => {
 
-    it.only('another signature test', async() => {
+    it('another signature test', async() => {
         const { publicKey, privateKey } = ecdsa.generateKeyPair();
         const message = web3.utils.soliditySha3('blah blah bah');
         console.log('private key = ', privateKey);

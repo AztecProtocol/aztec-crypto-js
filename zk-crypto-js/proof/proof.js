@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const Web3 = require('web3');
 const utils = require('../utils/utils');
 const Hash = require('../utils/keccak');
-const { FIELD_MODULUS, GROUP_MODULUS, groupReduction } = require('../params');
+const { FIELD_MODULUS, GROUP_MODULUS, groupReduction, fieldReduction } = require('../params');
 const curve = require('../curve/curve');
 const setup = require('../setup/setup');
 const proof = {};
@@ -32,144 +32,76 @@ proof.constructCommitmentSet = async ({ kIn, kOut }) => {
     }));
     return { inputs, outputs };
 };
-
-proof.constructCommit = ({ outputs, k }) => {
-    const hashed = new Hash();
-    hashed.data = [utils.toBytes32('0')];
-    outputs.forEach((output) => {
-        hashed.append(output.gamma);
-        hashed.append(output.sigma);
-        hashed.keccak();
-    });
-
-    let bkScalar = new BN(0).toRed(groupReduction);
-    const outputBlindingFactors = outputs.map((output) => {
-        const bk = utils.randomGroupScalar();
-        const ba = utils.randomGroupScalar();
-        const x = hashed.toGroupScalar();
-
-        const t1 = curve.h.mul(ba.redMul(x));
-        const B = output.gamma.mul(bk.redMul(x)).add(curve.h.mul(ba.redMul(x)));
-        bkScalar = bkScalar.redAdd(bk);
-        hashed.append(B);
-        hashed.keccak();
-        return { bk, ba, B };
-    });
-
-    const BSum = curve.g.mul(bkScalar);
-
-    hashed.append(BSum);
-    hashed.keccak();
-    const challenge = hashed.toGroupScalar();
-
-    const proofOutputs = outputBlindingFactors.map((blindingFactor, i) => {
-        const kBar = (outputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
-        const aBar = (outputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
-        return [
-            utils.bnToHex(kBar.fromRed()),               // kBar
-            utils.bnToHex(aBar.fromRed()),               // aBar
-            utils.bnToHex(outputs[i].gamma.x.fromRed()), // gammaX
-            utils.bnToHex(outputs[i].gamma.y.fromRed()), // gammaY
-            utils.bnToHex(outputs[i].sigma.x.fromRed()), // sigmaX
-            utils.bnToHex(outputs[i].sigma.y.fromRed()), // sigmaY
-        ];
-    });
-
-    const noteOutputs = proofOutputs.map(p => [p[2], p[3], p[4], p[5]]);
-
-    return {
-        proofOutputs,
-        noteOutputs,
-        challenge: utils.bnToHex(challenge),
-    };
+proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
+    const inputs = await Promise.all(kIn.map(async (k) => {
+        return await proof.generateCommitment(k);
+    }));
+    const outputs = await Promise.all(kOut.map(async (k) => {
+        return await proof.generateCommitment(k);
+    }));
+    const commitments = [...inputs, ...outputs];
+    return { commitments, m: inputs.length };
 };
 
-proof.constructReveal = ({ inputs, k }) => {
-    const { proofOutputs, noteOutputs, challenge } = proof.constructCommit({ outputs: inputs, k });
-    return { proofInputs: proofOutputs, noteInputs: noteOutputs, challenge };
-};
-
-///@dev basic script to construct a join split transaction
-proof.constructJoinSplit = ({ inputs, outputs }) => {
-    const hashed = new Hash();
-    hashed.data = [utils.toBytes32('0')];
-    // hash commitments
-    inputs.forEach((input) => {
-        hashed.append(input.gamma);
-        hashed.append(input.sigma);
-        hashed.keccak();
-    });
-    outputs.forEach((output) => {
-        hashed.append(output.gamma);
-        hashed.append(output.sigma);
-        hashed.keccak();
+proof.constructJoinSplit = (notes, m, kPublic = 0) => {
+    const rollingHash = new Hash();
+    let kPublicBn;
+    if (BN.isBN(kPublic)) {
+        kPublicBn = kPublic;
+    } else {
+        kPublicBn = new BN(kPublic);
+    }
+    notes.forEach((note) => {
+        rollingHash.append(note.gamma);
+        rollingHash.append(note.sigma);
     });
 
-    let bkScalar = new BN(0).toRed(groupReduction);
-    const outputBlindingFactors = outputs.map((output) => {
-        const bk = utils.randomGroupScalar();
-        const ba = utils.randomGroupScalar();
-        const x = hashed.toGroupScalar();
+    const finalHash = new Hash();
+    finalHash.data = [...rollingHash.data];
+    rollingHash.keccak();
+    let runningBk = new BN(0).toRed(groupReduction);
+    const blindingFactors = notes.map((note, i) => {
+        let bk = utils.randomGroupScalar();
+        let ba = utils.randomGroupScalar();
+        let B;
+        let x = new BN(0).toRed(groupReduction);
+        if (i === (notes.length - 1)) {
+            bk = runningBk;
+        }
+        if ((i + 1) > m) {
+            x = rollingHash.toGroupScalar();
+            const xbk = bk.redMul(x);
+            const xba = ba.redMul(x);
+            runningBk = runningBk.redSub(bk);
+            rollingHash.keccak();
+            B = note.gamma.mul(xbk).add(curve.h.mul(xba));
+        } else {
+            runningBk = runningBk.redAdd(bk);
+            B = note.gamma.mul(bk).add(curve.h.mul(ba));
+        }
 
-        const t1 = curve.h.mul(ba.redMul(x));
-        const B = output.gamma.mul(bk.redMul(x)).add(curve.h.mul(ba.redMul(x)));
-        bkScalar = bkScalar.redAdd(bk);
-        hashed.append(B);
-        hashed.keccak();
-        return { bk, ba, B };
+        finalHash.append(B);
+        return { bk, ba, B, x };
     });
-    const inputBlindingFactors = inputs.map((input) => {
-        const bk = utils.randomGroupScalar();
-        const ba = utils.randomGroupScalar();
-        const x = hashed.toGroupScalar();
-        const B = input.gamma.mul(bk.redMul(x)).add(curve.h.mul(ba.redMul(x)));
-
-        bkScalar = bkScalar.redSub(bk);
-        hashed.append(B);
-        hashed.keccak();
-        return { bk, ba, B };
-    });
-
-    const BSum = curve.g.mul(bkScalar);
-
-    hashed.append(BSum);
-    hashed.keccak();
-    const challenge = hashed.toGroupScalar();
-
-    const proofInputs = inputBlindingFactors.map((blindingFactor, i) => {
-        const kBar = (inputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
-        const aBar = (inputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
+    finalHash.keccak();
+    const challenge = finalHash.toGroupScalar();
+    const proofData = blindingFactors.map((blindingFactor, i) => {
+        let kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
+        const aBar = ((notes[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();
+        if (i === (notes.length - 1)) {
+            kBar = kPublicBn;
+        }
         return [
-            utils.bnToHex(kBar.fromRed()),              // kBar
-            utils.bnToHex(aBar.fromRed()),              // aBar
-            utils.bnToHex(inputs[i].gamma.x.fromRed()), // gammaX
-            utils.bnToHex(inputs[i].gamma.y.fromRed()), // gammaY
-            utils.bnToHex(inputs[i].sigma.x.fromRed()), // sigmaX
-            utils.bnToHex(inputs[i].sigma.y.fromRed()), // sigmaY
+            utils.bnToHex(kBar),               // kBar
+            utils.bnToHex(aBar),               // aBar
+            utils.bnToHex(notes[i].gamma.x.fromRed()), // gammaX
+            utils.bnToHex(notes[i].gamma.y.fromRed()), // gammaY
+            utils.bnToHex(notes[i].sigma.x.fromRed()), // sigmaX
+            utils.bnToHex(notes[i].sigma.y.fromRed()), // sigmaY
         ];
     });
-
-    const proofOutputs = outputBlindingFactors.map((blindingFactor, i) => {
-        const kBar = (outputs[i].k.redMul(challenge)).redAdd(blindingFactor.bk);
-        const aBar = (outputs[i].a.redMul(challenge)).redAdd(blindingFactor.ba);
-        return [
-            utils.bnToHex(kBar.fromRed()),               // kBar
-            utils.bnToHex(aBar.fromRed()),               // aBar
-            utils.bnToHex(outputs[i].gamma.x.fromRed()), // gammaX
-            utils.bnToHex(outputs[i].gamma.y.fromRed()), // gammaY
-            utils.bnToHex(outputs[i].sigma.x.fromRed()), // sigmaX
-            utils.bnToHex(outputs[i].sigma.y.fromRed()), // sigmaY
-        ];
-    });
-
-    const noteInputs = proofInputs.map(p => [p[2], p[3], p[4], p[5]]);
-    const noteOutputs = proofOutputs.map(p => [p[2], p[3], p[4], p[5]]);
-
     return {
-        proofInputs,
-        proofOutputs,
-        noteInputs,
-        noteOutputs,
+        proofData,
         challenge: utils.bnToHex(challenge),
     };
 };

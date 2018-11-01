@@ -18,8 +18,6 @@ signatures.constructFundSignature = (
         [...note, dealSize],
     );
     const message = web3.utils.sha3(parameters);
-    console.log('private key = ', privateKey);
-    console.log('message = ', message);
     return {
         signature: ecdsa.signMessage(message, privateKey),
         message,

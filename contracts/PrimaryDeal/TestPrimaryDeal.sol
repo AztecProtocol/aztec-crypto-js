@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "./Storage.sol";
-import "../AZTEC/OptimizedAZTEC.sol";
+import "../AZTEC/AZTEC.sol";
 
 contract TestPrimaryDeal {
     address _aztecValidator;
@@ -99,8 +99,8 @@ contract TestPrimaryDeal {
             fundNotes,
             loanSize
         );
-
-        if (OptimizedAZTECInterface(_aztecValidator).validateCommit(fundNotes, challenge, loanSize, _aztecKey)) {
+        // TODO, fix
+        if (AZTECInterface(_aztecValidator).validateJoinSplit(fundNotes, fundNotes.length, challenge, _aztecKey)) {
             _initialized = true;
             for (uint j = 0; j < noteInfo.length; j++) {
                 address owner = address(fundSignatures[j][0]);
