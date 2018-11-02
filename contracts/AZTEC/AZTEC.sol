@@ -69,11 +69,13 @@ contract AZTEC {
             /// 0x1c0:0x200     = location of pairing accumulator \sigma_{acc}, where \sigma_{acc} = \prod_{i=m}^{n-1}\sigma_i^{cx_{i-m-1}}
             /// 0x220:0x260     = scratch data to store \gamma_i^{cx_{i-m-1}}
             /// 0x260:0x2a0     = location of pairing accumulator \gamma_{acc}, where \gamma_{acc} = \prod_{i=m}^{n-1}\gamma_i^{cx_{i-m-1}}
+            /// 0x2a0:0x2c0     = kn (memory used to reconstruct hash starts here)
+            /// 0x2c0:0x2e0     = m
             /// 0x2a0:???       = block of memory that contains (\gamma_i, \sigma_i)_{i=0}^{n-1} concatenated with (B_i)_{i=0}^{n-1}
             /// 0x200 is... a spare. Not that I missed a word when calculating the memory map, oh no...
             function validateJoinSplit() {
-                mstore(0x80, 6483851876951186340299698915131841524257417305942095255806178259056825531140) // h_x
-                mstore(0xa0, 5007075189070983654636859883510741442756570786515348039503723406517378975219) // h_y
+                mstore(0x80, 7673901602397024137095011250362199966051872585513276903826533215767972925880) // h_x
+                mstore(0xa0, 8489654445897228341090914135473290831551238522473825886865492707826370766375) // h_y
                 let notes := add(0x04, calldataload(0x04))
                 let m := calldataload(0x24)
                 let n := calldataload(notes)
@@ -83,13 +85,17 @@ contract AZTEC {
                 if gt(m, n) { mstore(0x00, 404) revert(0x00, 0x20) }
                 // recover k_{public} and calculate k_{public}
                 let kn := calldataload(sub(calldatasize, 0xc0))
+                // add kn and m to final hash table
+                mstore(0x2a0, kn)
+                mstore(0x2c0, m)
+
                 if iszero(eq(m, n)) {
                     // unless all notes are input notes, invert k_{public}
                     kn := sub(gen_order, kn)
                 }
                 kn := mulmod(kn, challenge, gen_order) // we actually want c*k_{public}
                 hashCommitments(notes, n)
-                let b := add(0x2a0, mul(n, 0x80))
+                let b := add(0x2e0, mul(n, 0x80))
 
                 // Iterate over every note and calculate the blinding factor B_i = \gamma_i^{kBar}h^{aBar}\sigma_i^{-c}.
                 // We use the AZTEC protocol pairing optimization to reduce the number of pairing comparisons to 1, which adds some minor alterations
@@ -328,9 +334,9 @@ contract AZTEC {
             function hashCommitments(notes, n) {
                 for { let i := 0 } lt(i, n) { i := add(i, 0x01) } {
                     let index := add(add(notes, mul(i, 0xc0)), 0x60)
-                    calldatacopy(add(0x2a0, mul(i, 0x80)), index, 0x80)
+                    calldatacopy(add(0x2e0, mul(i, 0x80)), index, 0x80)
                 }
-                mstore(0x00, keccak256(0x2a0, mul(n, 0x80)))
+                mstore(0x00, keccak256(0x2e0, mul(n, 0x80)))
             }
         }
     }

@@ -10,19 +10,6 @@ const web3 = new Web3();
 
 const { AZTEC_RINKEBY_DOMAIN_PARAMS, AZTEC_NOTE_SIGNATURE } = require('../params.js');
 
-const { EIP712Domain } = AZTEC_NOTE_SIGNATURE.types;
-console.log(EIP712Domain);
-const struct = eip712.encodeStruct('EIP712Domain', { EIP712Domain });
-console.log('struct = ', struct);
-
-const hash = web3.utils.soliditySha3(struct);
-console.log('hash = ', hash);
-
-const name = web3.utils.soliditySha3(AZTEC_RINKEBY_DOMAIN_PARAMS.name);
-const version = web3.utils.soliditySha3(AZTEC_RINKEBY_DOMAIN_PARAMS.version);
-console.log('name = ', name);
-console.log('version = ', version);
-
 describe.only('eip712.js tests', () => {
     let simple;
     let complex;

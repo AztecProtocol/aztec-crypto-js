@@ -57,7 +57,9 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
     });
 
     const finalHash = new Hash();
-    finalHash.data = [...rollingHash.data];
+    finalHash.appendBN(kPublicBn);
+    finalHash.appendBN(new BN(m));
+    finalHash.data = [...finalHash.data, ...rollingHash.data];
     rollingHash.keccak();
     let runningBk = new BN(0).toRed(groupReduction);
     const blindingFactors = notes.map((note, i) => {

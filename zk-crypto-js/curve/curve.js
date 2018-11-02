@@ -28,6 +28,14 @@ function Curve() {
         return recurse();
     }
 
+    curve.getFromHash = function (x) {
+        let y2 = x.redSqr().redMul(x).redIAdd(weierstrassBRed);
+        const y = y2.redSqrt();
+        if (!y.redSqr().eq(y2)) {
+            throw new Error('point is not on curve');
+        }
+        return { x, y };
+    }
     curve.h = curve.point(H_X, H_Y);
 
     return curve;
