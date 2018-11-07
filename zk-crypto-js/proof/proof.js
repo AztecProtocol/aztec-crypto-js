@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const utils = require('../utils/utils');
 const Hash = require('../utils/keccak');
 const { groupReduction } = require('../params');
-const curve = require('../curve/curve');
+const bn128 = require('../bn128/bn128');
 const setup = require('../setup/setup');
 
 const proof = {};
@@ -11,10 +11,10 @@ const proof = {};
 proof.generateCommitment = async (k) => {
     const kBn = new BN(k).toRed(groupReduction);
     const { x, y } = await setup.readSignature(k);
-    const mu = curve.point(x, y);
+    const mu = bn128.point(x, y);
     const a = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
     const gamma = mu.mul(a);
-    const sigma = gamma.mul(kBn).add(curve.h.mul(a));
+    const sigma = gamma.mul(kBn).add(bn128.h.mul(a));
     return {
         gamma,
         sigma,
@@ -26,10 +26,10 @@ proof.generateCommitment = async (k) => {
 proof.constructCommitment = async (k, a) => {
     const kBn = new BN(k).toRed(groupReduction);
     const { x, y } = await setup.readSignature(k);
-    const mu = curve.point(x, y);
+    const mu = bn128.point(x, y);
     const aBn = new BN(a.slice(2), 16).toRed(groupReduction);
     const gamma = mu.mul(aBn);
-    const sigma = gamma.mul(kBn).add(curve.h.mul(aBn));
+    const sigma = gamma.mul(kBn).add(bn128.h.mul(aBn));
     return {
         gamma,
         sigma,
@@ -95,10 +95,10 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
             const xba = ba.redMul(x);
             runningBk = runningBk.redSub(bk);
             rollingHash.keccak();
-            B = note.gamma.mul(xbk).add(curve.h.mul(xba));
+            B = note.gamma.mul(xbk).add(bn128.h.mul(xba));
         } else {
             runningBk = runningBk.redAdd(bk);
-            B = note.gamma.mul(bk).add(curve.h.mul(ba));
+            B = note.gamma.mul(bk).add(bn128.h.mul(ba));
         }
 
         finalHash.append(B);

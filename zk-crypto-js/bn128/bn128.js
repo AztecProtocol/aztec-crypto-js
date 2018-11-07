@@ -12,7 +12,7 @@ const {
     zeroRed,
 } = require('../params');
 
-function Curve() {
+function Bn128() {
     // eslint-disable-next-line new-cap
     const curve = new EC.curve.short({
         a: '0',
@@ -69,4 +69,4 @@ function Curve() {
     return curve;
 }
 
-module.exports = Curve();
+module.exports = Bn128();

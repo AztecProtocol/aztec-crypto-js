@@ -3,7 +3,7 @@ const Web3 = require('web3');
 const Elliptic = require('elliptic');
 const BN = require('bn.js');
 
-const bn128 = require('../curve/curve');
+const bn128 = require('../bn128/bn128');
 const ecdsa = require('../secp256k1/ecdsa');
 const proof = require('../proof/proof');
 const { toBytes32 } = require('../utils/utils');
