@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Web3 = require('web3');
+const web3Utils = require('web3-utils');
 const Elliptic = require('elliptic');
 const BN = require('bn.js');
 
@@ -10,8 +10,6 @@ const { toBytes32 } = require('../utils/utils');
 
 // eslint-disable-next-line
 const secp256k1 = new Elliptic.ec('secp256k1');
-
-const web3 = new Web3();
 
 function createWallet(path) {
     const scanKey = ecdsa.generateKeyPair();
@@ -50,7 +48,7 @@ function createWallet(path) {
 function createNoteHash(gamma, sigma) {
     const gammaString = `${toBytes32(gamma.x.fromRed().toString(16))}${toBytes32(gamma.y.fromRed().toString(16))}`;
     const sigmaString = `${toBytes32(sigma.x.fromRed().toString(16))}${toBytes32(sigma.y.fromRed().toString(16))}`;
-    return web3.utils.sha3(`0x${gammaString}${sigmaString}`, 'hex');
+    return web3Utils.sha3(`0x${gammaString}${sigmaString}`, 'hex');
 }
 
 const Wallet = function Wallet(path, exists = false) {
@@ -68,7 +66,7 @@ Wallet.prototype.generateNote = async function generateNote(recipient, value) {
         .point(recipient.scanKey.publicKey.x, recipient.scanKey.publicKey.y)
         .mul(Buffer.from(ephemeralKey.privateKey.slice(2), 'hex'));
 
-    const sharedSecretScalar = web3.utils.sha3(
+    const sharedSecretScalar = web3Utils.sha3(
         `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
         'hex'
     );
@@ -120,8 +118,7 @@ Wallet.prototype.addNoteAccount = function addNoteAccount(ephemeralKey, gamma, s
     const sharedSecret = secp256k1.curve
         .point(ephemeralKey.x, ephemeralKey.y)
         .mul(Buffer.from(this.wallet.scanKey.privateKey.slice(2), 'hex'));
-    const noteSecret = web3
-        .utils
+    const noteSecret = web3Utils
         .sha3(
             `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
             'hex'
@@ -149,8 +146,7 @@ Wallet.prototype.validateNote = function validateNote(note, recipient /* , value
     const sharedSecret = secp256k1.curve
         .point(note.ephemeralKey.x, note.ephemeralKey.y)
         .mul(Buffer.from(recipient.scanKey.privateKey.slice(2), 'hex'));
-    const noteSecret = web3
-        .utils
+    const noteSecret = web3Utils
         .sha3(
             `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
             'hex'
@@ -217,8 +213,7 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
         const sharedSecret = secp256k1.curve
             .point(ephemeralKey.x, ephemeralKey.y)
             .mul(Buffer.from(this.wallet.scanKey.privateKey.slice(2), 'hex'));
-        const noteSecret = web3
-            .utils
+        const noteSecret = web3Utils
             .sha3(
                 `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
                 'hex'
