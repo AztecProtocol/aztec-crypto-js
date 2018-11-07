@@ -1,43 +1,58 @@
 const BN = require('bn.js');
-const EC = require('elliptic');
 const crypto = require('crypto');
-const Web3 = require('web3');
 const utils = require('../utils/utils');
 const Hash = require('../utils/keccak');
-const { FIELD_MODULUS, GROUP_MODULUS, groupReduction, fieldReduction } = require('../params');
+const { groupReduction } = require('../params');
 const curve = require('../curve/curve');
 const setup = require('../setup/setup');
+
 const proof = {};
-
-const web3 = new Web3();
-
 
 proof.generateCommitment = async (k) => {
     const kBn = new BN(k).toRed(groupReduction);
     const { x, y } = await setup.readSignature(k);
     const mu = curve.point(x, y);
-    let a = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
+    const a = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
     const gamma = mu.mul(a);
     const sigma = gamma.mul(kBn).add(curve.h.mul(a));
-    return { gamma, sigma, a, k: kBn };
+    return {
+        gamma,
+        sigma,
+        a,
+        k: kBn,
+    };
 };
 
+proof.constructCommitment = async (k, a) => {
+    const kBn = new BN(k).toRed(groupReduction);
+    const { x, y } = await setup.readSignature(k);
+    const mu = curve.point(x, y);
+    const aBn = new BN(a.slice(2), 16).toRed(groupReduction);
+    const gamma = mu.mul(aBn);
+    const sigma = gamma.mul(kBn).add(curve.h.mul(aBn));
+    return {
+        gamma,
+        sigma,
+        a: aBn,
+        k: kBn,
+    };
+};
 
 proof.constructCommitmentSet = async ({ kIn, kOut }) => {
     const inputs = await Promise.all(kIn.map(async (k) => {
-        return await proof.generateCommitment(k);
+        return proof.generateCommitment(k);
     }));
     const outputs = await Promise.all(kOut.map(async (k) => {
-        return await proof.generateCommitment(k);
+        return proof.generateCommitment(k);
     }));
     return { inputs, outputs };
 };
 proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
     const inputs = await Promise.all(kIn.map(async (k) => {
-        return await proof.generateCommitment(k);
+        return proof.generateCommitment(k);
     }));
     const outputs = await Promise.all(kOut.map(async (k) => {
-        return await proof.generateCommitment(k);
+        return proof.generateCommitment(k);
     }));
     const commitments = [...inputs, ...outputs];
     return { commitments, m: inputs.length };
@@ -64,11 +79,15 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
     let runningBk = new BN(0).toRed(groupReduction);
     const blindingFactors = notes.map((note, i) => {
         let bk = utils.randomGroupScalar();
-        let ba = utils.randomGroupScalar();
+        const ba = utils.randomGroupScalar();
         let B;
         let x = new BN(0).toRed(groupReduction);
         if (i === (notes.length - 1)) {
-            bk = runningBk;
+            if (i + 1 === m) {
+                bk = new BN(0).toRed(groupReduction).redSub(runningBk);
+            } else {
+                bk = runningBk;
+            }
         }
         if ((i + 1) > m) {
             x = rollingHash.toGroupScalar();
@@ -83,7 +102,12 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
         }
 
         finalHash.append(B);
-        return { bk, ba, B, x };
+        return {
+            bk,
+            ba,
+            B,
+            x,
+        };
     });
     finalHash.keccak();
     const challenge = finalHash.toGroupScalar();
@@ -94,12 +118,12 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
             kBar = kPublicBn;
         }
         return [
-            utils.bnToHex(kBar),               // kBar
-            utils.bnToHex(aBar),               // aBar
-            utils.bnToHex(notes[i].gamma.x.fromRed()), // gammaX
-            utils.bnToHex(notes[i].gamma.y.fromRed()), // gammaY
-            utils.bnToHex(notes[i].sigma.x.fromRed()), // sigmaX
-            utils.bnToHex(notes[i].sigma.y.fromRed()), // sigmaY
+            utils.bnToHex(kBar),
+            utils.bnToHex(aBar),
+            utils.bnToHex(notes[i].gamma.x.fromRed()),
+            utils.bnToHex(notes[i].gamma.y.fromRed()),
+            utils.bnToHex(notes[i].sigma.x.fromRed()),
+            utils.bnToHex(notes[i].sigma.y.fromRed()),
         ];
     });
     return {

@@ -10,7 +10,6 @@ contract AZTECInterface {
 /// @notice Don't include this as an internal library. This contract uses a static memory table to cache elliptic curve primitives and hashes.
 /// Calling this internally from another function will lead to memory mutation and undefined behaviour.
 /// The intended use case is to call this externally via `staticcall`. External calls to OptimizedAZTEC can be treated as pure functions as this contract contains no storage and makes no external calls (other than to precompiles)
-
 contract AZTEC {
     /// @dev AZTEC will take any transaction sent to it and attempt to validate a zero knowledge proof.
     /// If the proof is not valid, the transaction will throw.
@@ -88,11 +87,11 @@ contract AZTEC {
                 // add kn and m to final hash table
                 mstore(0x2a0, kn)
                 mstore(0x2c0, m)
-
-                if iszero(eq(m, n)) {
-                    // unless all notes are input notes, invert k_{public}
-                    kn := sub(gen_order, kn)
-                }
+                kn := sub(gen_order, kn)
+                // if iszero(eq(m, n)) {
+                //     // unless all notes are input notes, invert k_{public}
+                //     kn := sub(gen_order, kn)
+                // }
                 kn := mulmod(kn, challenge, gen_order) // we actually want c*k_{public}
                 hashCommitments(notes, n)
                 let b := add(0x2e0, mul(n, 0x80))
@@ -132,6 +131,10 @@ contract AZTEC {
                     switch eq(add(i, 0x01), n)
                     case 1 {
                         k := kn
+                        // if all notes are input notes, invert k
+                        if eq(m, n) {
+                            k := sub(gen_order, k)
+                        }
                     }
                     case 0 { k := calldataload(noteIndex) }
 

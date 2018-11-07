@@ -14,8 +14,17 @@
                 "-u", "tdd",
                 "--timeout", "999999",
                 "--colors", "--recursive",
-                "zk-crypto-js/*"
+                "zk-crypto-js/wallet"
             ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Deployer",
+            "program": "${workspaceFolder}/zk-crypto-js/web3Utils/deployer.js",
+            "useWSL": true,
+            "args": [],
             "internalConsoleOptions": "openOnSessionStart"
         }
     ]
