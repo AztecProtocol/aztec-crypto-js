@@ -5,7 +5,6 @@ const Web3 = require('web3');
 const web3 = new Web3();
 const rinkebyPrivateKey = Buffer.from('a5c9dede5aba72f88f6abf01ea768d78ad7c3bcfbf29d60bd46a829690bf7791', 'hex');
 const rinkebyWallet = Wallet.fromPrivateKey(rinkebyPrivateKey);
-console.log('rinkeby wallet = ', rinkebyWallet);
 const rinkebyProvider = new WalletProvider(rinkebyWallet, 'https://rinkeby.infura.io/FPuvsFyuZmA7p9xKUc9Q');
 
 module.exports = {

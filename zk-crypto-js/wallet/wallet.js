@@ -1,15 +1,13 @@
 const fs = require('fs');
 const web3Utils = require('web3-utils');
-const Elliptic = require('elliptic');
 const BN = require('bn.js');
 
 const bn128 = require('../bn128/bn128');
 const ecdsa = require('../secp256k1/ecdsa');
+const secp256k1 = require('../secp256k1/secp256k1');
 const proof = require('../proof/proof');
 const { toBytes32 } = require('../utils/utils');
 
-// eslint-disable-next-line
-const secp256k1 = new Elliptic.ec('secp256k1');
 
 function createWallet(path) {
     const scanKey = ecdsa.generateKeyPair();

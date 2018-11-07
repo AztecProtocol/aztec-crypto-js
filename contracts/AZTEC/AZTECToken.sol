@@ -48,7 +48,7 @@ contract AZTECToken is ERC20Mintable {
     /// };
     /// where sender = msg.sender. This is included in the signature to prevent a signature (and proof) being used maliciously in another transaction
     /// by signing against the proof challenge, the signer is signing an implicit acceptance of the transaction outputs
-    function validateInputNote(bytes32[6] note, bytes32[3] signature, uint challenge, bytes32 domainHashTemp) public /* returns (bytes32[3] compressedNote) */ {
+    function validateInputNote(bytes32[6] note, bytes32[3] signature, uint challenge, bytes32 domainHashTemp) internal {
         bytes32 noteHash;
         bytes32 signatureMessage;
         assembly {
@@ -76,12 +76,9 @@ contract AZTECToken is ERC20Mintable {
         address owner = ecrecover(signatureMessage, uint8(signature[0]), signature[1], signature[2]);
         require(noteRegistry[noteHash] == owner, "expected input note to exist in registry");
         noteRegistry[noteHash] = 0;
-        // compressedNote[0] = bytes32(uint(note[2]) | (uint(note[3]) & 1) * 0x8000000000000000000000000000000000000000000000000000000000000000);
-        // compressedNote[1] = bytes32(uint(note[4]) | (uint(note[5]) & 1) * 0x8000000000000000000000000000000000000000000000000000000000000000);
-        // compressedNote[2] = bytes32(owner);
     }
 
-    function validateOutputNote(bytes32[6] note, address owner) public /* returns (bytes32[3] compressedNote) */ {
+    function validateOutputNote(bytes32[6] note, address owner) internal {
         bytes32 noteHash;
         assembly {
             let m := mload(0x40)
@@ -94,9 +91,6 @@ contract AZTECToken is ERC20Mintable {
         }
         require(noteRegistry[noteHash] == 0, "expected output note to not exist in registry");
         noteRegistry[noteHash] = owner;
-        // compressedNote[0] = bytes32(uint(note[2]) | (uint(note[3]) & 1) * 0x8000000000000000000000000000000000000000000000000000000000000000);
-        // compressedNote[1] = bytes32(uint(note[4]) | (uint(note[5]) & 1) * 0x8000000000000000000000000000000000000000000000000000000000000000);
-        // compressedNote[2] = bytes32(owner);
     }
 
     /// @dev validate a confidential transaction. This transaction takes 'm' input notes and 'n - m' output notes (where n = notes.length), along with a public
@@ -124,19 +118,16 @@ contract AZTECToken is ERC20Mintable {
             require(this.transferFrom(msg.sender, this, GROUP_MODULUS - kPublic), "token transfer from user failed!");
         }
 
-        // bytes32[3][] memory compressedInputNotes = new bytes32[3][](inputSignatures.length);
-        // bytes32[3][] memory compressedOutputNotes = new bytes32[3][](outputOwners.length);
-
         for (uint i = 0; i < m; i++) {
             // call validateInputNote to check that the note exists and that we have a matching signature over the note.
             // pass domainHash in as a function parameter to prevent multiple sloads
             // this will remove the input notes from noteRegistry
-            /* compressedInputNotes[i] = */ validateInputNote(notes[i], inputSignatures[i], challenge, domainHash);
+            validateInputNote(notes[i], inputSignatures[i], challenge, domainHash);
         }
         for (i = 0; i < notes.length - m; i++) {
             // validate that output notes, attached to the specified owners do not exist in noteRegistry.
             // if all checks pass, add notes into note registry
-            /* compressedOutputNotes[i] = */ validateOutputNote(notes[i + m], outputOwners[i]);
+            validateOutputNote(notes[i + m], outputOwners[i]);
         }
         if (kPublic < GROUP_MODULUS_BOUNDARY) {
             // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
@@ -144,7 +135,7 @@ contract AZTECToken is ERC20Mintable {
             require(this.transfer(msg.sender, kPublic), "token transfer to user failed!");
         }
 
-        // TODO. Figure out what to do here. Truffle is throwing decoder errors when I use bytes32 arrays...
+        // emit an event for logging purposes.
         emit ConfidentialTransaction(kPublic, abi.encode(metadata));
     }
 }
