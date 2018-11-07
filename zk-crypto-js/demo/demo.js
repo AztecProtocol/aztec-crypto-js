@@ -10,7 +10,7 @@ const sign = require('../utils/sign');
 const AZTEC = require('../../build/contracts/AZTEC.json');
 const AZTECToken = require('../../build/contracts/AZTECToken.json');
 const AZTECInterface = require('../../build/contracts/AZTECInterface.json');
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2Formatted, GROUP_MODULUS } = require('../params');
 const AZTECWallet = require('../wallet/wallet');
 
 // eslint-disable-next-line new-cap
