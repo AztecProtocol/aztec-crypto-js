@@ -16,9 +16,9 @@ ecdsa.keyPairFromPrivate = function keyPairFromPrivate(privateKey) {
     const publicHash = web3Utils.sha3(publicKey);
     const address = web3Utils.toChecksumAddress(`0x${publicHash.slice(-40)}`);
     return {
-        address,
         privateKey,
-        publicKey,
+        publicKey: ecKey.getPublic(),
+        address,
     };
 };
 

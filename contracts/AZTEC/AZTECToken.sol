@@ -13,23 +13,22 @@ contract AZTECToken is ERC20Mintable {
     mapping(bytes32 => address) public noteRegistry;
     bytes32[4] setupPubKey;
     bytes32 domainHash;
-    AZTECInterface verifier;
 
     event Created(bytes32 domainHash, address contractAddress);
     event ConfidentialTransaction(uint, bytes);
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
-    constructor(bytes32[4] _setupPubKey, address _verifier) public {
+    constructor(bytes32[4] _setupPubKey) public {
         setupPubKey = _setupPubKey;
-        verifier = AZTECInterface(_verifier);
+
         // calculate the EIP712 domain hash, for hashing structured data
         bytes32 _domainHash;
         assembly {
             let m := mload(0x40)
             mstore(m, 0x8d4b25bfecb769291b71726cd5ec8a497664cc7292c02b1868a0534306741fd9)
-            mstore(add(m, 0x20), 0xc3fd9f27ca734f9ed0520121549fd2ed350619d246773431f7247f60bd774ee2) // name = "AZTEC_RINKEBY_DOMAIN"
+            mstore(add(m, 0x20), 0x87a23625953c9fb02b3570c86f75403039bbe5de82b48ca671c10157d91a991a) // name = "AZTEC_RINKEBY_DOMAIN"
             mstore(add(m, 0x40), 0x25130290f410620ec94e7cf11f1cdab5dea284e1039a83fa7b87f727031ff5f4) // version = "0.1.0"
-            mstore(add(m, 0x60), 4) // chain id
+            mstore(add(m, 0x60), 1) // chain id
             mstore(add(m, 0x80), 0x210db872dec2e06c375dd40a5a354307bb4ba52ba65bd84594554580ae6f0639)
             mstore(add(m, 0xa0), address) // verifying contract
             _domainHash := keccak256(m, 0xc0)
@@ -105,11 +104,11 @@ contract AZTECToken is ERC20Mintable {
     /// If a satisfying zero-knowledge proof is provided, then we know with confidence that the values encrypted by the output notes sum to 10,000,
     /// but we have no idea how those tokens are distributed across the notes.
     /// Each output note has a value bounded by the AZTEC commitment scheme's range proof.
-    function confidentialTransaction(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes32[2][] metadata) external {
+    function confidentialTransaction(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes metadata) external {
         require(inputSignatures.length == m, "input signature length invalid");
         require(m + outputOwners.length == notes.length, "array length mismatch");
 
-        require(AZTECInterface(verifier).validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
+        require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
         uint kPublic = uint(notes[notes.length - 1][0]);
 
         if (kPublic > GROUP_MODULUS_BOUNDARY) {
@@ -136,6 +135,6 @@ contract AZTECToken is ERC20Mintable {
         }
 
         // emit an event for logging purposes.
-        emit ConfidentialTransaction(kPublic, abi.encode(metadata));
+        emit ConfidentialTransaction(kPublic, metadata);
     }
 }

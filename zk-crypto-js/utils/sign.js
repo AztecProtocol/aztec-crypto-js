@@ -1,6 +1,6 @@
 const ecdsa = require('../secp256k1/ecdsa');
 const eip712 = require('./eip712');
-const { AZTEC_NOTE_SIGNATURE, AZTEC_RINKEBY_DOMAIN_PARAMS } = require('../params');
+const { AZTEC_NOTE_SIGNATURE, AZTEC_MAINNET_DOMAIN_PARAMS } = require('../params');
 
 const sign = {};
 
@@ -8,7 +8,7 @@ sign.signNote = function signNote(note, challenge, senderAddress, verifyingContr
     const messageBase = {
         ...AZTEC_NOTE_SIGNATURE,
         domain: {
-            ...AZTEC_RINKEBY_DOMAIN_PARAMS,
+            ...AZTEC_MAINNET_DOMAIN_PARAMS,
             verifyingContract,
         },
         message: {
@@ -26,7 +26,7 @@ sign.recoverAddress = function recoverAddress(note, challenge, senderAddress, ve
     const messageBase = {
         ...AZTEC_NOTE_SIGNATURE,
         domain: {
-            ...AZTEC_RINKEBY_DOMAIN_PARAMS,
+            ...AZTEC_MAINNET_DOMAIN_PARAMS,
             verifyingContract,
         },
         message: {

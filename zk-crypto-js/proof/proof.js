@@ -58,7 +58,7 @@ proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
     return { commitments, m: inputs.length };
 };
 
-proof.constructJoinSplit = (notes, m, kPublic = 0) => {
+proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
     const rollingHash = new Hash();
     let kPublicBn;
     if (BN.isBN(kPublic)) {
@@ -72,6 +72,7 @@ proof.constructJoinSplit = (notes, m, kPublic = 0) => {
     });
 
     const finalHash = new Hash();
+    finalHash.appendBN(new BN(sender.slice(2), 16));
     finalHash.appendBN(kPublicBn);
     finalHash.appendBN(new BN(m));
     finalHash.data = [...finalHash.data, ...rollingHash.data];

@@ -9,9 +9,14 @@ const proof = require('../proof/proof');
 const { toBytes32 } = require('../utils/utils');
 
 
-function createWallet(path) {
+function createWallet(path, privateKey = null) {
+    let issueKey;
+    if (privateKey) {
+        issueKey = ecdsa.keyPairFromPrivate(privateKey);
+    } else {
+        issueKey = ecdsa.generateKeyPair();
+    }
     const scanKey = ecdsa.generateKeyPair();
-    const issueKey = ecdsa.generateKeyPair();
     const wallet = {
         path,
         scanKey: {
@@ -30,13 +35,14 @@ function createWallet(path) {
             },
             privateKey: issueKey.privateKey,
         },
-        network: {
-            rinkeby: {
-
-            },
-            development: {
-
-            },
+        rinkeby: {
+            nonce: 0,
+        },
+        development: {
+            nonce: 0,
+        },
+        mainnet: {
+            nonce: 0,
         },
     };
     fs.writeFileSync(path, JSON.stringify(wallet));
@@ -49,12 +55,39 @@ function createNoteHash(gamma, sigma) {
     return web3Utils.sha3(`0x${gammaString}${sigmaString}`, 'hex');
 }
 
-const Wallet = function Wallet(path, exists = false) {
+const Wallet = function Wallet(path, privateKey = null) {
+    const exists = fs.existsSync(path);
     if (exists) {
+        console.log('loading wallet from path');
         this.wallet = JSON.parse(fs.readFileSync(`${path}`));
     } else {
-        this.wallet = createWallet(path);
+        this.wallet = createWallet(path, privateKey);
     }
+};
+
+Wallet.prototype.setNonce = async function setNonce(network, nonce) {
+    const networkWallet = this.wallet[network] || {};
+    this.wallet = {
+        ...this.wallet,
+        [network]: {
+            ...networkWallet,
+            nonce,
+        },
+    };
+    fs.writeFileSync(this.wallet.path, JSON.stringify(this.wallet));
+};
+
+Wallet.prototype.increaseNonce = function increaseNonce(network) {
+    const networkWallet = this.wallet[network] || {};
+    const oldNonce = networkWallet.nonce || 0;
+    this.wallet = {
+        ...this.wallet,
+        [network]: {
+            ...networkWallet,
+            nonce: oldNonce + 1,
+        },
+    };
+    fs.writeFileSync(this.wallet.path, JSON.stringify(this.wallet));
 };
 
 Wallet.prototype.generateNote = async function generateNote(recipient, value) {
@@ -72,10 +105,8 @@ Wallet.prototype.generateNote = async function generateNote(recipient, value) {
     const issueKey = secp256k1.curve.point(recipient.issueKey.publicKey.x, recipient.issueKey.publicKey.y);
     const ownerPublicKey = secp256k1.g.mul(Buffer.from(sharedSecretScalar.slice(2), 'hex')).add(issueKey);
 
-    const metadata = [
-        `0x${toBytes32(ephemeralKey.publicKey.x.fromRed().toString(16))}`,
-        `0x${toBytes32(ephemeralKey.publicKey.y.isOdd() ? '1' : '0')}`,
-    ];
+    const metadata = `0x${toBytes32(ephemeralKey.publicKey.x.fromRed().toString(16))}${ephemeralKey.publicKey.y.isOdd() ? '1' : '0'}`;
+
     const {
         gamma,
         sigma,
@@ -112,34 +143,6 @@ Wallet.prototype.getNotePrivateKey = function getNotePrivateKey(sharedSecretScal
     return privateKeyHex;
 };
 
-Wallet.prototype.addNoteAccount = function addNoteAccount(ephemeralKey, gamma, sigma, k) {
-    const sharedSecret = secp256k1.curve
-        .point(ephemeralKey.x, ephemeralKey.y)
-        .mul(Buffer.from(this.wallet.scanKey.privateKey.slice(2), 'hex'));
-    const noteSecret = web3Utils
-        .sha3(
-            `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
-            'hex'
-        );
-    const secretBn = new BN(noteSecret.slice(2), 'hex');
-    const issueKeyBn = new BN(this.wallet.issueKey.privateKey.slice(2), 'hex');
-    const privateKeyHex = `0x${toBytes32(issueKeyBn.add(secretBn).umod(secp256k1.n).toString(16))}`;
-    const account = ecdsa.keyPairFromPrivate(privateKeyHex);
-    const note = {
-        hash: createNoteHash(gamma, sigma),
-        gamma,
-        sigma,
-        k,
-        ephemeralKey,
-        ...account,
-    };
-    this.wallet = {
-        ...this.wallet,
-        [note.hash]: note,
-    };
-    return account;
-};
-
 Wallet.prototype.validateNote = function validateNote(note, recipient /* , value */) {
     const sharedSecret = secp256k1.curve
         .point(note.ephemeralKey.x, note.ephemeralKey.y)
@@ -152,31 +155,36 @@ Wallet.prototype.validateNote = function validateNote(note, recipient /* , value
     return (noteSecret === note.privateKey);
 };
 
-Wallet.prototype.addNote = function addNote(wallet, note, chain = 'development') {
-    const newWallet = {
-        ...wallet,
-        chain: {
-            ...wallet[chain],
-            [note.hash]: note,
-        },
-    };
-    fs.writeFileSync(wallet.path, JSON.stringify(newWallet));
-    return newWallet;
+Wallet.prototype.checkTokenTransfer = function checkTokenTransfer(from, to, value, contractAddress, network) {
+    let dirty = false;
+    let change = 0;
+    if (this.wallet.issueKey.address === from) {
+        dirty = true;
+        change = -Number(value);
+    }
+    if (this.wallet.issueKey.address === to) {
+        dirty = true;
+        change = Number(value);
+    }
+    if (dirty) {
+        const networkWallet = this.wallet[network] || {};
+        const contractWallet = networkWallet[contractAddress] || {};
+        const oldTokens = contractWallet.tokens || 0;
+        this.wallet = {
+            ...this.wallet,
+            [network]: {
+                ...networkWallet,
+                [contractAddress]: {
+                    ...contractWallet,
+                    tokens: oldTokens + change,
+                },
+            },
+        };
+        fs.writeFileSync(this.wallet.path, JSON.stringify(this.wallet));
+    }
 };
 
-Wallet.prototype.addTokens = function addTokens(wallet, tokens, chain = 'development') {
-    const newWallet = {
-        ...wallet,
-        chain: {
-            ...wallet[chain],
-            tokens,
-        },
-    };
-    fs.writeFileSync(wallet.path, JSON.stringify(newWallet));
-    return newWallet;
-};
-
-Wallet.prototype.checkForDestroyedNotes = function checkForDestroyedNotes(notes) {
+Wallet.prototype.checkForDestroyedNotes = function checkForDestroyedNotes(notes, contractAddress, network) {
     const destroyedNotes = notes.filter((note) => {
         const gamma = bn128.point(
             new BN(note[2].slice(2), 16),
@@ -187,14 +195,22 @@ Wallet.prototype.checkForDestroyedNotes = function checkForDestroyedNotes(notes)
             new BN(note[5].slice(2), 16)
         );
         const hash = createNoteHash(gamma, sigma);
-        const walletNote = this.wallet[hash];
+        const networkWallet = this.wallet[network] || {};
+        const contractWallet = networkWallet[contractAddress] || {};
+
+        const walletNote = contractWallet[hash];
 
         const found = (walletNote && gamma.eq(walletNote.gamma) && sigma.eq(walletNote.sigma));
         if (found) {
-            console.log('found note in wallet, removing');
             this.wallet = {
                 ...this.wallet,
-                [hash]: {},
+                [network]: {
+                    ...networkWallet,
+                    [contractAddress]: {
+                        ...contractWallet,
+                        [hash]: {},
+                    },
+                },
             };
         }
         return found;
@@ -205,7 +221,7 @@ Wallet.prototype.checkForDestroyedNotes = function checkForDestroyedNotes(notes)
     return destroyedNotes;
 };
 
-Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemeralKeys, noteOwners) {
+Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemeralKeys, noteOwners, contractAddress, network) {
     const walletNotes = notes.filter((note, index) => {
         const ephemeralKey = ephemeralKeys[index];
         const sharedSecret = secp256k1.curve
@@ -221,8 +237,6 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
         const issueKey = secp256k1.curve.point(this.wallet.issueKey.publicKey.x, this.wallet.issueKey.publicKey.y);
         const testAccount = ecdsa.accountFromPublicKey(issueKey.add(stealthPoint));
         if (testAccount === noteOwners[index]) {
-            // what now?
-            // recover note secret
             const gamma = bn128.point(
                 new BN(note[2].slice(2), 16),
                 new BN(note[3].slice(2), 16)
@@ -247,11 +261,18 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
                 ephemeralKey,
                 ...account,
             };
+            const networkWallet = this.wallet[network] || {};
+            const contractWallet = networkWallet[contractAddress] || {};
             this.wallet = {
                 ...this.wallet,
-                [newNote.hash]: newNote,
+                [network]: {
+                    ...networkWallet,
+                    [contractAddress]: {
+                        ...contractWallet,
+                        [newNote.hash]: newNote,
+                    },
+                },
             };
-            console.log('FOUND A VALUE FOR K: ', k);
         }
         return (testAccount === noteOwners[index]);
     });
@@ -260,4 +281,5 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
     }
     return walletNotes;
 };
+
 module.exports = Wallet;

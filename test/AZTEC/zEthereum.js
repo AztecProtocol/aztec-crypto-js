@@ -4,7 +4,7 @@ const BN = require('bn.js');
 
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
-const ZEthereum = artifacts.require('./contracts/AZTEC/ZEthereum');
+const ZEthereumAAA = artifacts.require('./contracts/AZTEC/ZEthereum');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
 const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
@@ -22,7 +22,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 const zEthereumToEthereum = new BN('10000000000000000', 10);
 
 AZTEC.abi = AZTECInterface.abi;
-contract('ZEthereum Tests', (accounts) => {
+contract.only('ZEthereum Tests', (accounts) => {
     let aztec;
     let zEthereum;
     let aztecAccounts = [];
@@ -30,7 +30,16 @@ contract('ZEthereum Tests', (accounts) => {
     let phaseTwoCommitments;
     before(async () => {
         aztec = await AZTEC.new(accounts[0]);
-        zEthereum = await ZEthereum.new(t2Formatted, aztec.address, {
+        console.log(ZEthereumAAA.bytecode);
+        console.log('###########');
+        ZEthereumAAA.link('AZTECInterface', aztec.address);
+        ZEthereumAAA.link('AZTECInterface', aztec.address);
+        await ZEthereumAAA.link('AZTECInterface', aztec.address);
+
+        console.log(ZEthereumAAA.bytecode);
+
+        console.log('aztec address = ', aztec.address);
+        zEthereum = await ZEthereumAAA.new(t2Formatted, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -46,11 +55,11 @@ contract('ZEthereum Tests', (accounts) => {
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [], kOut: [90, 110, 100, 130, 570] });
         initialCommitments = commitments;
         const kPublic = GROUP_MODULUS.sub(new BN(1000));
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, kPublic);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, [], outputOwners, [], {
+        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x', {
             from: accounts[0],
-            gas: 1400000,
+            gas: 5400000,
             value: new BN(1000).mul(zEthereumToEthereum),
         });
         const { gasPrice } = await web3.eth.getTransaction(result.tx);
@@ -69,14 +78,14 @@ contract('ZEthereum Tests', (accounts) => {
         phaseTwoCommitments = outputCommitments;
         const commitments = [initialCommitments[2], initialCommitments[3], ...outputCommitments];
         const m = 2;
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, 0);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
         const signatures = [
             sign.signNote(proofData[0], challenge, accounts[0], zEthereum.address, aztecAccounts[2].privateKey),
             sign.signNote(proofData[1], challenge, accounts[0], zEthereum.address, aztecAccounts[3].privateKey),
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, []);
+        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, '0x');
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 
@@ -86,13 +95,13 @@ contract('ZEthereum Tests', (accounts) => {
         const { commitments: outputCommitments } = await aztecProof.constructModifiedCommitmentSet({ kIn: [], kOut: [1] });
         const commitments = [initialCommitments[0], phaseTwoCommitments[0], ...outputCommitments];
         const m = 2;
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, 119);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[3], 119);
         const signatures = [
             sign.signNote(proofData[0], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
             sign.signNote(proofData[1], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
         ].map(r => r.signature);
         const outputOwners = [aztecAccounts[0].address];
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, [], {
+        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, '0x', {
             from: accounts[3],
             gas: 5000000,
         });

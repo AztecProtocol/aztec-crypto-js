@@ -5,6 +5,7 @@ import "./SafeMath.sol";
 /**
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
+* Sourced from https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
  */
 interface IERC20 {
   function totalSupply() external view returns (uint256);

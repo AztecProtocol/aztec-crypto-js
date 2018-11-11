@@ -16,7 +16,7 @@ contract('AZTEC', (accounts) => {
 
     it('succesfully validates an AZTEC JOIN-SPLIT zero-knowledge proof', async () => {
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [11, 22], kOut: [5, 28] });
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, 0);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
         const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
@@ -33,7 +33,7 @@ contract('AZTEC', (accounts) => {
     it('validates proof where kPublic > 0 and kPublic < n/2', async () => {
         const kPublic = 101;
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [113, 2212], kOut: [2222, 2] });
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, kPublic);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
             from: accounts[0],
             gas: 4000000,
@@ -51,7 +51,7 @@ contract('AZTEC', (accounts) => {
         let kPublic = 523;
         kPublic = GROUP_MODULUS.sub(new BN(kPublic));
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [2513, 800, 100], kOut: [3936] });
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, kPublic);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
             from: accounts[0],
             gas: 4000000,

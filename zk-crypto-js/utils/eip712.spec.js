@@ -7,7 +7,7 @@ const eip712 = require('./eip712');
 
 const web3 = new Web3();
 
-const { AZTEC_RINKEBY_DOMAIN_PARAMS } = require('../params.js');
+const { AZTEC_MAINNET_DOMAIN_PARAMS } = require('../params.js');
 
 describe.only('eip712.js tests', () => {
     let simple;
@@ -100,7 +100,7 @@ describe.only('eip712.js tests', () => {
                 second: 104344,
                 third: '0x1234567890abcdef10121234567890abcdef1012',
             },
-            domain: AZTEC_RINKEBY_DOMAIN_PARAMS,
+            domain: AZTEC_MAINNET_DOMAIN_PARAMS,
         };
     });
 
