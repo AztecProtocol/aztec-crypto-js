@@ -49,7 +49,6 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
             kIn: [],
             kOut: [9000, 11000, 10000, 13000, 57000],
         });
-
         initialCommitments = commitments;
         const kPublic = GROUP_MODULUS.sub(new BN(100000));
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);

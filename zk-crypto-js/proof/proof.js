@@ -47,6 +47,7 @@ proof.constructCommitmentSet = async ({ kIn, kOut }) => {
     }));
     return { inputs, outputs };
 };
+
 proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
     const inputs = await Promise.all(kIn.map(async (k) => {
         return proof.generateCommitment(k);

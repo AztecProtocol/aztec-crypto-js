@@ -21,7 +21,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../params');
 function constructConstructorCall(abi, bytecode) {
     const constructorCall = async (...args) => {
         const { sender, privateKey, nonce } = args.slice(-1)[0];
-        const params = args.slice(0, -1);    
+        const params = args.slice(0, -1);
         const deployBase = new this.web3.eth.Contract(abi).deploy({ data: bytecode, arguments: params });
         const transaction = new Tx({
             nonce: this.web3.utils.toHex(nonce),
@@ -129,22 +129,41 @@ Deployer.prototype.createAZTECContracts = async function createAZTECContracts(az
         contract: new this.web3.eth.Contract(AZTECInterface.abi, aztecResult.contractAddress),
     };
     console.log('creating erc20 token');
-    const erc20Result = await this.erc20.constructor({
-        sender: aztecWallet.wallet.issueKey.address,
-        privateKey: aztecWallet.wallet.issueKey.privateKey,
-        nonce: aztecWallet.wallet[this.network].nonce,
-    });
-    aztecWallet.increaseNonce(this.network);
-    const erc20Contract = new this.web3.eth.Contract(ERC20Mintable.abi, erc20Result.contractAddress);
-    const erc20Methods = Object
-        .entries(erc20Contract.methods)
-        .reduce((acc, [key, method]) => ({ ...acc, [key]: methodCall(method, erc20Result.contractAddress) }), {});
-    this.erc20 = {
-        ...this.erc20,
-        address: erc20Result.contractAddress,
-        contract: erc20Contract,
-        methods: erc20Methods,
-    };
+    let tokenAddress;
+    let tokenTxHash = '0x';
+    if (this.network === 'mainnet') {
+        tokenAddress = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'; // makerDAO DAI contract
+        const erc20Contract = new this.web3.eth.Contract(ERC20Mintable.abi, tokenAddress);
+        const erc20Methods = Object
+            .entries(erc20Contract.methods)
+            .reduce((acc, [key, method]) => ({ ...acc, [key]: methodCall(method, tokenAddress) }), {});
+        this.erc20 = {
+            ...this.erc20,
+            address: tokenAddress,
+            contract: erc20Contract,
+            methods: erc20Methods,
+        };
+    } else {
+        const erc20Result = await this.erc20.constructor({
+            sender: aztecWallet.wallet.issueKey.address,
+            privateKey: aztecWallet.wallet.issueKey.privateKey,
+            nonce: aztecWallet.wallet[this.network].nonce,
+        });
+        tokenAddress = erc20Result.contractAddress;
+        tokenTxHash = erc20Result.transactionHash;
+        aztecWallet.increaseNonce(this.network);
+        const erc20Contract = new this.web3.eth.Contract(ERC20Mintable.abi, tokenAddress);
+        const erc20Methods = Object
+            .entries(erc20Contract.methods)
+            .reduce((acc, [key, method]) => ({ ...acc, [key]: methodCall(method, tokenAddress) }), {});
+        this.erc20 = {
+            ...this.erc20,
+            address: tokenAddress,
+            contract: erc20Contract,
+            methods: erc20Methods,
+        };
+    }
+
 
     let oldBytecode = AZTECERC20Bridge.bytecode;
     oldBytecode = oldBytecode.replace('__AZTECInterface________________________', aztecResult.contractAddress.slice(2));
@@ -155,7 +174,7 @@ Deployer.prototype.createAZTECContracts = async function createAZTECContracts(az
 
     const aztecTokenResult = await this.aztecToken.constructor(
         t2Formatted,
-        erc20Result.contractAddress,
+        tokenAddress,
         {
             sender: aztecWallet.wallet.issueKey.address,
             privateKey: aztecWallet.wallet.issueKey.privateKey,
@@ -177,8 +196,8 @@ Deployer.prototype.createAZTECContracts = async function createAZTECContracts(az
     console.log('created contracts');
     return {
         erc20: {
-            contractAddress: erc20Result.contractAddress,
-            transactionHash: erc20Result.transactionHash,
+            contractAddress: tokenAddress,
+            transactionHash: tokenTxHash,
         },
         aztec: {
             contractAddress: aztecResult.contractAddress,
@@ -413,7 +432,7 @@ async function demo(config) {
 
     // subscribe to events being emitted by our AZTECERC20Bridge.sol smart contract
     deployer.subscribeToEvents(aztecWallets, 3, 3);
-    
+
     console.log('issuing public tokens');
     // some setup: give mint some tokens for mainWallet, and then approve AZTECERC20Bridge.sol
     await deployer.erc20.methods.mint(aztecWallets[0].wallet.issueKey.address, 1000000, {

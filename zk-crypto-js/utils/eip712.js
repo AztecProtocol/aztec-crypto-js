@@ -14,16 +14,16 @@ eip712.encodeTypedData = function encodeTypedData(typedData) {
     const { EIP712Domain, ...rest } = types;
     const params = rest || {};
     const structHash = eip712.hashStruct(primaryType, params, message).slice(2);
-    const domainHash = eip712.hashStruct('EIP712Domain', { EIP712Domain }, domain, true).slice(2);
+    const domainHash = eip712.hashStruct('EIP712Domain', { EIP712Domain }, domain).slice(2);
     const result = web3Utils.sha3(`0x1901${domainHash}${structHash}`, 'hex');
     return result;
 };
 
-eip712.hashStruct = function hashStruct(primaryType, types, message, debug = false) {
-    const typeString = eip712.encodeStruct(primaryType, types, debug);
+eip712.hashStruct = function hashStruct(primaryType, types, message) {
+    const typeString = eip712.encodeStruct(primaryType, types);
 
     const typeHash = web3Utils.sha3(web3EthAbi.encodeParameters(['string'], [typeString.slice(2)]), 'hex');
-    const encodedData = eip712.encodeMessageData(message, types, types[primaryType], debug);
+    const encodedData = eip712.encodeMessageData(message, types, types[primaryType]);
     const hashedStruct = web3Utils.sha3(`${typeHash}${encodedData.slice(2)}`, 'hex');
 
     return hashedStruct;
@@ -36,7 +36,7 @@ eip712.encodeStruct = function encodeStruct(primaryType, types) {
 };
 
 
-eip712.encodeMessageData = function encodeMessageData(message, types, topLevel = {}, debug = false) {
+eip712.encodeMessageData = function encodeMessageData(message, types, topLevel = {}) {
     function recurse(_message, _topLevel = {}) {
         const messageKeys = Object.keys(_message);
         const topLevelTypes = _topLevel.reduce((acc, { name, type }) => ({ ...acc, [name]: { name, type } }), {});

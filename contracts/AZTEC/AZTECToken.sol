@@ -3,6 +3,10 @@ pragma solidity ^0.4.23;
 import "./AZTEC.sol";
 import "../ERC20/ERC20Mintable.sol";
 
+contract AZTECDeX {
+
+}
+
 /// @title Contract that uses the AZTEC protocol to create a token with confidential and public representations
 /// @author Zachary Williamson, CreditMint
 /// @dev All rights reserved. This is a technical demo! Use at your own risk!
@@ -13,7 +17,7 @@ contract AZTECToken is ERC20Mintable {
     mapping(bytes32 => address) public noteRegistry;
     bytes32[4] setupPubKey;
     bytes32 domainHash;
-
+    AZTECDeX dex;
     event Created(bytes32 domainHash, address contractAddress);
     event ConfidentialTransaction(uint, bytes);
 
