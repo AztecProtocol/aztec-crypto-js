@@ -4,7 +4,7 @@ const BN = require('bn.js');
 
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
-const AZTECERC20Bridge = artifacts.require('./contracts/AZTEC/AZTECERC20BridgeTest');
+const AZTECERC20Bridge = artifacts.require('./contracts/AZTEC/AZTECERC20BridgeAsm');
 const ERC20Mintable = artifacts.require('./contracts/ERC20/ERC20Mintable');
 AZTEC.abi = AZTECInterface.abi; // hon hon hon
 

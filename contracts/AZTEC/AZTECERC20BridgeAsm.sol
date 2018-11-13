@@ -11,7 +11,7 @@ import "../ERC20/ERC20.sol";
 * This will include our bespoke AZTEC decentralized exchange, allowing for cross-asset transfers with full transaction privacy.
 * Stay tuned for updates!
 **/
-contract AZTECERC20BridgeTest {
+contract AZTECERC20BridgeAsm {
     mapping(bytes32 => address) public noteRegistry;
     bytes32[4] setupPubKey;
     bytes32 domainHash;
