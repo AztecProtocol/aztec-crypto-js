@@ -19,3 +19,5 @@ bin/*
 build/*
 
 testWallet*
+./transcripts/*
+./testWallets/*
