@@ -1,6 +1,8 @@
 .DS_Store
 
 node_modules
+transcripts
+testWallets
 
 lib/core/metadata.js
 lib/core/MetadataBlog.js
@@ -19,5 +21,3 @@ bin/*
 build/*
 
 testWallet*
-transcripts
-testWallets
