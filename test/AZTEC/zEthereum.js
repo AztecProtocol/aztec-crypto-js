@@ -1,10 +1,11 @@
 /* global artifacts, expect, contract, beforeEach, web3, it:true */
 /* eslint-disable no-console */
 const BN = require('bn.js');
+const web3Utils = require('web3-utils');
 
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
-const ZEthereumAAA = artifacts.require('./contracts/AZTEC/ZEthereum');
+const ZEthereum = artifacts.require('./contracts/AZTEC/ZEthereum');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
 const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
@@ -22,7 +23,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 const zEthereumToEthereum = new BN('10000000000000000', 10);
 
 AZTEC.abi = AZTECInterface.abi;
-contract.only('ZEthereum Tests', (accounts) => {
+contract('ZEthereum Tests', (accounts) => {
     let aztec;
     let zEthereum;
     let aztecAccounts = [];
@@ -30,16 +31,9 @@ contract.only('ZEthereum Tests', (accounts) => {
     let phaseTwoCommitments;
     before(async () => {
         aztec = await AZTEC.new(accounts[0]);
-        console.log(ZEthereumAAA.bytecode);
-        console.log('###########');
-        ZEthereumAAA.link('AZTECInterface', aztec.address);
-        ZEthereumAAA.link('AZTECInterface', aztec.address);
-        await ZEthereumAAA.link('AZTECInterface', aztec.address);
+        ZEthereum.link('AZTECInterface', aztec.address);
 
-        console.log(ZEthereumAAA.bytecode);
-
-        console.log('aztec address = ', aztec.address);
-        zEthereum = await ZEthereumAAA.new(t2Formatted, {
+        zEthereum = await ZEthereum.new(t2Formatted, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -63,10 +57,10 @@ contract.only('ZEthereum Tests', (accounts) => {
             value: new BN(1000).mul(zEthereumToEthereum),
         });
         const { gasPrice } = await web3.eth.getTransaction(result.tx);
-        const weiSpent = new BN(gasPrice, 10).mul(new BN(result.receipt.gasUsed, 10));
+        const weiSpent = gasPrice.mul(new BN(result.receipt.gasUsed, 10));
         const finalBalance = await web3.eth.getBalance(accounts[0]);
-        const balanceDifference = new BN(initialBalance).sub(new BN(finalBalance)).sub(weiSpent);
-        expect(balanceDifference.eq(new BN(web3.utils.toWei('10', 'ether')))).to.equal(true);
+        const balanceDifference = initialBalance.sub(finalBalance).sub(weiSpent);
+        expect(balanceDifference.eq(new BN(web3Utils.toWei('10', 'ether')))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 
@@ -107,10 +101,10 @@ contract.only('ZEthereum Tests', (accounts) => {
         });
 
         const { gasPrice } = await web3.eth.getTransaction(result.tx);
-        const weiSpent = new BN(gasPrice, 10).mul(new BN(result.receipt.gasUsed, 10));
+        const weiSpent = gasPrice.mul(new BN(result.receipt.gasUsed, 10));
         const finalBalance = await web3.eth.getBalance(accounts[3]);
-        const balanceDifference = new BN(finalBalance).sub(new BN(initialBalance)).add(weiSpent);
-        expect(balanceDifference.eq(new BN(web3.utils.toWei('1.19', 'ether')))).to.equal(true);
+        const balanceDifference = finalBalance.sub(initialBalance).add(weiSpent);
+        expect(balanceDifference.eq(new BN(web3Utils.toWei('1.19', 'ether')))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 });

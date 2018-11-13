@@ -17,7 +17,7 @@ contract AZTECERC20BridgeTest {
     bytes32 domainHash;
     ERC20 token;
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint);
+    event ConfidentialTransaction(uint kPublic);
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey, address _token) public {
@@ -60,8 +60,10 @@ contract AZTECERC20BridgeTest {
     * 0xa4:0xc4      = metadata
     * When note owners are assigned to stealth addresses, 'metadata' should contain an ephemeral public key that will enable note owner to identify their note
 */
+event Debug(address lib);
     function confidentialTransaction(bytes32[6][], uint, uint, bytes32[3][], address[], bytes) external {
         uint kPublic;
+
         assembly {
             let mem := mload(0x40)
             let ownerStart := add(calldataload(0x84), 0x24) // offset in calldata to outputOwners array
@@ -89,15 +91,15 @@ contract AZTECERC20BridgeTest {
             **/
             mstore(add(mem, 0x04), 0xe0)
             calldatacopy(add(mem, 0x24), 0x24, 0x40)
-            mstore(add(mem, 0x64), 0x1cf7cc93bfbf7b2c5f04a3bc9cb8b72bbcf2defcabdceb09860c493bdf1588d)
-            mstore(add(mem, 0x84), 0x8d554bf59102bbb961ba81107ec71785ef9ce6638e5332b6c1a58b87447d181)
+            mstore(add(mem, 0x64), 0x01cf7cc93bfbf7b2c5f04a3bc9cb8b72bbcf2defcabdceb09860c493bdf1588d)
+            mstore(add(mem, 0x84), 0x08d554bf59102bbb961ba81107ec71785ef9ce6638e5332b6c1a58b87447d181)
             mstore(add(mem, 0xa4), 0x204e5d81d86c561f9344ad5f122a625f259996b065b80cbbe74a9ad97b6d7cc2)
-            mstore(add(mem, 0xc4), 0x2cb2a424885c9e412b94c40905b359e3043275cd29f5b557f008cd0a3e0c0dc)
+            mstore(add(mem, 0xc4), 0x02cb2a424885c9e412b94c40905b359e3043275cd29f5b557f008cd0a3e0c0dc)
             calldatacopy(add(mem, 0xe4), 0xc4, sub(signatureStart, 0xe4))
 
             // if result == 0 then proof is invalid.
             if iszero(
-                staticcall(gas, AZTECInterface, mem, signatureStart, mem, 0x20)
+                delegatecall(gas, AZTECInterface, mem, signatureStart, mem, 0x20)
             ) { mstore(0x00, 403) revert(0x00, 0x20) }
 
             /**

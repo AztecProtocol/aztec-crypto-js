@@ -27,6 +27,8 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
     let aztecAccounts = [];
     let initialCommitments;
     let phaseTwoCommitments;
+    let scalingFactor;
+    const tokensTransferred = new BN(100000);
     before(async () => {
         token = await ERC20Mintable.new();
         aztec = await AZTEC.new(accounts[0]);
@@ -36,12 +38,21 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
             from: accounts[0],
             gas: 5000000,
         });
+        scalingFactor = await aztecToken.scalingFactor();
         const receipt = await web3.eth.getTransactionReceipt(aztecToken.transactionHash);
         console.log('gas spent creating contract = ', receipt.gasUsed);
 
         aztecAccounts = accounts.map(() => ecdsa.generateKeyPair());
-        await Promise.all(accounts.map(account => token.mint(account, 1000000, { from: accounts[0], gas: 5000000 })));
-        await Promise.all(accounts.map(account => token.approve(aztecToken.address, 1000000, { from: account, gas: 5000000 })));
+        await Promise.all(accounts.map(account => token.mint(
+            account,
+            scalingFactor.mul(tokensTransferred),
+            { from: accounts[0], gas: 5000000 }
+        )));
+        await Promise.all(accounts.map(account => token.approve(
+            aztecToken.address,
+            scalingFactor.mul(tokensTransferred),
+            { from: account, gas: 5000000 }
+        )));
     });
 
     it('successfully blinds 100000 tokens into 5 zero-knowledge notes', async () => {
@@ -50,13 +61,13 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
             kOut: [9000, 11000, 10000, 13000, 57000],
         });
         initialCommitments = commitments;
-        const kPublic = GROUP_MODULUS.sub(new BN(100000));
+        const kPublic = GROUP_MODULUS.sub(tokensTransferred);
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
         const result = await aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x');
         const balance = await token.balanceOf(aztecToken.address);
 
-        expect(balance.eq(new BN(100000))).to.equal(true);
+        expect(balance.eq(scalingFactor.mul(tokensTransferred))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 
@@ -99,8 +110,16 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         );
         const userBalance = await token.balanceOf(accounts[3]);
         const contractBalance = await token.balanceOf(aztecToken.address);
-        expect(userBalance.eq(new BN(1011999))).to.equal(true);
-        expect(contractBalance.eq(new BN(100000 - 11999))).to.equal(true);
+        const balance = 100000 - 11999;
+
+        expect(
+            userBalance
+                .eq(scalingFactor.mul(new BN(111999)))
+        ).to.equal(true);
+        expect(
+            contractBalance
+                .eq(scalingFactor.mul(balance))
+        ).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 });

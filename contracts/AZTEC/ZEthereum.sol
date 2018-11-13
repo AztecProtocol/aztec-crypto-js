@@ -18,7 +18,7 @@ contract ZEthereum {
     bytes32 domainHash;
     uint globalSupply = 0;
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint, bytes);
+    event ConfidentialTransaction(uint value, bytes metadata);
     event Debug(uint val);
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey) public {

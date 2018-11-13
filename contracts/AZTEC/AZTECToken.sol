@@ -19,7 +19,7 @@ contract AZTECToken is ERC20Mintable {
     bytes32 domainHash;
     AZTECDeX dex;
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint, bytes);
+    event ConfidentialTransaction(uint kPublic, bytes metadata);
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey) public {

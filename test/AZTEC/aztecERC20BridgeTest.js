@@ -20,7 +20,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 // Step 4: blind tokens into note form
 // Step 5: issue a join split transaction of confidential notes
 // Step 6: redeem tokens from confidential form
-contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
+contract('AZTEC - ERC20 Token Bridge (assembly) Tests', (accounts) => {
     let aztec;
     let aztecToken;
     let token;
@@ -55,7 +55,10 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         const kPublic = GROUP_MODULUS.sub(new BN(100000));
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
-        const result = await aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x');
+        const result = await aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x', {
+            from: accounts[0],
+            gas: 5000000,
+        });
         const balance = await token.balanceOf(aztecToken.address);
 
         expect(balance.eq(new BN(100000))).to.equal(true);
@@ -102,7 +105,8 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         const userBalance = await token.balanceOf(accounts[3]);
         const contractBalance = await token.balanceOf(aztecToken.address);
         expect(userBalance.eq(new BN(1011999))).to.equal(true);
-        expect(contractBalance.eq(new BN(100000 - 11999))).to.equal(true);
+        const balance = 100000 - 11999;
+        expect(contractBalance.eq(new BN(balance))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 });

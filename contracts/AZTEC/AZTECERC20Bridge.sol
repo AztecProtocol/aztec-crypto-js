@@ -15,7 +15,7 @@ import "../ERC20/ERC20.sol";
 contract AZTECERC20Bridge {
     uint constant GROUP_MODULUS_BOUNDARY = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
     uint constant GROUP_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-    uint constant SCALING_FACTOR = 100000;
+    uint public constant scalingFactor = 100000;
     mapping(bytes32 => address) public noteRegistry;
     bytes32[4] setupPubKey;
     bytes32 domainHash;
@@ -162,12 +162,12 @@ contract AZTECERC20Bridge {
 
                 // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
                 // call token.transfer to send relevent tokens
-                require(token.transfer(msg.sender, kPublic * SCALING_FACTOR), "token transfer to user failed!");
+                require(token.transfer(msg.sender, kPublic * scalingFactor), "token transfer to user failed!");
             } else {
 
                 // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
                 // only proceed if the required transferFrom call from msg.sender to this contract succeeds
-                require(token.transferFrom(msg.sender, this, (GROUP_MODULUS - kPublic) * SCALING_FACTOR), "token transfer from user failed!");
+                require(token.transferFrom(msg.sender, this, (GROUP_MODULUS - kPublic) * scalingFactor), "token transfer from user failed!");
             }
         }
 
