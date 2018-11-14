@@ -9,7 +9,7 @@ const web3 = new Web3();
 
 const { AZTEC_MAINNET_DOMAIN_PARAMS } = require('../params.js');
 
-describe.only('eip712.js tests', () => {
+describe('eip712.js tests', () => {
     let simple;
     let complex;
     let exampleStruct;

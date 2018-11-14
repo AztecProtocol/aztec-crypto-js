@@ -7,9 +7,7 @@ const {
     GROUP_MODULUS,
     H_X,
     H_Y,
-    fieldReduction,
     weierstrassBRed,
-    zeroRed,
 } = require('../params');
 
 function Bn128() {
@@ -25,13 +23,13 @@ function Bn128() {
 
     curve.randomPoint = function randomPoint() {
         function recurse() {
-            const x = new BN(crypto.randomBytes(32), 16).toRed(fieldReduction);
-            const y2 = x.redSqr().redMul(x).redIAdd(weierstrassBRed);
+            const x = new BN(crypto.randomBytes(32), 16).toRed(curve.red);
+            const y2 = x.redSqr().redMul(x).redIAdd(curve.b);
             const y = y2.redSqrt();
-            if (y.redSqr(y).redSub(y2).cmp(zeroRed)) {
+            if (y.redSqr(y).redSub(y2).cmp(curve.a)) {
                 return recurse();
             }
-            return curve.point(x.toString(16), y.toString(16), true);
+            return curve.point(x, y);
         }
         return recurse();
     };
@@ -65,6 +63,45 @@ function Bn128() {
             throw new Error('could not find k!');
         }
         return k;
+    };
+
+    function AztecCompressed(p1, p2) {
+        if (p1.y.eq(p2.y)) {
+            this.beta = p1.y;
+            this.beta.setn(255, true);
+            this.alpha = p1.x;
+        } else {
+            this.beta = p1.y.redSub(p2.y);
+            this.alpha = this.beta.redInvm().redMul(p1.x.redSub(p2.x));
+        }
+        this.x2 = p2.x;
+        this.half = new BN(2).toRed(curve.red).redInvm();
+    }
+
+    AztecCompressed.prototype.aztecDecompress = function aztecDecompress() {
+        if (this.beta.testn(255)) {
+            const y1 = this.beta.maskn(256);
+            return {
+                p1: curve.point(this.alpha, y1),
+                p2: curve.point(this.x2, y1),
+            };
+        }
+        const x1 = this.alpha.redMul(this.beta).redAdd(this.x2);
+
+        const t1 = (x1.redSqr()).redAdd(this.x2.redSqr()).redAdd(x1.redMul(this.x2));
+
+        const y1 = (t1.redMul(this.alpha)).redAdd(this.beta).redMul(this.half);
+
+        const y2 = y1.redSub(this.beta);
+
+        return {
+            p1: curve.point(x1, y1),
+            p2: curve.point(this.x2, y2),
+        };
+    };
+
+    curve.aztecCompressed = (p1, p2) => {
+        return new AztecCompressed(p1, p2);
     };
     return curve;
 }
