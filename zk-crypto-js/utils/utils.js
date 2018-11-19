@@ -63,4 +63,9 @@ utils.bnToHex = function bnToHex(bignum) {
     return `0x${utils.toBytes32(bignum.toString(16))}`;
 };
 
+
+utils.randomBytes32 = function randomBytes32() {
+    return `0x${toBytes32(new BN(crypto.randomBytes(32), 16).toString(16))}`;
+};
+
 module.exports = utils;
