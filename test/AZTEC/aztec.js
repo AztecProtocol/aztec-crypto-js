@@ -121,7 +121,8 @@ contract.only('AZTEC', (accounts) => {
             const {
                 proofData,
             } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
-
+            
+            // Creating a fake challenge
             const fakeChallenge = new BN(crypto.randomBytes(32), 16).umod(GROUP_MODULUS).toString(10);
 
             exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, fakeChallenge, t2Formatted, {
@@ -131,7 +132,6 @@ contract.only('AZTEC', (accounts) => {
         });
 
         it('validates failure for random proof data', async () => {
-            // Creating a set of commitments and messages
             const {
                 commitments,
                 m,
@@ -139,17 +139,55 @@ contract.only('AZTEC', (accounts) => {
                 kIn: [11, 22],
                 kOut: [5, 28],
             });
-            // Creating the proof data and challenge. Proof data contains:
-            // k_i, a_i, gamma (x and y coords), sigma (x and y coords)
 
             const {
                 proofData,
                 challenge,
             } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
             
-
+            // Creating fake proof data
             const fakeProofData = new Array(4).map(() => new Array(6).map(() => toBytes32.randomBytes32()));
             exceptions.catchRevert(aztec.validateJoinSplit(fakeProofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            }));
+        });
+
+        it('validate failure for zero input note value', async () => {
+            const {
+                commitments,
+                m,
+            } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [0, 0], // inputting notes of zero value
+                kOut: [5, 28], // this is the value of the output notes
+            });
+
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0); // last argument is K_public
+
+            exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            }));
+        });
+    
+        it('validate failure for zero ouput note value', async () => {
+            const {
+                commitments,
+                m,
+            } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [11, 22], // input notes of non-zero value
+                kOut: [0, 0], // outputting notes of zero value
+            });
+
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0); // last argument is K_public
+
+            exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
                 from: accounts[0],
                 gas: 4000000,
             }));
