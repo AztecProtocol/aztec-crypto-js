@@ -8,14 +8,19 @@ const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 const exceptions = require('../exceptions');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const aztecFakeProof = require('../../zk-crypto-js/proof/fakeProof/fakeProof'); // Proofs constructed using a fake setup key
+
+const {
+    t2Formatted,
+    GROUP_MODULUS,
+} = require('../../zk-crypto-js/params');
 const { toBytes32 } = require('../../zk-crypto-js/utils/utils');
 
 AZTEC.abi = AZTECInterface.abi;
 
 contract.only('AZTEC', (accounts) => {
     let aztec;
-
+/*
     // Creating a collection of tests that should pass
     describe('success states', () => {
         beforeEach(async () => {
@@ -49,7 +54,7 @@ contract.only('AZTEC', (accounts) => {
             expect(result).to.equal(true);
         });
 
-        it('validates proof where kPublic > 0 and kPublic < n/2', async () => {
+        it('validates proof where kPublic > 0 and kPublic < n/2', async () => { // n here is the group modulus
             const kPublic = 101;
             const {
                 commitments,
@@ -102,7 +107,7 @@ contract.only('AZTEC', (accounts) => {
             expect(result).to.equal(true);
         });
     });
-
+*/
     // Creating a collection of tests that should fail
     describe('failure states', () => {
         beforeEach(async () => {
@@ -192,6 +197,26 @@ contract.only('AZTEC', (accounts) => {
                 gas: 4000000,
             }));
         });
+
+        it('validate failure when using a fake trusted setup key', async () => {
+            const {
+                commitments,
+                m,
+            } = await aztecFakeProof.constructModifiedCommitmentSet({
+                kIn: [11, 22], // input notes of non-zero value
+                kOut: [5, 28], // outputting notes of zero value
+            });
+
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0); // last argument is K_public
+
+            exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            }));
+        });
     });
 
     it('validates that points are on curve', async () => {
@@ -208,4 +233,3 @@ contract.only('AZTEC', (accounts) => {
         }));
     });
 });
-
