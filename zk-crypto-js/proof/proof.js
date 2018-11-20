@@ -8,44 +8,20 @@ const setup = require('../setup/setup');
 
 const proof = {};
 
-proof.generateCommitment = async (k) => {
+proof.generateCommitment = async (k, a = null) => {
+    let aBn;
     const kBn = new BN(k).toRed(groupReduction);
     const { x, y } = await setup.readSignature(k);
     const mu = bn128.point(x, y);
-    const a = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
-    const gamma = mu.mul(a);
-    const sigma = gamma.mul(kBn).add(bn128.h.mul(a));
-    return {
-        gamma,
-        sigma,
-        a,
-        k: kBn,
-    };
-};
 
-proof.constructCommitment = async (k, a) => {
-    const kBn = new BN(k).toRed(groupReduction);
-    const { x, y } = await setup.readSignature(k);
-    const mu = bn128.point(x, y);
-    const aBn = new BN(a.slice(2), 16).toRed(groupReduction);
+    if (a === null) {
+        aBn = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
+    } else {
+        aBn = new BN(a.slice(2), 16).toRed(groupReduction);
+    }
     const gamma = mu.mul(aBn);
     const sigma = gamma.mul(kBn).add(bn128.h.mul(aBn));
-    return {
-        gamma,
-        sigma,
-        a: aBn,
-        k: kBn,
-    };
-};
-
-proof.constructCommitmentSet = async ({ kIn, kOut }) => {
-    const inputs = await Promise.all(kIn.map(async (k) => {
-        return proof.generateCommitment(k);
-    }));
-    const outputs = await Promise.all(kOut.map(async (k) => {
-        return proof.generateCommitment(k);
-    }));
-    return { inputs, outputs };
+    return { gamma, sigma, a: aBn, k: kBn };
 };
 
 proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
