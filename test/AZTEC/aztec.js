@@ -20,13 +20,28 @@ AZTEC.abi = AZTECInterface.abi;
 
 contract.only('AZTEC', (accounts) => {
     let aztec;
-/*
+
     // Creating a collection of tests that should pass
     describe('success states', () => {
         beforeEach(async () => {
-            // Create a new test environmentn for each test
+            // Create a new test environmennt for each test
             aztec = await AZTEC.new(accounts[0]); 
         });
+
+        /*
+        General structure of the success state unit tests:
+        1) Construct the commitments from a selection of k_in and k_out (input and output values)
+        2) Generate the proofData and random challenge. Proof data contains notes, and each note contains 6 pieces of information:
+            a) gamma_x
+            b) gamma_y
+            c) sigma_x
+            d) sigma_y
+            e) k^bar
+            f) a^bar
+            Note: a), b), c) and d) are the Pedersen commitment data
+        3) Validate that these result in a successfull join-split transaction
+        4) Calculate the gas used in validating this join-split transaction
+        */
 
         it('succesfully validates an AZTEC JOIN-SPLIT zero-knowledge proof', async () => {
             const {
@@ -106,8 +121,90 @@ contract.only('AZTEC', (accounts) => {
             console.log('gas used = ', gasUsed);
             expect(result).to.equal(true);
         });
+
+        it('validates that large numbers of input/output notes work', async () => {
+            let kPublic = 0;
+            kPublic = GROUP_MODULUS.sub(new BN(kPublic));
+            const {
+                commitments,
+                m,
+            } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [200, 50, 400, 250, 600],
+                kOut: [350, 150, 700, 150, 150],
+            });
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic); // ouptutting the proof data and challenge
+            const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+            const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+
+            console.log('gas used = ', gasUsed);
+            expect(result).to.equal(true);
+        });
+
+        it('validate that zero quantity of input notes works', async () => {
+            let kPublic = 33;
+            kPublic = GROUP_MODULUS.sub(new BN(kPublic));
+            const {
+                commitments,
+                m,
+            } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [],
+                kOut: [5, 28],
+            });
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic); // ouptutting the proof data and challenge
+            const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+            const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+
+            console.log('gas used = ', gasUsed);
+            expect(result).to.equal(true);
+        });
+
+        it('validate that zero quantity of output notes works', async () => {
+            let kPublic = 33;
+            // kPublic = GROUP_MODULUS.sub(new BN(kPublic));
+            const {
+                commitments,
+                m,
+            } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [5, 28],
+                kOut: [],
+            });
+            const {
+                proofData,
+                challenge,
+            } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic); // ouptutting the proof data and challenge
+            const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+            const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+                from: accounts[0],
+                gas: 4000000,
+            });
+
+            console.log('gas used = ', gasUsed);
+            expect(result).to.equal(true);
+        });
+
     });
-*/
+
     // Creating a collection of tests that should fail
     describe('failure states', () => {
         beforeEach(async () => {
@@ -126,7 +223,7 @@ contract.only('AZTEC', (accounts) => {
             const {
                 proofData,
             } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
-            
+
             // Creating a fake challenge
             const fakeChallenge = new BN(crypto.randomBytes(32), 16).umod(GROUP_MODULUS).toString(10);
 
@@ -149,7 +246,7 @@ contract.only('AZTEC', (accounts) => {
                 proofData,
                 challenge,
             } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
-            
+
             // Creating fake proof data
             const fakeProofData = new Array(4).map(() => new Array(6).map(() => toBytes32.randomBytes32()));
             exceptions.catchRevert(aztec.validateJoinSplit(fakeProofData, m, challenge, t2Formatted, {
