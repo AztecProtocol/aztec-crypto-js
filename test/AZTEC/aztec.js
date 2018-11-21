@@ -69,7 +69,7 @@ contract.only('AZTEC', (accounts) => {
             expect(result).to.equal(true);
         });
 
-        it('validates proof where kPublic > 0 and kPublic < n/2', async () => { // n here is the group modulus
+        it('validates proof where kPublic > 0 and kPublic < GROUP_MODULUS/2', async () => { // n here is the group modulus
             const kPublic = 101;
             const {
                 commitments,
@@ -95,7 +95,7 @@ contract.only('AZTEC', (accounts) => {
             expect(result).to.equal(true);
         });
 
-        it('validates proof where kPublic > n/2', async () => {
+        it('validates proof where kPublic > GROUP_MODULUS/2', async () => {
             let kPublic = 523;
             kPublic = GROUP_MODULUS.sub(new BN(kPublic));
             const {
