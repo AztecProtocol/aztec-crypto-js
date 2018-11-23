@@ -25,6 +25,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
     let initialCommitments;
     let phaseTwoCommitments;
     let scalingFactor;
+    let outputOwners;
     const tokensTransferred = new BN(100000); // defining total value of tokens to be transferred
 
     describe.only('failure cases', () => {
@@ -56,7 +57,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
                 { from: account, gas: 5000000 }
             ))); // approving tokens
 
-            // Distribute 100,000 ERC20 tokens into note format - sending to 5 adresses 
+            // Distribute 100,000 ERC20 tokens into note format - sending to 5 addreses 
             const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
                 kIn: [],
                 kOut: [9000, 11000, 10000, 13000, 57000],
@@ -65,10 +66,11 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
 
             const kPublic = GROUP_MODULUS.sub(tokensTransferred); // kPublic is negative - so converting public tokens into AZTEC notes
             const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic); // outputting the proof data
-            const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address); // determining 5 accounts that will be the owners of the notes 
-
+            outputOwners = aztecAccounts.slice(0, 5).map(account => account.address); // determining 5 accounts that will be the owners of the notes 
+            
+            // WHY DOES THIS NOT REQUIRE ANY SIGNATURES - because the notes don't yet have any ownership
             const result = await aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x'); // executes the confidential transaction
-            // Each output note has an associated outputOwner - they are distributed to the addresses by this line
+            // Each output note has an associated outputOwner - they are distributed to the addresses by this line. 
             // result = transaction receipt, gives a log of what happened
             const balance = await token.balanceOf(aztecToken.address); // this is the balance of the AZTEC smart contract. The AZTEC smart contract is acting
             // as an esckrow account. It holds onto the note value until you redeem.
@@ -84,7 +86,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
             const kPublic = 9001; // trying to withdraw 1 unit of value more than put in
             const { proofData, challenge } = aztecProof.constructJoinSplit(commitment, m, accounts[0], kPublic); // constructing the proof data
             
-            const signatures = [
+            const signatures = [ // withdrawing requires the note to be signed
                 sign.signNote(proofData[0], challenge, accounts[0], aztecToken.address, aztecAccounts[0].privateKey), // signing one note
             ].map(r => r.signature);
 
@@ -97,6 +99,36 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
                 '0x',
                 { from: accounts[0], gas: 5000000 }
             ));
+        });
+
+        it.only('validate failure if msg.sender tries to create note value > their ERC20 balance', async () => {
+            // msg.sender is trying to create another AZTEC note from their ERC20 token balance, despite them not having any balance left
+            const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
+                kIn: [],
+                kOut: [1],
+            }); // created the extra commitment
+            console.log('m:', m);
+            const extraToken = new BN('1', 10);
+            const kPublic = GROUP_MODULUS.sub(extraToken); // this defines kPublic as being negative, as expected
+
+            const { proofData, challenge } = aztecProof.constructJoinSplit(
+                commitments,
+                m,
+                accounts[0],
+                kPublic
+            ); // This is just performing proof calculations - don't think it has any dependence on whether msg.sender has the funds
+            // We need to somehow perform a check 
+            console.log('just above');
+            console.log('output owner', outputOwners[0]);
+            const outputOwner = [outputOwners[0]];
+
+            console.log('proofData:', proofData[0]);            
+            // no input signatures are required because the note is not owned by anyone yet
+            await exceptions.catchRevert(aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwner, '0x', {
+                from: accounts[0], // this is the account from which the funds are being withdrawn from. This account has already distributed it's 
+                // 100,000 ERC20 tokens, and so it should not be able to distribute any more. Hence, this command should throw a revert error
+                gas: 2000000,
+            }));
         });
     });
 });
