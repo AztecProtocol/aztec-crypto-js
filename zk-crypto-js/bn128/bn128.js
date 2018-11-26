@@ -22,6 +22,19 @@ function Bn128() {
         g: ['1', '2'],
     });
 
+    // TODO, get rid of this
+    curve.ec = new EC.ec({
+        curve: {
+            curve,
+            a: '0',
+            b: '3',
+            p: curve.p,
+            n: curve.n,
+            gRed: false,
+            g: curve.g,
+        },
+    });
+
     curve.randomPoint = function randomPoint() {
         function recurse() {
             const x = new BN(crypto.randomBytes(32), 16).toRed(curve.red);

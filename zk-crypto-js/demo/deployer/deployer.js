@@ -6,9 +6,9 @@ const config = require('../config');
 const web3 = new Web3(new Web3.providers.WebsocketProvider(config.provider));
 
 // ### wrappers
-const constructorWrapper = (contract, bytecode) => {
+const constructorWrapper = (contract, bytecode, ...params) => {
     return async function constructor(wallet) {
-        const deployBase = contract.deploy({ data: bytecode });
+        const deployBase = contract.deploy(...params, { data: bytecode });
         const transaction = new Tx({
             nonce: await web3.eth.getTransactionCount(wallet.address),
             gas: web3.utils.toHex(await deployBase.estimateGas({ from: wallet.address })),
@@ -25,6 +25,7 @@ const constructorWrapper = (contract, bytecode) => {
     };
 };
 
+// TODO: stronger delineation between config variables and method parameters
 const methodWrapper = (contract, method, ...params) => {
     return async function methodCall(wallet) {
         const gas = (await contract.methods[method](...params).estimateGas({
@@ -50,8 +51,8 @@ const methodWrapper = (contract, method, ...params) => {
 
 const deployer = {};
 
-deployer.deployContract = async (contract, wallet, bytecode) => {
-    const constructor = constructorWrapper(contract, bytecode);
+deployer.deployContract = async (contract, wallet, bytecode, ...params) => {
+    const constructor = constructorWrapper(contract, bytecode, ...params);
     const { transactionHash } = await constructor(wallet);
     return transactionHash;
 };

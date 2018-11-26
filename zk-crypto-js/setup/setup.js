@@ -31,4 +31,21 @@ setup.readSignature = (inputValue) => {
     });
 };
 
+setup.readSignatureSync = (inputValue) => {
+    const value = Number(inputValue);
+    const fileNum = Math.ceil(Number(value + 1) / SIGNATURES_PER_FILE);
+
+    const fileName = path.posix.resolve(partialPath, `data${(((fileNum) * SIGNATURES_PER_FILE) - 1)}.dat`);
+    const data = fs.readFileSync(fileName);
+
+    // each file starts at 0 (0, 1024, 2048 etc)
+    const min = ((fileNum - 1) * SIGNATURES_PER_FILE);
+    const bytePosition = ((value - min) * 32);
+    // eslint-disable-next-line new-cap
+    const signatureBuf = new Buffer.alloc(32);
+    data.copy(signatureBuf, 0, bytePosition, bytePosition + 32);
+
+    const x = new BN(signatureBuf);
+    return utils.decompress(x);
+};
 module.exports = setup;
