@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "bn.js": "^4.11.8",
+    "bull": "^3.5.2",
     "elliptic": "^6.4.1",
     "ethereumjs-tx": "^1.3.7",
     "js-sha3": "^0.8.0",
+    "lowdb": "^1.0.0",
     "openzeppelin-solidity": "^2.0.0",
     "truffle": "^4.1.14",
     "truffle-wallet-provider": "0.0.5",
@@ -31,7 +33,8 @@
     "mocha": "^5.2.0"
   },
   "scripts": {
-    "test": "mocha ./zk-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
+    "test": "NODE_ENV=TEST mocha ./zk-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
+    "demoTest": "NODE_ENV=TEST mocha ./zk-crypto-js/demo --trace-warnings --exit --colors --recursive --reporter spec",
     "demo": "node ./zk-crypto-js/demo/demo.js",
     "initWallets": "node ./zk-crypto-js/demo/initWallets.js"
   },
