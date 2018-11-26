@@ -17,7 +17,7 @@ contract AZTECERC20BridgeAsm {
     bytes32 domainHash;
     ERC20 token;
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint kPublic);
+    event ConfidentialTransfer();
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey, address _token) public {
@@ -60,8 +60,7 @@ contract AZTECERC20BridgeAsm {
     * 0xa4:0xc4      = metadata
     * When note owners are assigned to stealth addresses, 'metadata' should contain an ephemeral public key that will enable note owner to identify their note
 */
-event Debug(address lib);
-    function confidentialTransaction(bytes32[6][], uint, uint, bytes32[3][], address[], bytes) external {
+    function confidentialTransfer(bytes32[6][], uint, uint, bytes32[3][], address[], bytes) external {
         uint kPublic;
 
         assembly {
@@ -202,6 +201,6 @@ event Debug(address lib);
                     }
             }
         }
-        emit ConfidentialTransaction(kPublic);
+        emit ConfidentialTransfer();
     }
 }

@@ -10,16 +10,18 @@ import "../ERC20/SafeMath.sol";
 contract ZEthereum {
     using SafeMath for uint;
 
-    uint constant GROUP_MODULUS_BOUNDARY = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
-    uint constant GROUP_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-    uint constant ZETHEREUM_SCALING_PARAMETER = 10000000000000000; // A confidential note of value 1 is equal to 10^16 wei, or 0.01 ethereum.
+    uint private constant groupModulusBoundary = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
+    uint private constant groupModulus = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint public constant scalingFactor = 10000000000000000; // A confidential note of value 1 is equal to 10^16 wei, or 0.01 ethereum.
     mapping(bytes32 => address) public noteRegistry;
-    bytes32[4] setupPubKey;
-    bytes32 domainHash;
-    uint globalSupply = 0;
+    uint public globalSupply = 0;
+
+    bytes32[4] private setupPubKey;
+    bytes32 private domainHash;
+
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint value, bytes metadata);
-    event Debug(uint val);
+    event ConfidentialTransfer();
+
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey) public {
         setupPubKey = _setupPubKey;
@@ -104,23 +106,12 @@ contract ZEthereum {
     /// If a satisfying zero-knowledge proof is provided, then we know with confidence that the values encrypted by the output notes sum to 10,000,
     /// but we have no idea how those tokens are distributed across the notes.
     /// Each output note has a value bounded by the AZTEC commitment scheme's range proof.
-    function confidentialTransaction(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes metadata) external payable {
+    function confidentialTransfer(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes) external payable {
         require(inputSignatures.length == m, "input signature length invalid");
         require(inputSignatures.length + outputOwners.length == notes.length, "array length mismatch");
         uint kPublic = uint(notes[notes.length - 1][0]);
 
-        emit Debug(kPublic);
         require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
-
-        if (kPublic > GROUP_MODULUS_BOUNDARY) {
-            // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
-            // only proceed if the transaction sender has sent enough ether.
-            // The AZTEC range proof constrains the size of the values that can be represented in confidential note form.
-            // The technical demo taps out at 1048575, a full implementation could reach a cap of about 2^32
-            // so we apply a scaling paramter when translating to/from confidential form
-            require(msg.value == ((GROUP_MODULUS - kPublic) * ZETHEREUM_SCALING_PARAMETER), "msg.value is not sufficient for this transaction!");
-            globalSupply = globalSupply.add((GROUP_MODULUS - kPublic) * ZETHEREUM_SCALING_PARAMETER);
-        }
 
         for (uint i = 0; i < m; i++) {
             // call validateInputNote to check that the note exists and that we have a matching signature over the note.
@@ -133,15 +124,28 @@ contract ZEthereum {
             // if all checks pass, add notes into note registry
             validateOutputNote(notes[i + m], outputOwners[i]);
         }
-        if (kPublic < GROUP_MODULUS_BOUNDARY) {
-            // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
-            // call token.transfer to send relevent tokens.
-            // globalSupply should never be less than kPublic * ZETHEREUM_SCALING_PARAMETER,
-            // if that happens then somebody has either solved the discrete logarithm problem for the bn128 curve, or the trusted setup trapdoor key was not destroyed!
-            globalSupply = globalSupply.sub(kPublic * ZETHEREUM_SCALING_PARAMETER);
-            msg.sender.transfer(kPublic * ZETHEREUM_SCALING_PARAMETER);
+
+        if (kPublic > 0) {
+            if (kPublic < groupModulusBoundary) {
+
+                // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
+                // call token.transfer to send relevent tokens.
+                // globalSupply should never be less than kPublic * ZETHEREUM_SCALING_PARAMETER,
+                // if that happens then somebody has either solved the discrete logarithm problem for the bn128 curve, or the trusted setup trapdoor key was not destroyed!
+                globalSupply = globalSupply.sub(kPublic * scalingFactor);
+                msg.sender.transfer(kPublic * scalingFactor);
+            } else {
+
+                // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
+                // only proceed if the transaction sender has sent enough ether.
+                // The AZTEC range proof constrains the size of the values that can be represented in confidential note form.
+                // The technical demo taps out at 1048575, a full implementation could reach a cap of about 2^32
+                // so we apply a scaling paramter when translating to/from confidential form
+                require(msg.value == ((groupModulus - kPublic) * scalingFactor), "msg.value is not sufficient for this transaction!");
+                globalSupply = globalSupply.add((groupModulus - kPublic) * scalingFactor);
+            }
         }
-        // TODO. Figure out what to do here. Truffle is throwing decoder errors when I use bytes32 arrays...
-        emit ConfidentialTransaction(kPublic, metadata);
+
+        emit ConfidentialTransfer();
     }
 }
