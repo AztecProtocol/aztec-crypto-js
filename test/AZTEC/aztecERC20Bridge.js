@@ -34,7 +34,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         AZTECERC20Bridge.link('AZTECInterface', aztec.address);
 
-        aztecToken = await AZTECERC20Bridge.new(t2Formatted, token.address, {
+        aztecToken = await AZTECERC20Bridge.new(t2Formatted, token.address, 100000, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -64,12 +64,32 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         const kPublic = GROUP_MODULUS.sub(tokensTransferred);
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
-        const result = await aztecToken.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x');
+        const result = await aztecToken.confidentialTransfer(proofData, m, challenge, [], outputOwners, '0x');
         const balance = await token.balanceOf(aztecToken.address);
-
+        console.log(balance.toString(10));
+        console.log(scalingFactor.mul(tokensTransferred).toString(10));
         expect(balance.eq(scalingFactor.mul(tokensTransferred))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
+
+    // it('successfully blinds 100000 tokens into 4 small zero-knowledge notes', async () => {
+    //     const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
+    //         kIn: [],
+    //         kOut: [0, 2, 3, 2],
+    //     });
+    //     const kPublic = GROUP_MODULUS.sub(new BN(7));
+    //     const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[5], kPublic);
+    //     const outputOwners = aztecAccounts.slice(0, 4).map(account => account.address);
+    //     const result = await aztecToken.confidentialTransfer(proofData, m, challenge, [], outputOwners, '0x', {
+    //         from: accounts[5],
+    //         gas: 2000000,
+    //     });
+    //     const balance = await token.balanceOf(aztecToken.address);
+    //     console.log(balance.toString(10));
+    //     console.log(scalingFactor.mul(new BN(7)).toString(10));
+    //     expect(balance.eq(scalingFactor.mul(new BN(7)))).to.equal(true);
+    //     console.log('gas spent = ', result.receipt.gasUsed);
+    // });
 
     it('succesfully enacts a join split transaction, splitting a 10000, 13000 notes into a 3000, 20000 notes', async () => {
         const { commitments: outputCommitments } = await aztecProof.constructModifiedCommitmentSet({
@@ -86,7 +106,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
-        const result = await aztecToken.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, '0x');
+        const result = await aztecToken.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x');
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 
@@ -99,7 +119,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
             sign.signNote(proofData[0], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey),
             sign.signNote(proofData[1], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey),
         ].map(result => result.signature);
-        const result = await aztecToken.confidentialTransaction(
+        const result = await aztecToken.confidentialTransfer(
             proofData,
             m,
             challenge,

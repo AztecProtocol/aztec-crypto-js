@@ -51,7 +51,7 @@ contract('ZEthereum Tests', (accounts) => {
         const kPublic = GROUP_MODULUS.sub(new BN(1000));
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, [], outputOwners, '0x', {
+        const result = await zEthereum.confidentialTransfer(proofData, m, challenge, [], outputOwners, '0x', {
             from: accounts[0],
             gas: 5400000,
             value: new BN(1000).mul(zEthereumToEthereum),
@@ -79,7 +79,7 @@ contract('ZEthereum Tests', (accounts) => {
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, '0x');
+        const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x');
         console.log('gas spent = ', result.receipt.gasUsed);
     });
 
@@ -95,7 +95,7 @@ contract('ZEthereum Tests', (accounts) => {
             sign.signNote(proofData[1], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
         ].map(r => r.signature);
         const outputOwners = [aztecAccounts[0].address];
-        const result = await zEthereum.confidentialTransaction(proofData, m, challenge, signatures, outputOwners, '0x', {
+        const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x', {
             from: accounts[3],
             gas: 5000000,
         });
