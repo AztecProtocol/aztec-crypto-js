@@ -8,6 +8,7 @@ const {
     H_X,
     H_Y,
     weierstrassBRed,
+    groupReduction,
 } = require('../params');
 
 function Bn128() {
@@ -64,6 +65,8 @@ function Bn128() {
         }
         return k;
     };
+
+    curve.groupReduction = groupReduction;
 
     function AztecCompressed(p1, p2) {
         if (p1.y.eq(p2.y)) {

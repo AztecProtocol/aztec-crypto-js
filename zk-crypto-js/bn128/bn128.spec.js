@@ -8,7 +8,7 @@ const { groupReduction } = require('../params');
 
 const { expect } = chai;
 
-describe.only('curve.js tests', () => {
+describe('bn128 tests', () => {
     it('curve exports the bn128 curve', async () => {
         const testPoint = bn128.randomPoint();
         const scalar = new BN(crypto.randomBytes(32), 16).toRed(groupReduction);
