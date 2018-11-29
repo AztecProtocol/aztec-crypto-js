@@ -22,16 +22,16 @@ describe('note tests', () => {
 
         const importedNote = notes.fromPublicKey(exportedPublicKey);
 
-        expect(importedNote.gamma.getPublic(false, 'hex')).to.equal(note.gamma.getPublic(false, 'hex'));
-        expect(importedNote.sigma.getPublic(false, 'hex')).to.equal(note.sigma.getPublic(false, 'hex'));
+        expect(importedNote.gamma.encode('hex', false)).to.equal(note.gamma.encode('hex', false));
+        expect(importedNote.sigma.encode('hex', false)).to.equal(note.sigma.encode('hex', false));
     });
 
     it('note.create and note.derive create well formed notes', async () => {
         const spendingKey = secp256k1.keyFromPrivate(crypto.randomBytes(32, 16));
         const result = notes.create(spendingKey.getPublic(true, 'hex'), 1234);
         const expected = notes.derive(result.getPublic(), `0x${spendingKey.getPrivate('hex')}`);
-        expect(result.gamma.getPublic(false, 'hex')).to.equal(expected.gamma.getPublic(false, 'hex'));
-        expect(result.sigma.getPublic(false, 'hex')).to.equal(expected.sigma.getPublic(false, 'hex'));
+        expect(result.gamma.encode('hex', false)).to.equal(expected.gamma.encode('hex', false));
+        expect(result.sigma.encode('hex', false)).to.equal(expected.sigma.encode('hex', false));
         expect(result.k.toString(16)).to.equal(expected.k.toString(16));
         expect(result.a.toString(16)).to.equal(expected.a.toString(16));
         expect(expected.k.toString(10)).to.equal('1234');

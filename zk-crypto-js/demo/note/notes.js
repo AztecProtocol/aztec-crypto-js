@@ -33,8 +33,8 @@ function Note(publicKey, viewingKey) {
         if (publicKey.length !== 200) {
             throw new Error(`invalid public key length for key ${publicKey}, expected 200, got ${publicKey.length}`);
         }
-        this.gamma = bn128.ec.keyFromPublic(publicKey.slice(2, 68), 'hex');
-        this.sigma = bn128.ec.keyFromPublic(publicKey.slice(68, 134), 'hex');
+        this.gamma = bn128.ec.keyFromPublic(publicKey.slice(2, 68), 'hex').getPublic();
+        this.sigma = bn128.ec.keyFromPublic(publicKey.slice(68, 134), 'hex').getPublic();
         this.ephemeral = secp256k1.keyFromPublic(publicKey.slice(134, 200), 'hex');
         this.k = null;
         this.a = null;
@@ -44,15 +44,15 @@ function Note(publicKey, viewingKey) {
         this.k = new BN(viewingKey.slice(66, 74), 16);
         this.ephemeral = secp256k1.keyFromPublic(viewingKey.slice(74, 140), 'hex');
         const mu = bn128.ec.keyFromPublic(setup.readSignatureSync(this.k.toNumber()));
-        this.gamma = bn128.ec.keyFromPublic(mu.getPublic().mul(this.a));
-        this.sigma = bn128.ec.keyFromPublic(this.gamma.getPublic().mul(this.k).add(bn128.h.mul(this.a)));
+        this.gamma = (mu.getPublic().mul(this.a));
+        this.sigma = this.gamma.mul(this.k).add(bn128.h.mul(this.a));
     }
-    this.id = getNoteHash(this.gamma.getPublic(), this.sigma.getPublic());
+    this.id = getNoteHash(this.gamma, this.sigma);
 }
 
 Note.prototype.getPublic = function getPublic() {
-    const gamma = this.gamma.getPublic(true, 'hex');
-    const sigma = this.sigma.getPublic(true, 'hex');
+    const gamma = this.gamma.encode('hex', true);
+    const sigma = this.sigma.encode('hex', true);
     const ephemeral = this.ephemeral.getPublic(true, 'hex');
     return `0x${padLeft(gamma, 66)}${padLeft(sigma, 66)}${padLeft(ephemeral, 66)}`;
 };
@@ -67,8 +67,8 @@ Note.prototype.getView = function getView() {
 Note.prototype.derive = function derive(spendingKey) {
     const sharedSecret = getSharedSecret(this.ephemeral.getPublic(), Buffer.from(spendingKey.slice(2), 'hex'));
     this.a = new BN(sharedSecret.slice(2), 16).umod(bn128.n);
-    const gammaK = this.sigma.getPublic().add(bn128.h.mul(this.a).neg());
-    this.k = bn128.recoverMessage(this.gamma.getPublic(), gammaK);
+    const gammaK = this.sigma.add(bn128.h.mul(this.a).neg());
+    this.k = bn128.recoverMessage(this.gamma, gammaK);
 };
 
 Note.prototype.exportNote = function exportNote() {
