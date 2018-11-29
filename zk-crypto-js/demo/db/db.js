@@ -6,6 +6,7 @@ const config = require('../config');
 const transactions = require('./transactions');
 const wallets = require('./wallets');
 const contracts = require('./contracts');
+const notes = require('./notes');
 
 const adapter = new FileSync(config.db);
 const database = low(adapter);
@@ -37,6 +38,7 @@ function initialState() {
                 deployed: [],
             },
         },
+        notes: [],
     };
 }
 
@@ -50,5 +52,6 @@ module.exports = {
     wallets: wallets(getDb),
     transactions: transactions(getDb),
     contracts: contracts(getDb),
+    notes: notes(getDb),
     clear,
 };

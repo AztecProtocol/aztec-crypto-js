@@ -8,6 +8,20 @@ const setup = require('../../setup/setup');
 
 const { padLeft } = web3Utils;
 
+function getNoteHash(gamma, sigma) {
+    const gammaX = padLeft(gamma.x.fromRed().toString(16), 64);
+    const gammaY = padLeft(gamma.y.fromRed().toString(16), 64);
+    const sigmaX = padLeft(sigma.x.fromRed().toString(16), 64);
+    const sigmaY = padLeft(sigma.y.fromRed().toString(16), 64);
+    return web3Utils.sha3(`0x${gammaX}${gammaY}${sigmaX}${sigmaY}`, 'hex');
+}
+
+function getSharedSecret(ephemeralKey, privateKey) {
+    const sharedSecret = ephemeralKey.mul(privateKey);
+    const sharedSecretHex = `0x${sharedSecret.encode(false).toString('hex')}`;
+    return web3Utils.sha3(sharedSecretHex, 'hex');
+}
+
 function Note(publicKey, viewingKey) {
     if (publicKey && viewingKey) {
         throw new Error('expected one of publicKey or viewingKey, not both');
@@ -33,6 +47,7 @@ function Note(publicKey, viewingKey) {
         this.gamma = bn128.ec.keyFromPublic(mu.getPublic().mul(this.a));
         this.sigma = bn128.ec.keyFromPublic(this.gamma.getPublic().mul(this.k).add(bn128.h.mul(this.a)));
     }
+    this.id = getNoteHash(this.gamma, this.sigma);
 }
 
 Note.prototype.getPublic = function getPublic() {
@@ -49,18 +64,31 @@ Note.prototype.getView = function getView() {
     return `0x${a}${k}${ephemeral}`;
 };
 
-
-function getSharedSecret(ephemeralKey, privateKey) {
-    const sharedSecret = ephemeralKey.mul(privateKey);
-    const sharedSecretHex = `0x${sharedSecret.encode(false).toString('hex')}`;
-    return web3Utils.sha3(sharedSecretHex, 'hex');
-}
-
 Note.prototype.derive = function derive(spendingKey) {
     const sharedSecret = getSharedSecret(this.ephemeral.getPublic(), Buffer.from(spendingKey.slice(2), 'hex'));
     this.a = new BN(sharedSecret.slice(2), 16).umod(bn128.n);
     const gammaK = this.sigma.getPublic().add(bn128.h.mul(this.a).neg());
     this.k = bn128.recoverMessage(this.gamma.getPublic(), gammaK);
+};
+
+Note.prototype.exportNote = function exportNote() {
+    const publicKey = this.getPublic();
+    const viewKey = this.getView();
+    let k = '';
+    let a = '';
+    if (BN.isBN(this.k)) {
+        k = padLeft(this.k.toString(16), 64);
+    }
+    if (BN.isBN(this.a)) {
+        a = padLeft(this.a.toString(16), 64);
+    }
+    return {
+        publicKey,
+        viewKey,
+        k,
+        a,
+        noteHash: this.noteHash,
+    };
 };
 
 function createSharedSecret(publicKeyHex) {
