@@ -1,16 +1,14 @@
 const chai = require('chai');
 const crypto = require('crypto');
-const Web3 = require('web3');
 
 const queues = require('./queues');
-
+const web3 = require('../web3Listener');
 const db = require('../db/db');
 const basicWallet = require('../basicWallet/basicWallet');
 const erc20 = require('../deployer/erc20/erc20');
 
 const { expect } = chai;
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'));
 
 function queueHandler(q) {
     return new Promise((resolve, reject) => {
@@ -20,6 +18,33 @@ function queueHandler(q) {
 }
 
 describe('queue tests', () => {
+    // describe('aztec + erc20 join-split integration test', () => {
+    //     let wallets = [];
+    //     beforeEach(async () => {
+    //         db.clear();
+    //         const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+    //         wallets = [
+    //             basicWallet.createFromPrivateKey(privateKey, 'testA'),
+    //             basicWallet.createFromPrivateKey(privateKey, 'testB'),
+    //             basicWallet.createFromPrivateKey(privateKey, 'testC'),
+    //         ];
+
+    //         const accounts = await web3.eth.getAccounts();
+    //         await Promise.all(wallets.map(wallet => web3.eth.sendTransaction({
+    //             from: accounts[0],
+    //             to: wallet.address,
+    //             value: web3.utils.toWei('1', 'ether'),
+    //         })));
+    //         const updatePromise = queueHandler(queues.erc20.update.queue);
+
+    //         queues.erc20.deploy.queue.add({
+    //             address: wallets[0].address,
+    //         });
+    //         await updatePromise;
+    //     });
+    // });
+
+
     describe('queue erc20 test', () => {
         let wallets = [];
         beforeEach(async () => {
@@ -89,6 +114,23 @@ describe('queue tests', () => {
             const contract = erc20.contract(db.contracts.erc20.get().latest.contractAddress);
             const balance = await contract.methods.balanceOf(wallets[1].address).call();
             expect(balance.toString(10)).to.equal('100000');
+
+            const approvePromise = queueHandler(queues.erc20.approve.queue);
+            const approveTxPromise = queueHandler(queues.transactions.queue);
+
+            queues.erc20.approve.queue.add({
+                from: wallets[1].address,
+                spender: wallets[0].address,
+                value: 100000,
+            });
+
+            const approveResult = await approvePromise;
+            const approveTxHash = approveResult.returnvalue;
+            expect(db.transactions.get(approveTxHash).status).to.equal('SENT');
+            await approveTxPromise;
+            expect(db.transactions.get(approveTxHash).status).to.equal('MINED');
+            const allowance = await contract.methods.allowance(wallets[1].address, wallets[0].address).call();
+            expect(allowance.toString(10)).to.equal('100000');
         });
     });
 

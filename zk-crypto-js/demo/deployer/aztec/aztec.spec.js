@@ -10,7 +10,7 @@ const { t2Formatted } = require('../../../params');
 
 const { expect } = chai;
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'));
+const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
 
 describe('aztec tests', () => {
     let wallet;

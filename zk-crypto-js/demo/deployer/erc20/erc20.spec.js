@@ -1,6 +1,5 @@
 const chai = require('chai');
 const crypto = require('crypto');
-const Web3 = require('web3');
 
 const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
@@ -9,7 +8,10 @@ const transactions = require('../transactions/transactions');
 
 const { expect } = chai;
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:9545'));
+
+// const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
+const web3 = require('../../web3Listener');
+
 
 describe('erc20 tests', () => {
     const wallets = [];
@@ -58,10 +60,9 @@ describe('erc20 tests', () => {
         await transactions.getTransactionReceipt(mintTxHash);
         const approveTxHash = await erc20.approve(wallets[1].address, wallets[0].address, 1000);
         await transactions.getTransactionReceipt(approveTxHash);
-
         const { contractAddress } = db.contracts.erc20.get().latest;
         const contract = erc20.contract(contractAddress);
         const allowance = await contract.methods.allowance(wallets[1].address, wallets[0].address).call();
         expect(allowance.toString(10)).to.equal('1000');
-    });
+    }).timeout(3000);
 });

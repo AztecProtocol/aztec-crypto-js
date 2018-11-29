@@ -1,7 +1,7 @@
 const config = {
     TEST: {
         db: 'dbTest.json',
-        provider: 'ws://localhost:9545',
+        provider: 'ws://localhost:8545',
         gasPrice: '10',
         redisConfig: {
             redis: {
@@ -10,10 +10,11 @@ const config = {
             },
             queuePrefix: 'tests',
         },
+        env: 'TEST',
     },
     DEVELOPMENT: {
         db: 'dbDevelopment.json',
-        provider: 'ws://localhost:9545',
+        provider: 'ws://localhost:8545',
         gasPrice: '10',
         redisConfig: {
             redis: {
@@ -22,6 +23,7 @@ const config = {
             },
             queuePrefix: 'development',
         },
+        env: 'DEVELOPMENT',
     },
     RINKEBY: {
         db: 'dbRinkeby.json',
@@ -34,6 +36,7 @@ const config = {
             },
             queuePrefix: 'rinkeby',
         },
+        env: 'RINKEBY',
     },
     MAINNET: {
         db: 'dbMainNet.json',
@@ -46,6 +49,7 @@ const config = {
             },
             queuePrefix: 'mainnet',
         },
+        env: 'MAINNET',
     },
 };
 
@@ -58,4 +62,5 @@ function getConfig() {
     return params;
 }
 
-module.exports = getConfig();
+const exported = getConfig();
+module.exports = exported;
