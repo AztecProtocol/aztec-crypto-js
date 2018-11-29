@@ -27,12 +27,12 @@ basicWallet.createFromPrivateKey = function createFromPrivateKey(privateKey, nam
     return db.wallets.create(wallet);
 };
 
-basicWallet.get = function get(name) {
-    return db.wallets.get(name);
+basicWallet.get = function get(address) {
+    return db.wallets.get(address);
 };
 
-basicWallet.update = function update(name, data) {
-    return db.wallets.update(name, data);
+basicWallet.update = function update(address, data) {
+    return db.wallets.update(address, data);
 };
 
 module.exports = basicWallet;

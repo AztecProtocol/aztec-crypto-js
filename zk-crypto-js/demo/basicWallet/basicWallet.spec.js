@@ -3,6 +3,7 @@ const crypto = require('crypto');
 
 const db = require('../db/db');
 const basicWallet = require('./basicWallet');
+const secp256k1 = require('../../secp256k1/secp256k1');
 
 const { expect } = chai;
 
@@ -32,5 +33,13 @@ describe('basicWallet tests', () => {
         basicWallet.update('test', { foo: 'bar' });
         const result = basicWallet.get(expected.address);
         expect(result.foo).to.equal('bar');
+    });
+
+    it('address and public key are expected', () => {
+        const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+        const wallet = basicWallet.createFromPrivateKey(privateKey);
+        const publicKey = secp256k1.keyFromPublic(wallet.publicKey.slice(2), 'hex');
+        const expected = secp256k1.g.mul(Buffer.from(privateKey.slice(2), 'hex'));
+        expect(publicKey.getPublic().eq(expected)).to.equal(true);
     });
 });
