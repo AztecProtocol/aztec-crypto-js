@@ -23,6 +23,7 @@ function Bn128() {
     });
 
     // TODO, get rid of this
+    // eslint-disable-next-line new-cap
     curve.ec = new EC.ec({
         curve: {
             curve,
