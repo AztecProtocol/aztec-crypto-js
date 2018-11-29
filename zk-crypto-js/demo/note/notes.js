@@ -47,7 +47,7 @@ function Note(publicKey, viewingKey) {
         this.gamma = bn128.ec.keyFromPublic(mu.getPublic().mul(this.a));
         this.sigma = bn128.ec.keyFromPublic(this.gamma.getPublic().mul(this.k).add(bn128.h.mul(this.a)));
     }
-    this.id = getNoteHash(this.gamma, this.sigma);
+    this.id = getNoteHash(this.gamma.getPublic(), this.sigma.getPublic());
 }
 
 Note.prototype.getPublic = function getPublic() {
