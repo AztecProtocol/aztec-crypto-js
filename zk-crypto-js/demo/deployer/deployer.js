@@ -27,8 +27,8 @@ function addNoise() {
 // ### wrappers
 const constructorWrapper = (contract, bytecode, ...params) => {
     return async function constructor(wallet) {
-        const deployBase = contract.deploy(...params, { data: bytecode });
-        console.log('NONCE = ', await web3.eth.getTransactionCount(wallet.address));
+        const deployBase = contract.deploy({ data: bytecode, arguments: params });
+        // TODO: Log NONCE with wallet
         const transaction = new Tx({
             nonce: await web3.eth.getTransactionCount(wallet.address),
             gas: web3.utils.toHex(addNoise() + await deployBase.estimateGas({ from: wallet.address })),

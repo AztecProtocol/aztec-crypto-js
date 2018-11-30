@@ -1,23 +1,29 @@
 const chai = require('chai');
 const crypto = require('crypto');
-const Web3 = require('web3');
+const BN = require('bn.js');
 
 const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
 const aztec = require('./aztec');
 const aztecProof = require('../../../proof/proof');
-const { t2Formatted } = require('../../../params');
+const { t2Formatted, GROUP_MODULUS } = require('../../../params');
+const noteController = require('../../note/controller');
+const web3 = require('../../web3Listener');
 
 const { expect } = chai;
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
 
 describe('aztec tests', () => {
     let wallet;
+    let wallets = [];
     beforeEach(async () => {
         db.clear();
         const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
         wallet = basicWallet.createFromPrivateKey(privateKey, 'test');
+        wallets = [
+            basicWallet.createFromPrivateKey(privateKey, 'testB'),
+            basicWallet.createFromPrivateKey(privateKey, 'testC'),
+        ];
 
         const accounts = await web3.eth.getAccounts();
         await web3.eth.sendTransaction({
@@ -39,12 +45,18 @@ describe('aztec tests', () => {
     it('can create join split transaction', async () => {
         const deployTransactionHash = await aztec.deployAztec(wallet.address);
         await aztec.updateAztec(deployTransactionHash);
-        const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [11, 22], kOut: [5, 28] });
-        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, wallet.address, 0);
+        const inputNotes = [
+            noteController.createNote(wallets[0].address, 100),
+            noteController.createNote(wallets[0].address, 73),
+            noteController.createNote(wallets[1].address, 101),
+            noteController.createNote(wallets[1].address, 26),
+        ];
+        const kPublic = GROUP_MODULUS.sub(new BN(300, 10));
+        const { proofData, challenge } = aztecProof.constructJoinSplit(inputNotes, 0, wallet.address, kPublic);
         const transactionHash = await aztec.joinSplit(
             wallet.address,
             proofData,
-            m,
+            0,
             challenge,
             t2Formatted
         );

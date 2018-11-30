@@ -11,17 +11,18 @@ noteController.createNote = (owner, value) => {
         throw new Error(`wallet at address ${owner} does not exist`);
     }
     const parentToken = db.contracts.aztec.get().latest;
-    if (!parentToken || !parentToken.address) {
+    if (!parentToken || !parentToken.contractAddress) {
         throw new Error(`expected contract ${parentToken} to exist`);
     }
     const note = notes.create(wallet.publicKey, value);
     const exported = {
         ...note.exportNote(),
         owner,
-        parentToken: parentToken.address,
+        parentToken: parentToken.contractAddress,
         status: 'OFF_CHAIN',
     };
     db.notes.create(exported);
+    return note;
 };
 
 noteController.setNoteStatus = (noteHash, status) => {
@@ -33,6 +34,14 @@ noteController.setNoteStatus = (noteHash, status) => {
         ...note,
         status,
     });
+};
+
+noteController.encodeMetadata = (noteArr) => {
+    const result = noteArr.reduce((acc, note) => {
+        const ephemeral = note.exportMetadata();
+        return `${acc}${ephemeral.slice(2)}`;
+    }, '');
+    return `0x${result}`;
 };
 
 module.exports = noteController;

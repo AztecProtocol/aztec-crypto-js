@@ -7,11 +7,7 @@ const erc20 = require('./erc20');
 const transactions = require('../transactions/transactions');
 
 const { expect } = chai;
-
-
-// const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545'));
 const web3 = require('../../web3Listener');
-
 
 describe('erc20 tests', () => {
     const wallets = [];
