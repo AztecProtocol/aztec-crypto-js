@@ -13,7 +13,7 @@ function generateNotes(database) {
     const notes = {};
     notes.create = (data) => {
         const note = database().get('notes').find({ noteHash: data.noteHash }).value();
-        if (note) { throw new Error('transaction ', data.note, ' already exists'); }
+        if (note) { throw new Error(`note ${JSON.stringify(note)} already exists`); }
         database().get('notes')
             .push({ ...initNote, ...data })
             .write();

@@ -32,8 +32,6 @@ describe('bn128 tests', () => {
         const p2 = bn128.point(p1.x.redMul(bn128.endo.beta), p1.y);
         const compressed = bn128.aztecCompressed(p1, p2);
         const decompressed = compressed.aztecDecompress();
-        console.log(p1);
-        console.log(decompressed.p1);
         expect(decompressed.p1.eq(p1)).to.equal(true);
         expect(decompressed.p2.eq(p2)).to.equal(true);
     });

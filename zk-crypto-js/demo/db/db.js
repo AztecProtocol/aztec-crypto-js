@@ -37,6 +37,14 @@ function initialState() {
                 },
                 deployed: [],
             },
+            aztecToken: {
+                latest: {
+                    address: '',
+                    transactionHash: '',
+                    bytecode: '',
+                },
+                deployed: [],
+            },
         },
         notes: [],
     };
