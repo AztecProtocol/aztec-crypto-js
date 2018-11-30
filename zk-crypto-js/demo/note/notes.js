@@ -40,14 +40,14 @@ function Note(publicKey, viewingKey) {
         this.a = null;
     }
     if (viewingKey) {
-        this.a = new BN(viewingKey.slice(2, 66), 16);
-        this.k = new BN(viewingKey.slice(66, 74), 16);
+        this.a = new BN(viewingKey.slice(2, 66), 16).toRed(bn128.groupReduction);
+        this.k = new BN(viewingKey.slice(66, 74), 16).toRed(bn128.groupReduction);
         this.ephemeral = secp256k1.keyFromPublic(viewingKey.slice(74, 140), 'hex');
         const mu = bn128.ec.keyFromPublic(setup.readSignatureSync(this.k.toNumber()));
         this.gamma = (mu.getPublic().mul(this.a));
         this.sigma = this.gamma.mul(this.k).add(bn128.h.mul(this.a));
     }
-    this.id = getNoteHash(this.gamma, this.sigma);
+    this.noteHash = getNoteHash(this.gamma, this.sigma);
 }
 
 Note.prototype.getPublic = function getPublic() {
@@ -58,17 +58,17 @@ Note.prototype.getPublic = function getPublic() {
 };
 
 Note.prototype.getView = function getView() {
-    const a = padLeft(this.a.toString(16), 64);
-    const k = padLeft(this.k.toString(16), 8);
+    const a = padLeft(this.a.fromRed().toString(16), 64);
+    const k = padLeft(this.k.fromRed().toString(16), 8);
     const ephemeral = padLeft(this.ephemeral.getPublic(true, 'hex'), 66);
     return `0x${a}${k}${ephemeral}`;
 };
 
 Note.prototype.derive = function derive(spendingKey) {
     const sharedSecret = getSharedSecret(this.ephemeral.getPublic(), Buffer.from(spendingKey.slice(2), 'hex'));
-    this.a = new BN(sharedSecret.slice(2), 16).umod(bn128.n);
+    this.a = new BN(sharedSecret.slice(2), 16).toRed(bn128.groupReduction);
     const gammaK = this.sigma.add(bn128.h.mul(this.a).neg());
-    this.k = bn128.recoverMessage(this.gamma, gammaK);
+    this.k = new BN(bn128.recoverMessage(this.gamma, gammaK)).toRed(bn128.groupReduction);
 };
 
 Note.prototype.exportNote = function exportNote() {
@@ -77,10 +77,10 @@ Note.prototype.exportNote = function exportNote() {
     let k = '';
     let a = '';
     if (BN.isBN(this.k)) {
-        k = padLeft(this.k.toString(16), 64);
+        k = padLeft(this.k.fromRed().toString(16), 64);
     }
     if (BN.isBN(this.a)) {
-        a = padLeft(this.a.toString(16), 64);
+        a = padLeft(this.a.fromRed().toString(16), 64);
     }
     return {
         publicKey,
@@ -91,8 +91,13 @@ Note.prototype.exportNote = function exportNote() {
     };
 };
 
+Note.prototype.exportMetadata = function exportMetadata() {
+    const res = this.ephemeral.getPublic(true, 'hex');
+    return `0x${res}`;
+};
+
 function createSharedSecret(publicKeyHex) {
-    const publicKey = secp256k1.keyFromPublic(publicKeyHex, 'hex');
+    const publicKey = secp256k1.keyFromPublic(publicKeyHex.slice(2), 'hex');
 
     const ephemeralKey = secp256k1.keyFromPrivate(crypto.randomBytes(32, 16));
     const sharedSecret = publicKey.getPublic().mul(ephemeralKey.priv);
