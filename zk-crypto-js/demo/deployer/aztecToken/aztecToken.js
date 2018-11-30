@@ -4,7 +4,7 @@ const transactions = require('../transactions/transactions');
 const db = require('../../db/db');
 const { t2Formatted } = require('../../../params');
 
-const AZTECERC20Bridge = require('../../../../build/contracts/AZTEC.json');
+const AZTECERC20Bridge = require('../../../../build/contracts/AZTECERC20Bridge.json');
 
 const { web3 } = deployer;
 
@@ -12,10 +12,10 @@ const aztecToken = {};
 
 aztecToken.deployAztecToken = async (address, aztecAddress, erc20Address, scalingFactor) => {
     const wallet = db.wallets.get(address);
-    const aztecDb = db.contracts.aztec.get();
+    const aztecDb = db.contracts.aztecToken.get();
     const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, aztecDb.latest.contractAddress);
     // link to aztec verifier
-    const bytecode = AZTECERC20Bridge.replace('__AZTECInterface________________________', aztecAddress.slice(2));
+    const bytecode = AZTECERC20Bridge.bytecode.replace('__AZTECInterface________________________', aztecAddress.slice(2));
 
     if (aztecDb && aztecDb.latest.bytecode === bytecode) {
         throw new Error('aztec contract already deployed at address ', aztecDb.latest.address);
@@ -53,9 +53,9 @@ aztecToken.updateAztecToken = async (transactionHash) => {
     });
 };
 
-aztecToken.confidentialTransfer = async (address, proofData, m, challenge) => {
+aztecToken.confidentialTransfer = async (address, proofData, m, challenge, inputSignatures, outputOwners, metadata) => {
     const wallet = db.wallets.get(address);
-    const aztecDb = db.contracts.aztec.get();
+    const aztecDb = db.contracts.aztecToken.get();
     if (!aztecDb.latest.contractAddress) {
         throw new Error('could not find deployed aztec contract');
     }
@@ -65,28 +65,34 @@ aztecToken.confidentialTransfer = async (address, proofData, m, challenge) => {
     const transactionHash = await deployer.methodCall(
         aztecContract,
         wallet,
-        'validateJoinSplit',
+        'confidentialTransfer',
         proofData,
         m,
         challenge,
-        t2Formatted
+        inputSignatures,
+        outputOwners,
+        metadata
     );
 
     // add transaction
     db.transactions.create({
         status: 'SENT',
-        type: 'AZTEC_JOIN_SPLIT',
+        type: 'AZTEC_TOKEN_CONFIDENTIAL_TRANSFER',
         transactionHash,
     });
-    const transactionReceipt = await deployer.getTransactionReceipt(transactionHash);
+    // const transactionReceipt = await deployer.getTransactionReceipt(transactionHash);
 
-    db.transactions.update(transactionHash, {
-        status: 'SENT',
-        type: 'AZTEC_JOIN_SPLIT',
-        transactionHash,
-        transactionReceipt,
-    });
+    // db.transactions.update(transactionHash, {
+    //     status: 'SENT',
+    //     type: 'AZTEC_JOIN_SPLIT',
+    //     transactionHash,
+    //     transactionReceipt,
+    // });
     return transactionHash;
+};
+
+aztecToken.contract = (contractAddress) => {
+    return new web3.eth.Contract(AZTECERC20Bridge.abi, contractAddress);
 };
 
 module.exports = aztecToken;
