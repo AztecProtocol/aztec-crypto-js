@@ -2,17 +2,15 @@ pragma solidity ^0.4.23;
 
 library AZTECInterface {
     function validateJoinSplit(bytes32[6][], uint, uint, bytes32[4]) external pure returns (bool) {}
-    function validateJoinSplit2(bytes32[6][], uint, uint, bytes32[4]) external pure returns (bytes32[20]) {}
-
 }
 
 /**
  * @title Library to validate AZTEC zero-knowledge proofs
- * @author Zachary Williamson, CreditMint
+ * @author Zachary Williamson, AZTEC
  * @dev Don't include this as an internal library. This contract uses a static memory table to cache elliptic curve primitives and hashes.
  * Calling this internally from another function will lead to memory mutation and undefined behaviour.
  * The intended use case is to call this externally via `staticcall`. External calls to OptimizedAZTEC can be treated as pure functions as this contract contains no storage and makes no external calls (other than to precompiles)
- * Copyright Creditmint 2018. All rights reserved.
+ * Copyright Spilbury Holdings Ltd 2018. All rights reserved.
  * We will be releasing AZTEC as an open-source protocol that provides efficient transaction privacy for Ethereum.
  * This will include our bespoke AZTEC decentralized exchange, allowing for cross-asset transfers with full transaction privacy
  * and interopability with public decentralized exchanges.
@@ -25,13 +23,15 @@ contract AZTEC {
      * @notice See AZTECInterface for how method calls should be constructed.
      * 'Cost' of raw elliptic curve primitives for a transaction: 260,700 gas + (124,500 * number of input notes) + (167,600 * number of output notes).
      * For a basic 'joinSplit' with 2 inputs and 2 outputs = 844,900 gas.
-     * AZTEC is written in IULIA to enable manual memory management and for other efficiency savings.
+     * AZTEC is written in YUL to enable manual memory management and for other efficiency savings.
      **/
     function() external payable {
         assembly {
+
             // We don't check for function signatures, there's only one function that ever gets called: validateJoinSplit()
             // We still assume calldata is offset by 4 bytes so that we can represent this contract through a compatible ABI
             validateJoinSplit()
+
             // should not get here
             mstore(0x00, 404)
             revert(0x00, 0x20)
@@ -85,10 +85,13 @@ contract AZTEC {
                 let n := calldataload(notes)
                 let gen_order := 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
                 let challenge := mod(calldataload(0x44), gen_order)
+
                 // validate m <= n
                 if gt(m, n) { mstore(0x00, 404) revert(0x00, 0x20) }
+
                 // recover k_{public} and calculate k_{public}
                 let kn := calldataload(sub(calldatasize, 0xc0))
+
                 // add kn and m to final hash table
                 mstore(0x2a0, caller)
                 mstore(0x2c0, kn)
@@ -96,11 +99,14 @@ contract AZTEC {
                 kn := mulmod(sub(gen_order, kn), challenge, gen_order) // we actually want c*k_{public}
                 hashCommitments(notes, n)
                 let b := add(0x300, mul(n, 0x80))
+
                 // Iterate over every note and calculate the blinding factor B_i = \gamma_i^{kBar}h^{aBar}\sigma_i^{-c}.
                 // We use the AZTEC protocol pairing optimization to reduce the number of pairing comparisons to 1, which adds some minor alterations
                 for { let i := 0 } lt(i, n) { i := add(i, 0x01) } {
+
                     // Get the calldata index of this note
                     let noteIndex := add(add(notes, 0x20), mul(i, 0xc0))
+
                     // Define variables k, a and c.
                     // If i <= m then
                     //   k = kBar_i
@@ -131,6 +137,7 @@ contract AZTEC {
                     switch eq(add(i, 0x01), n)
                     case 1 {
                         k := kn
+
                         // if all notes are input notes, invert k
                         if eq(m, n) {
                             k := sub(gen_order, k)
@@ -140,20 +147,24 @@ contract AZTEC {
 
                     // Check this commitment is well formed...
                     validateCommitment(noteIndex, k, a)
+
                     // If i > m then this is an output note.
                     // Set k = kx_j, a = ax_j, c = cx_j, where j = i - (m+1)
                     switch gt(add(i, 0x01), m)
                     case 1 {
+
                         // before we update k, update kn = \sum_{i=0}^{m-1}k_i - \sum_{i=m}^{n-1}k_i
                         kn := addmod(kn, sub(gen_order, k), gen_order)
                         let x := mod(mload(0x00), gen_order)
                         k := mulmod(k, x, gen_order)
                         a := mulmod(a, x, gen_order)
                         c := mulmod(challenge, x, gen_order)
+
                         // calculate x_{j+1}
                         mstore(0x00, keccak256(0x00, 0x20))
                     }
                     case 0 {
+
                         // nothing to do here except update kn = \sum_{i=0}^{m-1}k_i - \sum_{i=m}^{n-1}k_i
                         kn := addmod(kn, k, gen_order)
                     }
@@ -188,10 +199,11 @@ contract AZTEC {
                     // \gamma_i^{k} and h^{a} in memory block 0x120:0x1a0
                     // Store result of addition at 0x160:0x1a0
                     result := and(result, staticcall(gas, 6, 0x120, 0x80, 0x160, 0x40))
+
                     // \gamma_i^{k}h^{a} and \sigma^{-c} in memory block 0x160:0x1e0
                     // Store resulting point B at memory index b
                     result := and(result, staticcall(gas, 6, 0x160, 0x80, b, 0x40))
-                    sstore(100, b)
+
                     // We have \sigma^{-c} at 0x1a0:0x200
                     // And \sigma_{acc} at 0x1e0:0x200
                     // If i = m + 1 (i.e. first output note)
@@ -202,19 +214,23 @@ contract AZTEC {
                         mstore(0x1e0, mload(0xe0))
                         mstore(0x200, sub(0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47, mload(0x100)))
                     }
+
                     // If i > m + 1 (i.e. subsequent output notes)
                     // then we add \sigma^{-c} and \sigma_{acc} and store result at \sigma_{acc} (0x1e0:0x200)
                     // we then calculate \gamma^{cx} and add into \gamma_{acc}
                     if gt(i, m) {
                        mstore(0x60, c)
                        result := and(result, staticcall(gas, 7, 0x20, 0x60, 0x220, 0x40))
+
                        // \gamma_i^{cx} now at 0x220:0x260, \gamma_{acc} is at 0x260:0x2a0
                        result := and(result, staticcall(gas, 6, 0x220, 0x80, 0x260, 0x40))
+
                        // add \sigma_i^{-cx} and \sigma_{acc} into \sigma_{acc} at 0x1e0
                        result := and(result, staticcall(gas, 6, 0x1a0, 0x80, 0x1e0, 0x40))
                     }
+
                     // throw transaction if any calls to precompiled contracts failed
-                    if iszero(result) { revert(0x00, 0x00) }
+                    if iszero(result) { mstore(0x00, 400) revert(0x00, 0x20) }
                     b := add(b, 0x40) // increase B pointer by 2 words
                 }
 
@@ -227,9 +243,10 @@ contract AZTEC {
 
                 // We now have the note commitments and the calculated blinding factors in a block of memory
                 // starting at 0x2a0, of size (b - 0x2a0).
-                // Hash this block to reconstruct the initial challenge ahd validate that they match
+                // Hash this block to reconstruct the initial challenge and validate that they match
                 let expected := mod(keccak256(0x2a0, sub(b, 0x2a0)), gen_order)
                 if iszero(eq(expected, challenge)) {
+
                     // No! Bad! No soup for you!
                     mstore(0x00, 404)
                     revert(0x00, 0x20)
@@ -246,10 +263,11 @@ contract AZTEC {
              **/
             function validatePairing(t2) {
                 let field_order := 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47
-                let t2_x_1 := calldataload(t2) // 0x464
+                let t2_x_1 := calldataload(t2)
                 let t2_x_2 := calldataload(add(t2, 0x20))
                 let t2_y_1 := calldataload(add(t2, 0x40))
                 let t2_y_2 := calldataload(add(t2, 0x60))
+
                 // check provided setup pubkey is not zero or g2
                 if or(or(or(or(or(or(or(
                     iszero(t2_x_1),
@@ -261,7 +279,7 @@ contract AZTEC {
                     eq(t2_y_1, 0x12c85ea5db8c6deb4aab71808dcb408fe3d1e7690c43d37b4ce6cc0166fa7daa)),
                     eq(t2_y_2, 0x90689d0585ff075ec9e99ad690c3395bc4b313370b38ef355acdadcd122975b))
                 {
-                    mstore(0x00, 500)
+                    mstore(0x00, 400)
                     revert(0x00, 0x20)
                 }
 

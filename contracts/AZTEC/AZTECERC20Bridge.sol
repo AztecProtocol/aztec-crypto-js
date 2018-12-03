@@ -15,8 +15,8 @@ contract ERC20Interface {
 
 /**
  * @title  AZTEC token, providing a confidential representation of an ERC20 token 
- * @author Zachary Williamson, CreditMint
- * Copyright Creditmint 2018. All rights reserved.
+ * @author Zachary Williamson, AZTEC
+ * Copyright Spilsbury Holdings 2018. All rights reserved.
  * We will be releasing AZTEC as an open-source protocol that provides efficient transaction privacy for Ethereum.
  * This will include our bespoke AZTEC decentralized exchange, allowing for cross-asset transfers with full transaction privacy
  * and interopability with public decentralized exchanges.
@@ -46,6 +46,7 @@ contract AZTECERC20Bridge {
         setupPubKey = _setupPubKey;
         token = ERC20Interface(_token);
         scalingFactor = _scalingFactor;
+
         // calculate the EIP712 domain hash, for hashing structured data
         bytes32 _domainHash;
         assembly {
