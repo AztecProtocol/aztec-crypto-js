@@ -148,7 +148,7 @@ contract AZTECERC20Bridge {
 
         // extract variable kPublic from proof
         uint256 kPublic = uint(notes[notes.length - 1][0]);
-        require(kPublic < groupModulus, "invalid valid of kPublic");
+        require(kPublic < groupModulus, "invalid value of kPublic");
 
         // iterate over the notes array and validate each input/output note
         for (uint256 i = 0; i < notes.length; i++) {
