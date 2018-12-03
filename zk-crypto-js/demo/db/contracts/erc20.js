@@ -31,6 +31,18 @@ function generateErc20(database) {
         database().get('contracts.erc20').assign(newContract).write();
         return newContract;
     };
+
+    // TODO export defaults
+    erc20.clear = () => {
+        database().get('contracts.erc20').assign({
+            latest: {
+                address: '',
+                transactionHash: '',
+                bytecode: '',
+            },
+            deployed: [],
+        }).write();
+    };
     return erc20;
 }
 

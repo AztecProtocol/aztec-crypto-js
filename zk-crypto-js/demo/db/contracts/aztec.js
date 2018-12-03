@@ -32,6 +32,19 @@ function generateAztec(database) {
         database().get('contracts.aztec').assign(newContract).write();
         return newContract;
     };
+
+    // TODO export defaults
+    aztec.clear = () => {
+        database().get('contracts.aztec').assign({
+            latest: {
+                address: '',
+                transactionHash: '',
+                bytecode: '',
+            },
+            deployed: [],
+        }).write();
+    };
+
     return aztec;
 }
 

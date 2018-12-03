@@ -20,9 +20,9 @@ function generateWallets(database) {
             .value();
     };
 
-    wallets.update = (name, data) => {
+    wallets.update = (address, data) => {
         const wallet = database().get('wallets')
-            .find({ name })
+            .find({ address })
             .assign(data)
             .write();
         return wallet;
