@@ -3,6 +3,7 @@ const Tx = require('ethereumjs-tx');
 const config = require('../config');
 
 const web3 = require('../web3Listener');
+const basicWallet = require('../basicWallet/basicWallet'); // todo put in controllers
 
 function getTransactionHash(transaction) {
     if (config.env === 'TEST') {
@@ -28,9 +29,8 @@ function addNoise() {
 const constructorWrapper = (contract, bytecode, ...params) => {
     return async function constructor(wallet) {
         const deployBase = contract.deploy({ data: bytecode, arguments: params });
-        // TODO: Log NONCE with wallet
         const transaction = new Tx({
-            nonce: await web3.eth.getTransactionCount(wallet.address),
+            nonce: wallet.nonce,
             gas: web3.utils.toHex(addNoise() + await deployBase.estimateGas({ from: wallet.address })),
             gasPrice: web3.utils.toHex(web3.utils.toWei(config.gasPrice, 'gwei')),
             data: deployBase.encodeABI(),
@@ -41,6 +41,10 @@ const constructorWrapper = (contract, bytecode, ...params) => {
         transaction.sign(Buffer.from(wallet.privateKey.slice(2), 'hex'));
         const transactionHash = getTransactionHash(transaction);
         const result = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+        basicWallet.update(
+            wallet.address,
+            { nonce: Number(wallet.nonce) + 1 }
+        );
         return {
             transactionHash,
             transaction: result,
@@ -56,7 +60,7 @@ const methodWrapper = (contract, method, ...params) => {
             to: contract.contractAddress,
         }));
         const transaction = new Tx({
-            nonce: await web3.eth.getTransactionCount(wallet.address),
+            nonce: wallet.nonce,
             gas: web3.utils.toHex(Math.floor(Number(gas) * 1.1) + addNoise()),
             gasPrice: web3.utils.toHex(web3.utils.toWei(config.gasPrice, 'gwei')),
             data: contract.methods[method](...params).encodeABI(),
@@ -64,9 +68,13 @@ const methodWrapper = (contract, method, ...params) => {
             to: contract.contractAddress,
             chainId: web3.utils.toHex(await web3.eth.net.getId()),
         });
-        const transactionHash = getTransactionHash(transaction);
         transaction.sign(Buffer.from(wallet.privateKey.slice(2), 'hex'));
+        const transactionHash = getTransactionHash(transaction);
         const result = web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+        basicWallet.update(
+            wallet.address,
+            { nonce: Number(wallet.nonce) + 1 }
+        );
         return {
             transactionHash,
             transaction: result,

@@ -16,7 +16,7 @@ const { GROUP_MODULUS } = require('../../../params');
 const { expect } = chai;
 const web3 = require('../../web3Listener');
 
-describe.only('aztecToken tests', function describe() {
+describe('aztecToken tests', function describe() {
     this.timeout(10000);
     const wallets = [];
     let scalingFactor;
@@ -24,8 +24,9 @@ describe.only('aztecToken tests', function describe() {
     let erc20Address;
     beforeEach(async () => {
         db.clear();
-        wallets[0] = basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testA');
-        wallets[1] = basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testB');
+        wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testA');
+        wallets[1] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testB');
+        wallets[2] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testC');
 
         const accounts = await web3.eth.getAccounts();
         await Promise.all(wallets.map((wallet) => {
@@ -95,7 +96,17 @@ describe.only('aztecToken tests', function describe() {
         expect(transaction.transactionHash).to.equal(transactionHash);
         expect(transaction.status).to.equal('SENT');
 
-        await transactions.getTransactionReceipt(transactionHash);
+        expect(noteController.get(inputNotes[0].noteHash).status).to.equal('OFF_CHAIN');
+        expect(noteController.get(inputNotes[1].noteHash).status).to.equal('OFF_CHAIN');
+        expect(noteController.get(inputNotes[2].noteHash).status).to.equal('OFF_CHAIN');
+        expect(noteController.get(inputNotes[3].noteHash).status).to.equal('OFF_CHAIN');
+
+        await aztecToken.updateJoinSplitTransaction(transactionHash);
+
+        expect(noteController.get(inputNotes[0].noteHash).status).to.equal('UNSPENT');
+        expect(noteController.get(inputNotes[1].noteHash).status).to.equal('UNSPENT');
+        expect(noteController.get(inputNotes[2].noteHash).status).to.equal('UNSPENT');
+        expect(noteController.get(inputNotes[3].noteHash).status).to.equal('UNSPENT');
 
         transaction = db.transactions.get(transactionHash);
         expect(transaction.transactionHash).to.equal(transactionHash);
@@ -106,5 +117,35 @@ describe.only('aztecToken tests', function describe() {
         expect(await contract.methods.noteRegistry(inputNotes[1].noteHash).call()).to.equal(wallets[0].address);
         expect(await contract.methods.noteRegistry(inputNotes[2].noteHash).call()).to.equal(wallets[1].address);
         expect(await contract.methods.noteRegistry(inputNotes[3].noteHash).call()).to.equal(wallets[1].address);
+
+        const {
+            proofData: newProofData,
+            challenge: newChallenge,
+            inputSignatures,
+            outputOwners,
+            metadata: newMetadata,
+            noteHashes,
+        } = noteController.createConfidentialTransfer(
+            [inputNotes[0].noteHash, inputNotes[1].noteHash],
+            [[wallets[2].address, 20], [wallets[2].address, 3]],
+            150,
+            wallets[1].address
+        );
+
+        const redeemTransactionHash = await aztecToken.confidentialTransfer(
+            wallets[1].address,
+            newProofData,
+            2,
+            newChallenge,
+            inputSignatures,
+            outputOwners,
+            newMetadata
+        );
+
+        await aztecToken.updateJoinSplitTransaction(redeemTransactionHash);
+        expect(noteController.get(noteHashes[0]).status).to.equal('SPENT');
+        expect(noteController.get(noteHashes[1]).status).to.equal('SPENT');
+        expect(noteController.get(noteHashes[2]).status).to.equal('UNSPENT');
+        expect(noteController.get(noteHashes[3]).status).to.equal('UNSPENT');
     });
 });

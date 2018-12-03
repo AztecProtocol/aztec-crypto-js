@@ -13,8 +13,8 @@ describe('erc20 tests', () => {
     const wallets = [];
     beforeEach(async () => {
         db.clear();
-        wallets[0] = basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testA');
-        wallets[1] = basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testB');
+        wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testA');
+        wallets[1] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testB');
 
         const accounts = await web3.eth.getAccounts();
         await Promise.all(wallets.map((wallet) => {

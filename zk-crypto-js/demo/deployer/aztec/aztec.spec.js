@@ -19,10 +19,10 @@ describe('aztec tests', () => {
     beforeEach(async () => {
         db.clear();
         const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
-        wallet = basicWallet.createFromPrivateKey(privateKey, 'test');
+        wallet = await basicWallet.createFromPrivateKey(privateKey, 'test');
         wallets = [
-            basicWallet.createFromPrivateKey(privateKey, 'testB'),
-            basicWallet.createFromPrivateKey(privateKey, 'testC'),
+            await basicWallet.createFromPrivateKey(privateKey, 'testB'),
+            await basicWallet.createFromPrivateKey(privateKey, 'testC'),
         ];
 
         const accounts = await web3.eth.getAccounts();

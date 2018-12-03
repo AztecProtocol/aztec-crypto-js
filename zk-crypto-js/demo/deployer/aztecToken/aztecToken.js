@@ -1,12 +1,15 @@
+const web3Utils = require('web3-utils');
+
 const deployer = require('../deployer');
 const transactions = require('../transactions/transactions');
-
 const db = require('../../db/db');
 const { t2Formatted } = require('../../../params');
+const noteController = require('../../note/controller');
 
 const AZTECERC20Bridge = require('../../../../build/contracts/AZTECERC20Bridge.json');
 
 const { web3 } = deployer;
+const { padLeft } = web3Utils;
 
 const aztecToken = {};
 
@@ -89,6 +92,36 @@ aztecToken.confidentialTransfer = async (address, proofData, m, challenge, input
     //     transactionReceipt,
     // });
     return transactionHash;
+};
+
+aztecToken.updateJoinSplitTransaction = async (transactionHash) => {
+    const transactionReceipt = await deployer.getTransactionReceipt(transactionHash);
+
+    const transactionData = await deployer.getTransaction(transactionHash);
+    // // fish out notes from input data
+    const { inputs } = AZTECERC20Bridge.abi.find(v => ((v.name === 'confidentialTransfer') && (v.type === 'function')));
+    inputs[inputs.length - 1].name = 'metadata';
+    const { notes, m } = web3.eth.abi.decodeParameters(
+        inputs,
+        `0x${transactionData.input.slice(10)}`
+    );
+
+    const inputNoteHashes = notes.slice(0, m).map((note) => {
+        const noteString = note.slice(2).reduce((acc, s) => `${acc}${padLeft(s.slice(2), 64)}`, '0x');
+        return web3Utils.sha3(noteString, 'hex');
+    });
+    const outputNoteHashes = notes.slice(m, notes.length).map((note) => {
+        const noteString = note.slice(2).reduce((acc, s) => `${acc}${padLeft(s.slice(2), 64)}`, '0x');
+        return web3Utils.sha3(noteString, 'hex');
+    });
+
+    inputNoteHashes.forEach((noteHash) => { noteController.setNoteStatus(noteHash, 'SPENT'); });
+    outputNoteHashes.forEach((noteHash) => { noteController.setNoteStatus(noteHash, 'UNSPENT'); });
+    db.transactions.update(transactionHash, {
+        status: 'MINED',
+        transactionReceipt,
+        transactionData,
+    });
 };
 
 aztecToken.contract = (contractAddress) => {
