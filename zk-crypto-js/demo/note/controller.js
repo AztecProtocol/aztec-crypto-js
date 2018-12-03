@@ -1,9 +1,24 @@
+const BN = require('bn.js');
+
 const basicWallet = require('../basicWallet/basicWallet');
 const notes = require('../note/notes');
-
+const { GROUP_MODULUS } = require('../../params');
 const db = require('../db/db');
+const proof = require('../../proof/proof');
+const sign = require('../../utils/sign');
 
 const noteController = {};
+
+noteController.get = (noteHash) => {
+    const rawNote = db.notes.get(noteHash);
+    if (!rawNote) {
+        throw new Error(`could not find note at ${noteHash}`);
+    }
+    return {
+        note: notes.fromViewKey(rawNote.viewKey),
+        ...rawNote,
+    };
+};
 
 noteController.createNote = (owner, value) => {
     const wallet = basicWallet.get(owner);
@@ -26,7 +41,7 @@ noteController.createNote = (owner, value) => {
 };
 
 noteController.setNoteStatus = (noteHash, status) => {
-    const note = notes.get(noteHash);
+    const note = db.notes.get(noteHash);
     if (!note) {
         throw new Error(`could not find note with noteHash ${noteHash}`);
     }
@@ -42,6 +57,45 @@ noteController.encodeMetadata = (noteArr) => {
         return `${acc}${ephemeral.slice(2)}`;
     }, '');
     return `0x${result}`;
+};
+
+noteController.createConfidentialTransfer = (inputNoteHashes, outputNoteData, v, senderAddress) => {
+    let kPublic;
+    if (v < 0) {
+        kPublic = GROUP_MODULUS.sub(new BN(-v));
+    } else {
+        kPublic = new BN(v);
+    }
+    const aztecTokenContract = db.contracts.aztecToken.get().latest;
+    const aztecTokenAddress = aztecTokenContract.contractAddress;
+
+    const inputNotes = inputNoteHashes.map(noteHash => noteController.get(noteHash));
+    const outputNotes = outputNoteData.map(([owner, value]) => noteController.createNote(owner, value));
+    const m = inputNotes.length;
+    const noteData = [...inputNotes.map(n => n.note), ...outputNotes];
+
+    const { proofData, challenge } = proof.constructJoinSplit(noteData, m, senderAddress, kPublic);
+    const metadata = noteController.encodeMetadata(inputNotes.map(n => n.note));
+
+    const outputOwners = outputNoteData.map(([owner]) => owner);
+
+    const inputSignatures = inputNotes.map((inputNote, index) => {
+        const { owner } = inputNote;
+        const wallet = basicWallet.get(owner);
+        return sign.signNote(proofData[index], challenge, senderAddress, aztecTokenAddress, wallet.privateKey).signature;
+    });
+
+    const noteHashes = noteData.map(n => n.noteHash);
+
+    return {
+        proofData,
+        m,
+        challenge,
+        inputSignatures,
+        outputOwners,
+        metadata,
+        noteHashes,
+    };
 };
 
 module.exports = noteController;

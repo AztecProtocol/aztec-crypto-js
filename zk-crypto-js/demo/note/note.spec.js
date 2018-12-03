@@ -1,17 +1,20 @@
 const chai = require('chai');
 const crypto = require('crypto');
 const web3Utils = require('web3-utils');
+const BN = require('bn.js');
 
 const notes = require('./notes');
 const secp256k1 = require('../../secp256k1/secp256k1');
+const { GROUP_MODULUS } = require('../../params');
 
 const { padLeft } = web3Utils;
 const { expect } = chai;
 
-
 describe('note tests', () => {
     it('notes.fromPublic and notes.fromViewKey create well formed notes', async () => {
-        const a = padLeft(crypto.randomBytes(32, 16).toString('hex'), 64);
+        const aBn = new BN(crypto.randomBytes(32, 16), 16).umod(GROUP_MODULUS);
+        const a = padLeft(aBn.toString(16), 64);
+
         const k = padLeft(web3Utils.toHex('13456').slice(2), 8);
         const ephemeral = secp256k1.keyFromPrivate(crypto.randomBytes(32, 16));
         const viewKey = `0x${a}${k}${padLeft(ephemeral.getPublic(true, 'hex'), 66)}`;
@@ -28,7 +31,7 @@ describe('note tests', () => {
 
     it('note.create and note.derive create well formed notes', async () => {
         const spendingKey = secp256k1.keyFromPrivate(crypto.randomBytes(32, 16));
-        const result = notes.create(spendingKey.getPublic(true, 'hex'), 1234);
+        const result = notes.create(`0x${spendingKey.getPublic(true, 'hex')}`, 1234);
         const expected = notes.derive(result.getPublic(), `0x${spendingKey.getPrivate('hex')}`);
         expect(result.gamma.encode('hex', false)).to.equal(expected.gamma.encode('hex', false));
         expect(result.sigma.encode('hex', false)).to.equal(expected.sigma.encode('hex', false));
