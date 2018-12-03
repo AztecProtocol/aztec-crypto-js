@@ -38,7 +38,11 @@
   "scripts": {
     "test": "NODE_ENV=TEST mocha ./zk-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
     "demoTest": "NODE_ENV=TEST mocha ./zk-crypto-js/demo --trace-warnings --exit --colors --recursive --reporter spec",
-    "demo": "node ./zk-crypto-js/demo/demo.js",
+    "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoDeploy.js",
+    "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTransactions.js",
+    "demoDeployMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoDeploy.js",
+    "demoTransactionsMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoTransactions.js",
+
     "initWallets": "node ./zk-crypto-js/demo/initWallets.js"
   },
   "repository": {
