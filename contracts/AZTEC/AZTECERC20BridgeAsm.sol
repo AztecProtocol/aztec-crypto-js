@@ -163,7 +163,7 @@ contract AZTECERC20BridgeAsm {
                     }
 
                     // throw if ecdsarecover fails or noteRegistry[noteHash] !== address of signer
-                    if iszero(eq(sload(key), mload(0x00))) { mstore(0x00, 400) revert(0x00, 0x20) }
+                    if iszero(and(eq(sload(key), mload(0x00)), mload(0x00))) { mstore(0x00, 400) revert(0x00, 0x20) }
                     sstore(key, 0) // remove note from noteRegistry
                 }
                 case 0 { // output note

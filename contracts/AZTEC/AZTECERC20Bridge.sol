@@ -98,6 +98,7 @@ contract AZTECERC20Bridge {
             signatureMessage := keccak256(add(m, 0x1e), 0x42)
         }
         address owner = ecrecover(signatureMessage, uint8(signature[0]), signature[1], signature[2]);
+        require(owner != address(0), "signature invalid");
         require(noteRegistry[noteHash] == owner, "expected input note to exist in registry");
         noteRegistry[noteHash] = 0;
     }
@@ -118,6 +119,7 @@ contract AZTECERC20Bridge {
             mstore(add(m, 0x60), mload(add(note, 0xa0)))
             noteHash := keccak256(m, 0x80)
         }
+        require(owner != address(0), "owner must be valid Ethereum address");
         require(noteRegistry[noteHash] == 0, "expected output note to not exist in registry");
         noteRegistry[noteHash] = owner;
     }
@@ -142,7 +144,7 @@ contract AZTECERC20Bridge {
         require(inputSignatures.length + outputOwners.length == notes.length, "array length mismatch");
 
         // validate AZTEC zero-knowledge proof
-        require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
+        // require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
 
         // extract variable kPublic from proof
         uint256 kPublic = uint(notes[notes.length - 1][0]);

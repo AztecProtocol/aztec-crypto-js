@@ -11,6 +11,7 @@ AZTEC.abi = AZTECInterface.abi; // hon hon hon
 const aztecProof = require('../../zk-crypto-js/proof/proof');
 const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
 const sign = require('../../zk-crypto-js/utils/sign');
+const exceptions = require('../exceptions');
 
 const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 
@@ -20,7 +21,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 // Step 4: blind tokens into note form
 // Step 5: issue a join split transaction of confidential notes
 // Step 6: redeem tokens from confidential form
-contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
+contract.only('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
     let aztec;
     let aztecToken;
     let token;
@@ -141,5 +142,47 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
                 .eq(scalingFactor.mul(balance))
         ).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
+    });
+
+    it('invalid signatures cannot be used to spend non-existant notes', async () => {
+        await token.transfer(
+            aztecToken.address,
+            scalingFactor.mul(200),
+            { from: accounts[4], gas: 5000000 }
+        );
+        const { commitments } = await aztecProof.constructModifiedCommitmentSet({ kIn: [100], kOut: [] });
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, 1, accounts[3], 100);
+        const signatures = [['0x0', '0x0', '0x0']];
+        const m = 1;
+        await exceptions.catchRevert(aztecToken.confidentialTransfer(
+            proofData,
+            m,
+            challenge,
+            signatures,
+            [],
+            '0x',
+            { from: accounts[3], gas: 5000000 }
+        ));
+    });
+
+    it.only('cannot create note with no owner', async () => {
+        const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
+            kIn: [],
+            kOut: [9000, 11000, 10000, 13000, 57000],
+        });
+        initialCommitments = commitments;
+        const kPublic = GROUP_MODULUS.sub(tokensTransferred);
+        const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[4], kPublic);
+        const outputOwners = aztecAccounts.slice(0, 4).map(account => account.address);
+        outputOwners.push('0x0');
+        await exceptions.catchRevert(aztecToken.confidentialTransfer(
+            proofData,
+            m,
+            challenge,
+            [],
+            outputOwners,
+            '0x',
+            { from: accounts[4], gas: 5000000 }
+        ));
     });
 });
