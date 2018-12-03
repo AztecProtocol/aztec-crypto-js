@@ -21,7 +21,7 @@ const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 // Step 4: blind tokens into note form
 // Step 5: issue a join split transaction of confidential notes
 // Step 6: redeem tokens from confidential form
-contract.only('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
+contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
     let aztec;
     let aztecToken;
     let token;
@@ -72,25 +72,6 @@ contract.only('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         expect(balance.eq(scalingFactor.mul(tokensTransferred))).to.equal(true);
         console.log('gas spent = ', result.receipt.gasUsed);
     });
-
-    // it('successfully blinds 100000 tokens into 4 small zero-knowledge notes', async () => {
-    //     const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
-    //         kIn: [],
-    //         kOut: [0, 2, 3, 2],
-    //     });
-    //     const kPublic = GROUP_MODULUS.sub(new BN(7));
-    //     const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[5], kPublic);
-    //     const outputOwners = aztecAccounts.slice(0, 4).map(account => account.address);
-    //     const result = await aztecToken.confidentialTransfer(proofData, m, challenge, [], outputOwners, '0x', {
-    //         from: accounts[5],
-    //         gas: 2000000,
-    //     });
-    //     const balance = await token.balanceOf(aztecToken.address);
-    //     console.log(balance.toString(10));
-    //     console.log(scalingFactor.mul(new BN(7)).toString(10));
-    //     expect(balance.eq(scalingFactor.mul(new BN(7)))).to.equal(true);
-    //     console.log('gas spent = ', result.receipt.gasUsed);
-    // });
 
     it('succesfully enacts a join split transaction, splitting a 10000, 13000 notes into a 3000, 20000 notes', async () => {
         const { commitments: outputCommitments } = await aztecProof.constructModifiedCommitmentSet({
@@ -165,7 +146,7 @@ contract.only('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         ));
     });
 
-    it.only('cannot create note with no owner', async () => {
+    it('cannot create note with no owner', async () => {
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({
             kIn: [],
             kOut: [9000, 11000, 10000, 13000, 57000],

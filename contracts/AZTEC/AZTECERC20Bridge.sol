@@ -144,10 +144,11 @@ contract AZTECERC20Bridge {
         require(inputSignatures.length + outputOwners.length == notes.length, "array length mismatch");
 
         // validate AZTEC zero-knowledge proof
-        // require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
+        require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
 
         // extract variable kPublic from proof
         uint256 kPublic = uint(notes[notes.length - 1][0]);
+        require(kPublic < groupModulus, "invalid valid of kPublic");
 
         // iterate over the notes array and validate each input/output note
         for (uint256 i = 0; i < notes.length; i++) {
