@@ -30,7 +30,7 @@ describe('basicWallet tests', () => {
             `0x${crypto.randomBytes(32, 16).toString('hex')}`,
             'test'
         );
-        basicWallet.update('test', { foo: 'bar' });
+        basicWallet.update(expected.address, { foo: 'bar' });
         const result = basicWallet.get(expected.address);
         expect(result.foo).to.equal('bar');
     });
