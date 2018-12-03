@@ -2,6 +2,8 @@ pragma solidity ^0.4.23;
 
 library AZTECInterface {
     function validateJoinSplit(bytes32[6][], uint, uint, bytes32[4]) external pure returns (bool) {}
+    function validateJoinSplit2(bytes32[6][], uint, uint, bytes32[4]) external pure returns (bytes32[20]) {}
+
 }
 
 /**
@@ -94,7 +96,6 @@ contract AZTEC {
                 kn := mulmod(sub(gen_order, kn), challenge, gen_order) // we actually want c*k_{public}
                 hashCommitments(notes, n)
                 let b := add(0x300, mul(n, 0x80))
-
                 // Iterate over every note and calculate the blinding factor B_i = \gamma_i^{kBar}h^{aBar}\sigma_i^{-c}.
                 // We use the AZTEC protocol pairing optimization to reduce the number of pairing comparisons to 1, which adds some minor alterations
                 for { let i := 0 } lt(i, n) { i := add(i, 0x01) } {
@@ -138,7 +139,7 @@ contract AZTEC {
                     case 0 { k := calldataload(noteIndex) }
 
                     // Check this commitment is well formed...
-                    // validateCommitment(noteIndex, k, a)
+                    validateCommitment(noteIndex, k, a)
                     // If i > m then this is an output note.
                     // Set k = kx_j, a = ax_j, c = cx_j, where j = i - (m+1)
                     switch gt(add(i, 0x01), m)
@@ -190,7 +191,7 @@ contract AZTEC {
                     // \gamma_i^{k}h^{a} and \sigma^{-c} in memory block 0x160:0x1e0
                     // Store resulting point B at memory index b
                     result := and(result, staticcall(gas, 6, 0x160, 0x80, b, 0x40))
-
+                    sstore(100, b)
                     // We have \sigma^{-c} at 0x1a0:0x200
                     // And \sigma_{acc} at 0x1e0:0x200
                     // If i = m + 1 (i.e. first output note)
