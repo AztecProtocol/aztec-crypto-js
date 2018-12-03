@@ -51,9 +51,9 @@ describe('queue tests', () => {
             db.clear();
             const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
             wallets = [
-                basicWallet.createFromPrivateKey(privateKey, 'testA'),
-                basicWallet.createFromPrivateKey(privateKey, 'testB'),
-                basicWallet.createFromPrivateKey(privateKey, 'testC'),
+                await basicWallet.createFromPrivateKey(privateKey, 'testA'),
+                await basicWallet.createFromPrivateKey(privateKey, 'testB'),
+                await basicWallet.createFromPrivateKey(privateKey, 'testC'),
             ];
 
             const accounts = await web3.eth.getAccounts();

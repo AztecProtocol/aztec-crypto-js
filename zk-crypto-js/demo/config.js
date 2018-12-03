@@ -41,7 +41,7 @@ const config = {
     MAINNET: {
         db: 'dbMainNet.json',
         provider: 'wss://mainnet.infura.io/ws',
-        gasPrice: '10',
+        gasPrice: '5',
         redisConfig: {
             redis: {
                 port: 6379,
