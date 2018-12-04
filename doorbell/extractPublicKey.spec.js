@@ -93,11 +93,6 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             expect(returnTx).to.equal(initialTxHash);
         });
 
-        it('validate that the two methods that calculate the address from the public key, give consistent outputs', async () => {
-            const publicKey = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
-            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(helpers.publicKeyToAddress2(publicKey));
-        });
-
         it('validate that the public key can be successfully extracted from ecdsa parameters', async () => {
             const publicKey = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
             expect(typeof (publicKey)).to.equal('string');
