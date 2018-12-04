@@ -3,7 +3,7 @@ const Tx = require('ethereumjs-tx');
 const ethUtils = require('ethereumjs-util');
 
 const DOORBELL = require('../build/contracts/doorbell.json');
-const web3 = require('../doorbell/web3Config.js');
+const web3 = require('./web3Config.js');
 
 
 const deployContract = async () => {

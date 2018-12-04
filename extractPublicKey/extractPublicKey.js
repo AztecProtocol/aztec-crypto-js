@@ -1,6 +1,6 @@
 const ethUtils = require('ethereumjs-util');
 
-const helpers = require('../helpers/extractHelpers');
+const helpers = require('./helpers');
 
 
 async function extractPublicKey(userAddress, contractInstance) {
