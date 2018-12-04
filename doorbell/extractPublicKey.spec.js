@@ -48,7 +48,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         before(async () => {
             contractInstance = await helpers.deployContract();
             accounts = await web3.eth.getAccounts();
-            const { privateKey, address, publicKey } = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
+            const { privateKey, address } = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
 
             // Sending transaction to load our manually generated account with ether
             await web3.eth.sendTransaction({
@@ -83,19 +83,8 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that we can detect the transaction in the block', async () => {
-            transactionArray = await helpers.blockTxList(extractedNumber);
-
-            // Looping through the list of transactions in the block, checking if tx is in there
-            let i;
-            let result;
-            for (i = 0; i < transactionArray.length; i++) {
-                if (initialTxHash === transactionArray[i]) { // tx is the stored tx-hash
-                    result = true;
-                } else {
-                    result = false;
-                }
-            }
-            expect(result).to.equal(true);
+            transactionArray = await helpers.getTransactionHashesFromBlock(extractedNumber);
+            expect(transactionArray).to.contains.members([initialTxHash]);
         });
 
         it('validate that we can recover ecdsa params for a sending address from an array of tx hashes', async () => {
@@ -105,18 +94,16 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that the two methods that calculate the address from the public key, give consistent outputs', async () => {
-            const publicKeyBuffer = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
-            const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
-            expect(helpers.publicKeyToAddress1(publicKeyBuffer)).to.equal(helpers.publicKeyToAddress2(publicKey));
+            const publicKey = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
+            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(helpers.publicKeyToAddress2(publicKey));
         });
 
         it('validate that the public key can be successfully extracted from ecdsa parameters', async () => {
-            const publicKeyBuffer = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
-            const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
+            const publicKey = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
-            expect(helpers.publicKeyToAddress1(publicKeyBuffer)).to.equal(userAddress);
+            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(userAddress);
         });
 
         it('Validating that the extractPublicKey script successfully extracts the public key', async () => {
