@@ -1,17 +1,14 @@
 /* eslint-disable prefer-destructuring */
-const Web3 = require('web3');
 const chai = require('chai');
-const ethUtils = require('ethereumjs-util');
 const crypto = require('crypto');
 const Tx = require('ethereumjs-tx'); // a module for creating, manipulating and signing ethereum transactions
 
 const helpers = require('../helpers/extractHelpers'); // convention is to not put exentions (e.g. .js) for relative imports
 const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
 const extractPublicKey = require('./extractPublicKey');
+const web3 = require('./web3Config.js');
 
 const { expect } = chai;
-
-const web3 = new Web3(new Web3.providers.WebsocketProvider('ws://localhost:8545')); // connection instance
 
 describe('Series of tests to validate Doorbell smart contract and utility script functionality', () => {
     describe('Validating on chain smart contract pinging script', () => {
@@ -98,14 +95,14 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
-            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(userAddress);
+            expect(helpers.publicKeyToAddress(publicKey)).to.equal(userAddress);
         });
 
         it('Validating that the extractPublicKey script successfully extracts the public key', async () => {
             const publicKey = await extractPublicKey(userAddress, contractInstance);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.length).to.equal(130);
-            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(userAddress);
+            expect(helpers.publicKeyToAddress(publicKey)).to.equal(userAddress);
         });
     });
 });

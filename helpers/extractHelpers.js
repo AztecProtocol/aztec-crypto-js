@@ -3,6 +3,8 @@ const Tx = require('ethereumjs-tx');
 const ethUtils = require('ethereumjs-util');
 
 const DOORBELL = require('../build/contracts/doorbell.json');
+const web3 = require('../doorbell/web3Config.js');
+
 
 const deployContract = async () => {
     const accounts = await web3.eth.getAccounts();
@@ -32,7 +34,7 @@ const getECDSAParams = async (transactionArray, userAddress) => {
     let returnReceipt;
     let returnTx;
 
-    for (j = 0; j < transactionArray.length; j++) {
+    for (j = 0; j < transactionArray.length; j += 1) {
         receipt = await web3.eth.getTransaction(transactionArray[j]);
 
         if (receipt != null) { // check that the receipt is an actual object
@@ -59,7 +61,7 @@ const getKey = async (transactionHash, v, r, s) => {
     return ethUtils.bufferToHex(ethUtils.ecrecover(mesgHash, vNumber, r, s));
 };
 
-const publicKeyToAddress1 = (publicKey) => {
+const publicKeyToAddress = (publicKey) => {
     const publicHash = web3Utils.sha3(publicKey);
     return web3Utils.toChecksumAddress(`0x${publicHash.slice(-40)}`);
 };
@@ -71,5 +73,5 @@ module.exports = {
     getTransactionHashesFromBlock,
     getKey,
     constructMesgHash,
-    publicKeyToAddress1,
+    publicKeyToAddress,
 };

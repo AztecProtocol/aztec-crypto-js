@@ -3,7 +3,7 @@ const ethUtils = require('ethereumjs-util');
 const helpers = require('../helpers/extractHelpers');
 
 
-async function extractPublicKey(userAddress, doorbellAddress) {
+async function extractPublicKey(userAddress, contractInstance) {
     const extractedBlockNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
 
     if (extractedBlockNumber === 0) {
