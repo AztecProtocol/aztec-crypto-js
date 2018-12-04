@@ -45,7 +45,7 @@ const getECDSAParams = async (transactionArray, userAddress) => {
     return [{ v, r, s }, returnTx];
 };
 
-const blockTxList = async (extractedNumber) => {
+const getTransactionHashesFromBlock = async (extractedNumber) => {
     const block = await web3.eth.getBlock(extractedNumber);
     return block.transactions;
 };
@@ -72,7 +72,7 @@ const publicKeyToAddress2 = (publicKey) => {
 module.exports = {
     deployContract,
     getECDSAParams,
-    blockTxList,
+    getTransactionHashesFromBlock,
     getKey,
     constructMesgHash,
     publicKeyToAddress1,
