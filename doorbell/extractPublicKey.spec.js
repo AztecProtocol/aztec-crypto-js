@@ -7,6 +7,7 @@ const Tx = require('ethereumjs-tx'); // a module for creating, manipulating and 
 
 const helpers = require('../helpers/extractHelpers'); // convention is to not put exentions (e.g. .js) for relative imports
 const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
+const extractPublicKey = require('./extractPublicKey');
 
 const { expect } = chai;
 
@@ -121,22 +122,13 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             expect(publicKey.length).to.equal(130);
             expect(helpers.publicKeyToAddress1(publicKeyBuffer)).to.equal(userAddress);
         });
-    });
 
-    /*
-    describe('Validating that the extractPublicKey module successfully extracts the public key', () => { 
-        before(async () => {
-            contractInstance = await helpers.deployContract(web3);
-
-        });
-
-        it('validate that public key is of expected format and the correct key', async () => {
-            const publicKey = await extractPublicKey(userAddress);
+        it('Validating that the extractPublicKey script successfully extracts the public key', async () => {
+            const publicKey = await extractPublicKey(userAddress, contractInstance, web3);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
-            expect(helpers.publicKeyToAddress(publicKey)).to.equal(userAddress);
+            expect(helpers.publicKeyToAddress1(publicKey)).to.equal(userAddress);
         });
     });
-    */
 });
