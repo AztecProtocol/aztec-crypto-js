@@ -22,16 +22,14 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         let extractedNumber;
 
         before(async () => {
-            contractInstance = await helpers.deployContract(web3);
+            contractInstance = await helpers.deployContract();
             accounts = await web3.eth.getAccounts();
             userAddress = accounts[7];
-
             blockNumber = await contractInstance.methods.getBlock().send({ from: userAddress });
         });
 
         it('validate that we can recover the block number of an address', async () => {
             extractedNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
-
             expect(blockNumber.blockNumber.toString()).to.equal(extractedNumber);
         });
     });
@@ -48,9 +46,8 @@ describe('Series of tests to validate Doorbell smart contract and utility script
 
 
         before(async () => {
-            contractInstance = await helpers.deployContract(web3);
+            contractInstance = await helpers.deployContract();
             accounts = await web3.eth.getAccounts();
-
             const { privateKey, address, publicKey } = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
 
             // Sending transaction to load our manually generated account with ether
@@ -86,7 +83,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that we can get the transaction from a block', async () => {
-            transactionArray = await helpers.blockTxList(web3, extractedNumber);
+            transactionArray = await helpers.blockTxList(extractedNumber);
 
             // Looping through the list of transactions in the block, checking if tx is in there
             let i;
@@ -102,20 +99,19 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that we can recover ecdsa params for a sending address from an array of tx hashes', async () => {
-            transactionArray.push('o8xhek2omfhfgkl'); // this is an arbitary, rubbish transaction - used for testing purposes
-
-            [ecdsaParams, returnTx] = await helpers.getECDSAParams(web3, transactionArray, userAddress);
+            transactionArray.push('o8xhek2omfhfgkl'); // this is an arbitary, fake transaction hash - used for testing purposes
+            [ecdsaParams, returnTx] = await helpers.getECDSAParams(transactionArray, userAddress);
             expect(returnTx).to.equal(initialTxHash);
         });
 
         it('validate that the two methods that calculate the address from the public key, give consistent outputs', async () => {
-            const publicKeyBuffer = await helpers.getKey(web3, returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
+            const publicKeyBuffer = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
             const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
             expect(helpers.publicKeyToAddress1(publicKeyBuffer)).to.equal(helpers.publicKeyToAddress2(publicKey));
         });
 
         it('validate that the public key can be successfully extracted from ecdsa parameters', async () => {
-            const publicKeyBuffer = await helpers.getKey(web3, returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
+            const publicKeyBuffer = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
             const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
@@ -124,9 +120,8 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('Validating that the extractPublicKey script successfully extracts the public key', async () => {
-            const publicKey = await extractPublicKey(userAddress, contractInstance, web3);
+            const publicKey = await extractPublicKey(userAddress, contractInstance);
             expect(typeof (publicKey)).to.equal('string');
-            expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
             expect(helpers.publicKeyToAddress1(publicKey)).to.equal(userAddress);
         });
