@@ -6,6 +6,7 @@ const DOORBELL = require('../build/contracts/doorbell.json');
 
 const deployContract = async () => {
     const accounts = await web3.eth.getAccounts();
+
     const result = await new web3.eth.Contract(DOORBELL.abi);
     const deployed = await result.deploy({ data: DOORBELL.bytecode });
 
@@ -55,15 +56,10 @@ const getKey = async (transactionHash, v, r, s) => {
     const mesgHash = await constructMesgHash(tx);
     let vNumber = web3Utils.hexToNumber(v);
     vNumber -= (await web3.eth.net.getId()) * 2 + 8;
-    return ethUtils.ecrecover(mesgHash, vNumber, r, s);
+    return ethUtils.bufferToHex(ethUtils.ecrecover(mesgHash, vNumber, r, s));
 };
 
-const publicKeyToAddress1 = (publicKeyBuffer) => {
-    const addressBuffer = ethUtils.pubToAddress(publicKeyBuffer);
-    return web3Utils.toChecksumAddress(ethUtils.bufferToHex(addressBuffer));
-};
-
-const publicKeyToAddress2 = (publicKey) => {
+const publicKeyToAddress1 = (publicKey) => {
     const publicHash = web3Utils.sha3(publicKey);
     return web3Utils.toChecksumAddress(`0x${publicHash.slice(-40)}`);
 };
@@ -76,5 +72,4 @@ module.exports = {
     getKey,
     constructMesgHash,
     publicKeyToAddress1,
-    publicKeyToAddress2,
 };
