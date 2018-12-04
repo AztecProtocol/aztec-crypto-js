@@ -33,7 +33,7 @@ contract AZTEC {
             validateJoinSplit()
 
             // should not get here
-            mstore(0x00, 404) //what's this doing?
+            mstore(0x00, 404)
             revert(0x00, 0x20)
 
             /**
