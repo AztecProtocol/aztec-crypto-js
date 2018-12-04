@@ -14,7 +14,7 @@
                 "-u", "tdd",
                 "--timeout", "999999",
                 "--colors", "--recursive",
-                "zk-crypto-js/wallet"
+                "./doorbell"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },
