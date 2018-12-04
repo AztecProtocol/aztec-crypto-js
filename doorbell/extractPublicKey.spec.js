@@ -82,7 +82,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             extractedNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
         });
 
-        it('validate that we can get the transaction from a block', async () => {
+        it('validate that we can detect the transaction in the block', async () => {
             transactionArray = await helpers.blockTxList(extractedNumber);
 
             // Looping through the list of transactions in the block, checking if tx is in there
