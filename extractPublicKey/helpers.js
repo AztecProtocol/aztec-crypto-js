@@ -50,6 +50,10 @@ const getECDSAParams = async (transactionArray, userAddress) => {
 
 const getTransactionHashesFromBlock = async (extractedNumber) => {
     const block = await web3.eth.getBlock(extractedNumber);
+
+    if (block === undefined) {
+        return [];
+    }
     return block.transactions;
 };
 
