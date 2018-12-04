@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "./Roles.sol";
 
+// Sourced from https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
 contract MinterRole {
   using Roles for Roles.Role;
 

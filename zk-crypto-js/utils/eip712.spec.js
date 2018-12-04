@@ -1,33 +1,33 @@
 const chai = require('chai');
-const BN = require('bn.js');
+const Web3 = require('web3');
 
-const { expect, assert } = chai;
+const { expect } = chai;
 
 const eip712 = require('./eip712');
-const utils = require('./utils');
-const Web3 = require('web3');
+
 const web3 = new Web3();
 
-const { AZTEC_RINKEBY_DOMAIN_PARAMS, AZTEC_NOTE_SIGNATURE } = require('../params.js');
+const { AZTEC_MAINNET_DOMAIN_PARAMS } = require('../params.js');
 
 describe.only('eip712.js tests', () => {
     let simple;
     let complex;
     let exampleStruct;
+    let alphabetical;
     before(() => {
         simple = {
             types: {
                 Foo: [
                     { name: 'first', type: 'bytes32' },
                     { name: 'second', type: 'uint256' },
-                    { name: 'third', type: 'address' }
+                    { name: 'third', type: 'address' },
                 ],
             },
             primaryType: 'Foo',
             message: {
                 first: '0x13',
                 second: 104344,
-                third: '0x1234567890abcdef10121234567890abcdef1012'
+                third: '0x1234567890abcdef10121234567890abcdef1012',
             },
         };
 
@@ -46,7 +46,7 @@ describe.only('eip712.js tests', () => {
                     foo: 'Balthazar Lewis IV Von Dudley',
                 },
                 aBar: {
-                    bar: '0x12345678'
+                    bar: '0x12345678',
                 },
             },
         };
@@ -69,7 +69,12 @@ describe.only('eip712.js tests', () => {
                 eloRating: '1007',
                 marbleCredentials: {
                     quibbleRating: '0x2329',
-                    flimflamHeirarchy: [100, 813, '21888242871839275222246405745257275088696311157297823662689037894645226208583', 7],
+                    flimflamHeirarchy: [
+                        100,
+                        813,
+                        '21888242871839275222246405745257275088696311157297823662689037894645226208583',
+                        7,
+                    ],
                 },
             },
         };
@@ -82,31 +87,33 @@ describe.only('eip712.js tests', () => {
                     { name: 'third', type: 'address' },
                 ],
                 EIP712Domain: [
-                    { "name": "name", "type": "string" },
-                    { "name": "version", "type": "string" },
-                    { "name": "chainId", "type": "uint256" },
-                    { "name": "verifyingContract", "type": "address" },
-                    { "name": "salt", "type": "bytes32" },
+                    { name: 'name', type: 'string' },
+                    { name: 'version', type: 'string' },
+                    { name: 'chainId', type: 'uint256' },
+                    { name: 'verifyingContract', type: 'address' },
+                    { name: 'salt', type: 'bytes32' },
                 ],
             },
             primaryType: 'Foo',
             message: {
                 first: '0x13',
                 second: 104344,
-                third: '0x1234567890abcdef10121234567890abcdef1012'
+                third: '0x1234567890abcdef10121234567890abcdef1012',
             },
-            domain: AZTEC_RINKEBY_DOMAIN_PARAMS,
+            domain: AZTEC_MAINNET_DOMAIN_PARAMS,
         };
     });
 
     it('encodeData will correctly encode a basic struct', () => {
         const encoded = eip712.encodeMessageData(simple.message, simple.types, simple.types[simple.primaryType]);
+        // eslint-disable-next-line max-len
         expect(encoded).to.equal('0x130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000197980000000000000000000000001234567890abcdef10121234567890abcdef1012');
     });
 
     it('encodeData will correctly encode a nested struct', () => {
         const encoded = eip712.encodeMessageData(complex.message, complex.types, complex.types[complex.primaryType]);
-        const expected = `0xdcc66a3502c48266f81ee15b636a8ddc6406382ae4f6a1bcc51b23d271f110d200000000000000000000000000000000000000000000000000000000000003ef2329000000000000000000000000000000000000000000000000000000000000d716955403d21f5ddb28253df82b9345ef5dbefeb8e8fb349abf4c95e35cf1e9`;
+        // eslint-disable-next-line max-len
+        const expected = '0xdcc66a3502c48266f81ee15b636a8ddc6406382ae4f6a1bcc51b23d271f110d200000000000000000000000000000000000000000000000000000000000003ef2329000000000000000000000000000000000000000000000000000000000000d716955403d21f5ddb28253df82b9345ef5dbefeb8e8fb349abf4c95e35cf1e9';
         expect(encoded).to.equal(expected);
     });
 
@@ -124,6 +131,7 @@ describe.only('eip712.js tests', () => {
         const hashed = eip712.hashStruct(simple.primaryType, simple.types, simple.message);
         const typeData = 'Foo(first bytes32,second uint256,third address)';
         const typeHash = web3.utils.soliditySha3(typeData);
+        // eslint-disable-next-line max-len
         const encodedData = '0x130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000197980000000000000000000000001234567890abcdef10121234567890abcdef1012';
         const expected = web3.utils.sha3(`${typeHash}${encodedData.slice(2)}`);
         expect(hashed).to.equal(expected);
@@ -132,6 +140,5 @@ describe.only('eip712.js tests', () => {
     it('encodeTypedData correctly calculates the encoding for a Struct', () => {
         const encoded = eip712.encodeTypedData(exampleStruct);
         expect(encoded.length === 64);
-        console.log('encoded = ', encoded);
     });
 });

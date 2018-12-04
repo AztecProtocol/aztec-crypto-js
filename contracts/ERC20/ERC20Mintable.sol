@@ -6,6 +6,7 @@ import "./ERC20.sol";
 /**
  * @title ERC20Mintable
  * @dev ERC20 minting logic
+ * Sourced from https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
  */
 contract ERC20Mintable is ERC20, MinterRole {
   /**
