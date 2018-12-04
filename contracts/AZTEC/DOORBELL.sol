@@ -8,7 +8,7 @@ contract Doorbell {
 
     mapping(address => uint) public addressBlockMap;
 
-    function getBlock() external {
+    function setBlock() external {
         uint number = block.number; 
 
         addressBlockMap[msg.sender] = number;        
