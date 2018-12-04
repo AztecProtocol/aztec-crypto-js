@@ -40,11 +40,13 @@ const constructorWrapper = (contract, bytecode, ...params) => {
 
         transaction.sign(Buffer.from(wallet.privateKey.slice(2), 'hex'));
         const transactionHash = getTransactionHash(transaction);
-        const result = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+        const result = web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+
         basicWallet.update(
             wallet.address,
             { nonce: Number(wallet.nonce) + 1 }
         );
+
         return {
             transactionHash,
             transaction: result,

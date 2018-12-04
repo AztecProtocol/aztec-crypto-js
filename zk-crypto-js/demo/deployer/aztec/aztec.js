@@ -20,6 +20,7 @@ aztec.deployAztec = async (address) => {
         throw new Error('aztec contract already deployed at address ', aztecDb.latest.address);
     }
     const transactionHash = await deployer.deployContract(aztecContract, wallet, AZTEC.bytecode);
+
     // add transaction
     db.transactions.create({
         status: 'SENT',

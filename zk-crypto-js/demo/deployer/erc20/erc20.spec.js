@@ -1,3 +1,5 @@
+/* eslint-disable prefer-arrow-callback */
+
 const chai = require('chai');
 const crypto = require('crypto');
 
@@ -9,7 +11,8 @@ const transactions = require('../transactions/transactions');
 const { expect } = chai;
 const web3 = require('../../web3Listener');
 
-describe('erc20 tests', () => {
+describe('erc20 tests', function describe() {
+    this.timeout(10000);
     const wallets = [];
     beforeEach(async () => {
         db.clear();
@@ -60,5 +63,5 @@ describe('erc20 tests', () => {
         const contract = erc20.contract(contractAddress);
         const allowance = await contract.methods.allowance(wallets[1].address, wallets[0].address).call();
         expect(allowance.toString(10)).to.equal('1000');
-    }).timeout(3000);
+    });
 });

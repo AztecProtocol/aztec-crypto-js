@@ -42,7 +42,6 @@
     "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTransactions.js",
     "demoDeployMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoDeploy.js",
     "demoTransactionsMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoTransactions.js",
-
     "initWallets": "node ./zk-crypto-js/demo/initWallets.js"
   },
   "repository": {
