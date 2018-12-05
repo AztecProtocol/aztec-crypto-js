@@ -12,10 +12,10 @@ async function extractPublicKey(userAddress, contractInstance) {
     const transactionArray = await helpers.getTransactionHashesFromBlock(extractedBlockNumber);
 
     // Get the ecdsa parameters and appropriate transaction hash
-    const [ecdsaParams, returnTx] = await helpers.getECDSAParams(transactionArray, userAddress);
+    const txData = await helpers.getECDSAParams(transactionArray, userAddress);
 
     // Extract the public key
-    const publicKeyBuffer = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
+    const publicKeyBuffer = await helpers.getKey(txData.hash, txData.v, txData.r, txData.s);
     const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
 
     return publicKey;
