@@ -9,6 +9,7 @@ const extractPublicKey = require('./extractPublicKey');
 const web3 = require('./web3Config.js');
 const DOORBELL = require('../build/contracts/doorbell.json');
 
+
 const { expect } = chai;
 
 describe('Series of tests to validate Doorbell smart contract and utility script functionality', () => {
@@ -19,7 +20,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         let blockNumber;
         let extractedNumber;
         let contractInstance;
-    
+
         before(async () => {
             contractAddress = await helpers.deployContract();
             contractInstance = new web3.eth.Contract(DOORBELL.abi, contractAddress);
@@ -138,6 +139,17 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.length).to.equal(130);
             expect(helpers.publicKeyToAddress(publicKey)).to.equal(userAddress);
+        });
+
+        it('Validate that an informative error is returned when attempting to get public key from address that has not rung', async () => {
+            const fakeAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
+
+            try {
+                await extractPublicKey(fakeAccount.address, contractAddress);
+                throw new Error();
+            } catch (e) {
+                expect(e.message).to.equal('This Ethereum address has not rung Doorbell.sol');
+            }
         });
     });
 });
