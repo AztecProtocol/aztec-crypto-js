@@ -2,17 +2,16 @@ const web3Utils = require('web3-utils');
 const Tx = require('ethereumjs-tx');
 const ethUtils = require('ethereumjs-util');
 
-const DOORBELL = require('../build/contracts/doorbell.json');
+const doorbell = require('../build/contracts/doorbell.json');
 const web3 = require('./web3Config.js');
 
 
 const deployContract = async () => {
     const accounts = await web3.eth.getAccounts();
+    const contractObject = await (new web3.eth.Contract(doorbell.abi)).deploy({ data: doorbell.bytecode });
+    const contractInstance = await contractObject.send({ from: accounts[0], gas: 1000000 });
 
-    const result = await new web3.eth.Contract(DOORBELL.abi);
-    const deployed = await result.deploy({ data: DOORBELL.bytecode });
-    const contractInstance = await deployed.send({ from: accounts[0], gas: 1000000 });
-    console.log('contract', contractInstance);
+    return contractInstance.options.address;
 };
 
 const constructMesgHash = async (tx) => {
