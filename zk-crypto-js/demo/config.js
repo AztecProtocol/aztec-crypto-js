@@ -27,7 +27,7 @@ const config = {
     },
     RINKEBY: {
         db: 'dbRinkeby.json',
-        provider: 'wss://rinkeby.infura.io/ws',
+        provider: 'wss://rinkeby.infura.io/ws/v3/ef95d642a1ab405aa9f71e5096294a92',
         gasPrice: '10',
         redisConfig: {
             redis: {
@@ -40,7 +40,7 @@ const config = {
     },
     MAINNET: {
         db: 'dbMainNet.json',
-        provider: 'wss://mainnet.infura.io/ws',
+        provider: 'wss://mainnet.infura.io/ws/v3/ef95d642a1ab405aa9f71e5096294a92',
         gasPrice: '5',
         redisConfig: {
             redis: {
