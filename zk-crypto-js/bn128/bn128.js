@@ -7,8 +7,8 @@ const {
     GROUP_MODULUS,
     H_X,
     H_Y,
-    weierstrassBRed,
     groupReduction,
+    kMax,
 } = require('../params');
 
 function Bn128() {
@@ -56,7 +56,7 @@ function Bn128() {
     };
 
     curve.getFromHash = function getFromHash(x) {
-        const y2 = x.redSqr().redMul(x).redIAdd(weierstrassBRed);
+        const y2 = x.redSqr().redMul(x).redIAdd(curve.b);
         const y = y2.redSqrt();
         if (!y.redSqr().eq(y2)) {
             throw new Error('point is not on curve');
@@ -66,7 +66,7 @@ function Bn128() {
     curve.h = curve.point(H_X, H_Y);
 
     // @dev method to brute-force recover k from (\gamma, \gamma^{k})
-    // TODO: replace with optimized C++ implementation.
+    // TODO: replace with optimized C++ implementation, this is way too slow
     curve.recoverMessage = function recoverMessage(gamma, gammaK) {
         if (gammaK.isInfinity()) {
             return 1;
@@ -80,7 +80,7 @@ function Bn128() {
             accumulator = accumulator.add(gamma);
             k += 1;
         }
-        if (k === 1000000) {
+        if (k === kMax) {
             throw new Error('could not find k!');
         }
         return k;
