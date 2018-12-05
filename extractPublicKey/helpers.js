@@ -11,8 +11,8 @@ const deployContract = async () => {
 
     const result = await new web3.eth.Contract(DOORBELL.abi);
     const deployed = await result.deploy({ data: DOORBELL.bytecode });
-
-    return deployed.send({ from: accounts[0], gas: 1000000 });
+    const contractInstance = await deployed.send({ from: accounts[0], gas: 1000000 });
+    console.log('contract', contractInstance);
 };
 
 const constructMesgHash = async (tx) => {
