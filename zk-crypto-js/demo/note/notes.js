@@ -43,8 +43,9 @@ function Note(publicKey, viewingKey) {
         this.a = new BN(viewingKey.slice(2, 66), 16).toRed(bn128.groupReduction);
         this.k = new BN(viewingKey.slice(66, 74), 16).toRed(bn128.groupReduction);
         this.ephemeral = secp256k1.keyFromPublic(viewingKey.slice(74, 140), 'hex');
-        const mu = bn128.ec.keyFromPublic(setup.readSignatureSync(this.k.toNumber()));
-        this.gamma = (mu.getPublic().mul(this.a));
+        const { x, y } = setup.readSignatureSync(this.k.toNumber());
+        const mu = bn128.point(x, y);
+        this.gamma = (mu.mul(this.a));
         this.sigma = this.gamma.mul(this.k).add(bn128.h.mul(this.a));
     }
     this.noteHash = getNoteHash(this.gamma, this.sigma);

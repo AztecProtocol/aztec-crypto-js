@@ -20,7 +20,10 @@ const listen = () => {
     });
     web3.setProvider(provider);
 };
-listen();
+
+if (config.env !== 'NONE') {
+    listen();
+}
 
 
 module.exports = web3;

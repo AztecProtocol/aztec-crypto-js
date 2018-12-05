@@ -22,20 +22,6 @@ function Bn128() {
         g: ['1', '2'],
     });
 
-    // TODO, get rid of this
-    // eslint-disable-next-line new-cap
-    curve.ec = new EC.ec({
-        curve: {
-            curve,
-            a: '0',
-            b: '3',
-            p: curve.p,
-            n: curve.n,
-            gRed: false,
-            g: curve.g,
-        },
-    });
-
     curve.groupReduction = BN.red(curve.n);
 
     curve.randomGroupScalar = () => {
