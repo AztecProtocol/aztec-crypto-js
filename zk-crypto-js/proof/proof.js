@@ -2,11 +2,12 @@ const BN = require('bn.js');
 const crypto = require('crypto');
 const utils = require('../utils/utils');
 const Hash = require('../utils/keccak');
-const { groupReduction } = require('../params');
 const bn128 = require('../bn128/bn128');
 const setup = require('../setup/setup');
 
 const proof = {};
+
+const { groupReduction } = bn128;
 
 proof.generateCommitment = async (k) => {
     const kBn = new BN(k).toRed(groupReduction);
@@ -92,7 +93,7 @@ proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
             }
         }
         if ((i + 1) > m) {
-            x = rollingHash.toGroupScalar();
+            x = rollingHash.toGroupScalar(groupReduction);
             const xbk = bk.redMul(x);
             const xba = ba.redMul(x);
             runningBk = runningBk.redSub(bk);
@@ -112,7 +113,7 @@ proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
         };
     });
     finalHash.keccak();
-    const challenge = finalHash.toGroupScalar();
+    const challenge = finalHash.toGroupScalar(groupReduction);
     const proofData = blindingFactors.map((blindingFactor, i) => {
         let kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
         const aBar = ((notes[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();

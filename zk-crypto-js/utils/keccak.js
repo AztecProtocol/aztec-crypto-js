@@ -1,9 +1,6 @@
 const BN = require('bn.js');
 const { sha3, padLeft } = require('web3-utils');
 
-const { bnToHex } = require('./utils');
-const { groupReduction } = require('../params');
-
 function hashStrings(inputArr) {
     if (!Array.isArray(inputArr)) {
         throw new Error(`expected ${inputArr} to be of type 'array'`);
@@ -15,30 +12,26 @@ function hashStrings(inputArr) {
     return sha3(`0x${input}`, 'hex').slice(2);
 }
 
-function Hash() {
+function Keccak() {
     this.data = [];
 }
 
-Hash.prototype.append = function append(point) {
+Keccak.prototype.append = function append(point) {
     this.data.push(padLeft(point.x.fromRed().toString(16), 64));
     this.data.push(padLeft(point.y.fromRed().toString(16), 64));
 };
 
-Hash.prototype.appendBN = function append(scalar) {
+Keccak.prototype.appendBN = function append(scalar) {
     this.data.push(padLeft(scalar.toString(16), 64));
 };
 
-Hash.prototype.keccak = function keccak() {
+Keccak.prototype.keccak = function keccak() {
     const result = hashStrings(this.data);
     this.data = [result];
 };
 
-Hash.prototype.toGroupScalar = function toGroupScalar() {
-    return new BN(this.data[0], 16).toRed(groupReduction);
+Keccak.prototype.toGroupScalar = function toGroupScalar(reductionContext) {
+    return new BN(this.data[0], 16).toRed(reductionContext);
 };
 
-Hash.prototype.toBytes32 = function hashToBytes32() {
-    return bnToHex(new BN(this.data[0], 16));
-};
-
-module.exports = Hash;
+module.exports = Keccak;
