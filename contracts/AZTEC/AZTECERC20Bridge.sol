@@ -1,37 +1,52 @@
 pragma solidity ^0.4.23;
 
 import "./AZTEC.sol";
-import "../ERC20/ERC20.sol";
 
 /**
-* @title  AZTEC token, providing a confidential representation of an ERC20 token 
-* @author Zachary Williamson, CreditMint
-* Copyright Creditmint 2018. All rights reserved.
-* We will be releasing AZTEC as an open-source protocol that provides efficient transaction privacy for Ethereum.
-* This will include our bespoke AZTEC decentralized exchange, allowing for cross-asset transfers with full transaction privacy
-* and interopability with public decentralized exchanges.
-* Stay tuned for updates!
-**/
+ * @title ERC20 interface
+ * @dev https://github.com/ethereum/EIPs/issues/20
+ **/
+contract ERC20Interface {
+  function transfer(address to, uint256 value) external returns (bool);
+
+  function transferFrom(address from, address to, uint256 value)
+    external returns (bool);
+}
+
+/**
+ * @title  AZTEC token, providing a confidential representation of an ERC20 token 
+ * @author Zachary Williamson, AZTEC
+ * Copyright Spilsbury Holdings Ltd 2018. All rights reserved.
+ * We will be releasing AZTEC as an open-source protocol that provides efficient transaction privacy for Ethereum.
+ * This will include our bespoke AZTEC decentralized exchange, allowing for cross-asset transfers with full transaction privacy
+ * and interopability with public decentralized exchanges.
+ * Stay tuned for updates!
+ **/
 contract AZTECERC20Bridge {
-    uint constant GROUP_MODULUS_BOUNDARY = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
-    uint constant GROUP_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
-    uint public constant scalingFactor = 100000;
+    uint private constant groupModulusBoundary = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
+    uint private constant groupModulus = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint public scalingFactor;
     mapping(bytes32 => address) public noteRegistry;
     bytes32[4] setupPubKey;
     bytes32 domainHash;
-    ERC20 token;
+    ERC20Interface token;
 
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint kPublic, bytes metadata);
+    event ConfidentialTransfer();
 
     /**
     * @dev contract constructor.
     * @param _setupPubKey the trusted setup public key (group element of group G2)
     * @param _token the address of the ERC20 token being attached to
+    * @param _scalingFactor the mapping from note value -> ERC20 token value.
+    * AZTEC notes have a range between 0 and 2^{25}-1 and ERC20 tokens range between 0 and 2^{255} - 1
+    * so we don't want to directly map note value : token value
     **/
-    constructor(bytes32[4] _setupPubKey, address _token) public {
+    constructor(bytes32[4] _setupPubKey, address _token, uint256 _scalingFactor) public {
         setupPubKey = _setupPubKey;
-        token = ERC20(_token);
+        token = ERC20Interface(_token);
+        scalingFactor = _scalingFactor;
+
         // calculate the EIP712 domain hash, for hashing structured data
         bytes32 _domainHash;
         assembly {
@@ -53,7 +68,7 @@ contract AZTECERC20Bridge {
     * 1. validate that the note is signed by the note owner
     * 2. validate that the note exists in the note registry
     *
-    * Note signature is EIP712 signature over the following struct
+    * Note signature is EIP712 signature (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md) over the following struct
     * struct AZTEC_NOTE_SIGNATURE {
     *     bytes32[4] note;
     *     uint256 challenge;
@@ -82,13 +97,9 @@ contract AZTECERC20Bridge {
             mstore(add(m, 0x20), domainHashT)
             mstore(m, 0x1901)
             signatureMessage := keccak256(add(m, 0x1e), 0x42)
-            mstore(m, 0x0)
-            mstore(add(m, 0x20), 0x0)
-            mstore(add(m, 0x40), 0x0)
-            mstore(add(m, 0x60), 0x0)
-            mstore(add(m, 0x80), 0x0)
         }
         address owner = ecrecover(signatureMessage, uint8(signature[0]), signature[1], signature[2]);
+        require(owner != address(0), "signature invalid");
         require(noteRegistry[noteHash] == owner, "expected input note to exist in registry");
         noteRegistry[noteHash] = 0;
     }
@@ -109,6 +120,7 @@ contract AZTECERC20Bridge {
             mstore(add(m, 0x60), mload(add(note, 0xa0)))
             noteHash := keccak256(m, 0x80)
         }
+        require(owner != address(0), "owner must be valid Ethereum address");
         require(noteRegistry[noteHash] == 0, "expected output note to not exist in registry");
         noteRegistry[noteHash] = owner;
     }
@@ -126,9 +138,9 @@ contract AZTECERC20Bridge {
     * @param challenge AZTEC zero-knowledge proof challenge variable
     * @param inputSignatures array of ECDSA signatures, one for each input note
     * @param outputOwners addresses of owners, one for each output note
-    * @param metadata if AZTEC notes are assigned to stealth addresses, metadata should contain the ephemeral keys required for note owner to identify their note
+    * Unnamed param is metadata: if AZTEC notes are assigned to stealth addresses, metadata should contain the ephemeral keys required for note owner to identify their note
     */
-    function confidentialTransaction(bytes32[6][] notes, uint256 m, uint256 challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes metadata) external {
+    function confidentialTransfer(bytes32[6][] notes, uint256 m, uint256 challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes) external {
         require(inputSignatures.length == m, "input signature length invalid");
         require(inputSignatures.length + outputOwners.length == notes.length, "array length mismatch");
 
@@ -137,6 +149,7 @@ contract AZTECERC20Bridge {
 
         // extract variable kPublic from proof
         uint256 kPublic = uint(notes[notes.length - 1][0]);
+        require(kPublic < groupModulus, "invalid value of kPublic");
 
         // iterate over the notes array and validate each input/output note
         for (uint256 i = 0; i < notes.length; i++) {
@@ -158,7 +171,7 @@ contract AZTECERC20Bridge {
         }
 
         if (kPublic > 0) {
-            if (kPublic < GROUP_MODULUS_BOUNDARY) {
+            if (kPublic < groupModulusBoundary) {
 
                 // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
                 // call token.transfer to send relevent tokens
@@ -167,11 +180,11 @@ contract AZTECERC20Bridge {
 
                 // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
                 // only proceed if the required transferFrom call from msg.sender to this contract succeeds
-                require(token.transferFrom(msg.sender, this, (GROUP_MODULUS - kPublic) * scalingFactor), "token transfer from user failed!");
+                require(token.transferFrom(msg.sender, this, (groupModulus - kPublic) * scalingFactor), "token transfer from user failed!");
             }
         }
 
-        // emit an event to mark this transaction and broadcast metadata
-        emit ConfidentialTransaction(kPublic, metadata);
+        // emit an event to mark this transaction. Can recover notes + metadata from input data
+        emit ConfidentialTransfer();
     }
 }

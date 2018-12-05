@@ -3,23 +3,20 @@ pragma solidity ^0.4.23;
 import "./AZTEC.sol";
 import "../ERC20/ERC20Mintable.sol";
 
-contract AZTECDeX {
-
-}
-
 /// @title Contract that uses the AZTEC protocol to create a token with confidential and public representations
 /// @author Zachary Williamson, CreditMint
 /// @dev All rights reserved. This is a technical demo! Use at your own risk!
 contract AZTECToken is ERC20Mintable {
-    uint constant GROUP_MODULUS_BOUNDARY = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
-    uint constant GROUP_MODULUS = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint private constant groupModulusBoundary = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
+    uint private constant groupModulus = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint public constant scalingFactor = 1;
 
     mapping(bytes32 => address) public noteRegistry;
-    bytes32[4] setupPubKey;
-    bytes32 domainHash;
-    AZTECDeX dex;
+    bytes32[4] private setupPubKey;
+    bytes32 private domainHash;
+
     event Created(bytes32 domainHash, address contractAddress);
-    event ConfidentialTransaction(uint kPublic, bytes metadata);
+    event ConfidentialTransfer();
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
     constructor(bytes32[4] _setupPubKey) public {
@@ -108,37 +105,42 @@ contract AZTECToken is ERC20Mintable {
     /// If a satisfying zero-knowledge proof is provided, then we know with confidence that the values encrypted by the output notes sum to 10,000,
     /// but we have no idea how those tokens are distributed across the notes.
     /// Each output note has a value bounded by the AZTEC commitment scheme's range proof.
-    function confidentialTransaction(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes metadata) external {
+    function confidentialTransfer(bytes32[6][] notes, uint m, uint challenge, bytes32[3][] inputSignatures, address[] outputOwners, bytes) external {
         require(inputSignatures.length == m, "input signature length invalid");
         require(m + outputOwners.length == notes.length, "array length mismatch");
 
         require(AZTECInterface.validateJoinSplit(notes, m, challenge, setupPubKey), "proof not valid!");
         uint kPublic = uint(notes[notes.length - 1][0]);
 
-        if (kPublic > GROUP_MODULUS_BOUNDARY) {
-            // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
-            // only proceed if the required transferFrom call from msg.sender to this contract succeeds
-            require(this.transferFrom(msg.sender, this, GROUP_MODULUS - kPublic), "token transfer from user failed!");
-        }
-
         for (uint i = 0; i < m; i++) {
+
             // call validateInputNote to check that the note exists and that we have a matching signature over the note.
             // pass domainHash in as a function parameter to prevent multiple sloads
             // this will remove the input notes from noteRegistry
             validateInputNote(notes[i], inputSignatures[i], challenge, domainHash);
         }
         for (i = 0; i < notes.length - m; i++) {
+
             // validate that output notes, attached to the specified owners do not exist in noteRegistry.
             // if all checks pass, add notes into note registry
             validateOutputNote(notes[i + m], outputOwners[i]);
         }
-        if (kPublic < GROUP_MODULUS_BOUNDARY) {
-            // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
-            // call transfer to send relevent tokens
-            require(this.transfer(msg.sender, kPublic), "token transfer to user failed!");
+
+        if (kPublic > 0) {
+            if (kPublic < groupModulusBoundary) {
+
+                // if value < the group modulus boundary then this public value represents a conversion from confidential note form to public form
+                // call transfer to send relevent tokens
+                require(this.transfer(msg.sender, kPublic * scalingFactor), "token transfer to user failed!");
+            } else {
+
+                // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
+                // only proceed if the required transferFrom call from msg.sender to this contract succeeds
+                require(this.transferFrom(msg.sender, this, (groupModulus - kPublic) * scalingFactor), "token transfer from user failed!");
+            }
         }
 
         // emit an event for logging purposes.
-        emit ConfidentialTransaction(kPublic, metadata);
+        emit ConfidentialTransfer();
     }
 }

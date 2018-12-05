@@ -54,11 +54,11 @@ contract.only('ZEthereum Tests', (accounts) => {
         const kPublic = GROUP_MODULUS.sub(new BN(1000));
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
         const outputOwners = aztecAccounts.slice(0, 5).map(account => account.address);
+        // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, [], outputOwners, '0x', {
         const transactionData = web3.eth.abi.encodeParameters(
             ['bytes32[6][]', 'uint', 'uint', 'bytes32[3][]'],
             [proofData, m, challenge, []]
         );
-
         const result = await zEthereum.confidentialTransaction(transactionData, outputOwners, '0x', {
             from: accounts[0],
             gas: 5400000,
@@ -92,6 +92,8 @@ contract.only('ZEthereum Tests', (accounts) => {
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
+
+      // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x');
         const transactionData = web3.eth.abi.encodeParameters(
             ['bytes32[6][]', 'uint', 'uint', 'bytes32[3][]'],
             [proofData, m, challenge, signatures]
@@ -112,6 +114,7 @@ contract.only('ZEthereum Tests', (accounts) => {
             sign.signNote(proofData[1], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
         ].map(r => r.signature);
         const outputOwners = [aztecAccounts[0].address];
+        // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x', {
         const transactionData = web3.eth.abi.encodeParameters(
             ['bytes32[6][]', 'uint', 'uint', 'bytes32[3][]'],
             [proofData, m, challenge, signatures]

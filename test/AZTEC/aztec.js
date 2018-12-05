@@ -1,11 +1,13 @@
 /* global artifacts, expect, contract, beforeEach, it:true */
 const BN = require('bn.js');
+const { padLeft, sha3 } = require('web3-utils');
 
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
 const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const exceptions = require('../exceptions');
 
 AZTEC.abi = AZTECInterface.abi;
 contract('AZTEC', (accounts) => {
@@ -63,5 +65,19 @@ contract('AZTEC', (accounts) => {
 
         console.log('gas used = ', gasUsed);
         expect(result).to.equal(true);
+    });
+
+    it('validates that points are on curve', async () => {
+        const zeroes = `${padLeft('0', 64)}`;
+        const noteString = `${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}`;
+        const challengeString = `0x${padLeft(accounts[0].slice(2), 64)}${padLeft('132', 64)}${padLeft('1', 64)}${noteString}`;
+        const challenge = sha3(challengeString, 'hex');
+        const m = 1;
+        const proofData = [[`0x${padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
+
+        await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+            from: accounts[0],
+            gas: 4000000,
+        }));
     });
 });
