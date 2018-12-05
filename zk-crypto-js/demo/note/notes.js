@@ -33,8 +33,8 @@ function Note(publicKey, viewingKey) {
         if (publicKey.length !== 200) {
             throw new Error(`invalid public key length for key ${publicKey}, expected 200, got ${publicKey.length}`);
         }
-        this.gamma = bn128.ec.keyFromPublic(publicKey.slice(2, 68), 'hex').getPublic();
-        this.sigma = bn128.ec.keyFromPublic(publicKey.slice(68, 134), 'hex').getPublic();
+        this.gamma = bn128.decodePoint(publicKey.slice(2, 68), 'hex');
+        this.sigma = bn128.decodePoint(publicKey.slice(68, 134), 'hex');
         this.ephemeral = secp256k1.keyFromPublic(publicKey.slice(134, 200), 'hex');
         this.k = null;
         this.a = null;

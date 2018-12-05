@@ -17,6 +17,7 @@ aztecToken.deployAztecToken = async (address, aztecAddress, erc20Address, scalin
     const wallet = db.wallets.get(address);
     const aztecDb = db.contracts.aztecToken.get();
     const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, aztecDb.latest.contractAddress);
+
     // link to aztec verifier
     const bytecode = AZTECERC20Bridge.bytecode.replace('__AZTECInterface________________________', aztecAddress.slice(2));
 
@@ -83,14 +84,7 @@ aztecToken.confidentialTransfer = async (address, proofData, m, challenge, input
         type: 'AZTEC_TOKEN_CONFIDENTIAL_TRANSFER',
         transactionHash,
     });
-    // const transactionReceipt = await deployer.getTransactionReceipt(transactionHash);
 
-    // db.transactions.update(transactionHash, {
-    //     status: 'SENT',
-    //     type: 'AZTEC_JOIN_SPLIT',
-    //     transactionHash,
-    //     transactionReceipt,
-    // });
     return transactionHash;
 };
 

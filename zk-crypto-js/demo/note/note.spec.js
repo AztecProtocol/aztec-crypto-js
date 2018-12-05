@@ -10,8 +10,8 @@ const { GROUP_MODULUS } = require('../../params');
 const { padLeft } = web3Utils;
 const { expect } = chai;
 
-describe('note tests', () => {
-    it('notes.fromPublic and notes.fromViewKey create well formed notes', async () => {
+describe.only('note tests', () => {
+    it('notes.fromPublic and notes.fromViewKey create well formed notes', () => {
         const aBn = new BN(crypto.randomBytes(32, 16), 16).umod(GROUP_MODULUS);
         const a = padLeft(aBn.toString(16), 64);
 
@@ -29,7 +29,7 @@ describe('note tests', () => {
         expect(importedNote.sigma.encode('hex', false)).to.equal(note.sigma.encode('hex', false));
     });
 
-    it('note.create and note.derive create well formed notes', async () => {
+    it('note.create and note.derive create well formed notes', () => {
         const spendingKey = secp256k1.keyFromPrivate(crypto.randomBytes(32, 16));
         const result = notes.create(`0x${spendingKey.getPublic(true, 'hex')}`, 1234);
         const expected = notes.derive(result.getPublic(), `0x${spendingKey.getPrivate('hex')}`);
