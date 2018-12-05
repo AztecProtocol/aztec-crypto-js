@@ -29,10 +29,6 @@ const constructMesgHash = async (tx) => {
 };
 
 const getECDSAParams = async (transactionArray, userAddress) => {
-    // console.log('transaction array: ', transactionArray);
-    // this is effectively iterating through every element in transactionArray 
-    // console.log('transaction array map', transactionArray.map(t => web3.eth.getTransaction(t)));
-    // console.log('promises', await Promise.all(transactionArray.map(t => web3.eth.getTransaction(t))));
     const transactionData = (await Promise.all(transactionArray.map(t => web3.eth.getTransaction(t)))).find(r => r.from === userAddress);
     return transactionData;
 };
@@ -46,12 +42,11 @@ const getTransactionHashesFromBlock = async (extractedBlockNumber) => {
     return block.transactions;
 };
 
-const getKey = async (transactionHash, v, r, s) => {
-    const tx = await web3.eth.getTransaction(transactionHash);
-    const mesgHash = await constructMesgHash(tx);
-    let vNumber = web3Utils.hexToNumber(v);
+const getKey = async (txData) => {
+    const mesgHash = await constructMesgHash(txData);
+    let vNumber = web3Utils.hexToNumber(txData.v);
     vNumber -= (await web3.eth.net.getId()) * 2 + 8; // removing the chainID component from v
-    return ethUtils.bufferToHex(ethUtils.ecrecover(mesgHash, vNumber, r, s));
+    return ethUtils.bufferToHex(ethUtils.ecrecover(mesgHash, vNumber, txData.r, txData.s));
 };
 
 const publicKeyToAddress = (publicKey) => {

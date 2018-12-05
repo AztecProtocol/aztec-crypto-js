@@ -129,7 +129,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that the public key can be successfully extracted from ecdsa parameters', async () => {
-            const publicKey = await helpers.getKey(txData.hash, txData.v, txData.r, txData.s);
+            const publicKey = await helpers.getKey(txData);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
