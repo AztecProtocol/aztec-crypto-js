@@ -65,7 +65,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
                 value: web3.utils.toHex(web3.utils.toWei('0.5', 'ether')),
                 gas: 100000,
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
-            });
+            });   
             
             const testAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
             const testPrivateKey = testAccount.privateKey;
