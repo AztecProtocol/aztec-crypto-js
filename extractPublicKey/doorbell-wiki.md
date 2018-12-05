@@ -8,55 +8,58 @@ This serves two purposes:
 2. It makes the user interface simpler - the user does not need to undergo a two stage interactive process of supplying first their
     address and then their public key
 
-## Global environment setup
-Most significant aspect is the creation of a WebsocketProvider - we open a communication channel/connection instance to the local host port 8545. This allows us to connect to the testing environment setup by Ganache for example.
+Integration tests have been written in the *extractPublicKey.spec.js* script, to investigate and confirm functionality of the *doobell.sol*, *extractPublicKey.js* and *helpers.js* scripts.
 
-## Tests
+## web3Congfig.js
+Instantiates a WebsocketProvider - we open a communication channel/connection instance to the local host port 8545. This allows us to connect to the testing environment setup by Ganache.
 
-There are 3 broad buckets of tests that the testing script performs:
+## extractPublicKey.js
+### Tests
+
+There are 2 broad buckets of tests that the testing script performs:
 1. Validation of the on chain smart contract pinging script
 2. Validation of the off chain utility script methods
-3. Validation of the combined package (on chain + off chain) 
 
-## Validating on chain smart contract pinging script
+### Validating on chain smart contract pinging script
 
-### Setup
+#### Setup
 Starts with a before() test environment setup block. It deploys the contract, assigns a userAddress and then pings the smart contract script. The block number that the ping is associated with is extracted.
 
-### Test
-Extracts the stored Block number from the public *addressBlockMap* stored in the smart contract. 
+#### Test
+Extracts the stored Block number from the public *addressBlockMap* mapping stored in the smart contract. 
 
 Checks that it is equal to the the original block number inputted.
 
-## Validating off chain utility script methods
-### Setup
+### Validating off chain utility script methods
+#### Setup
 Deploys the doorbell contract and gets the available Ethereum accounts. 
 
-We then manually create an Ethereum account. We supply a random private key to the ecdsa.keyPairFromPrivate() method and in return get the outputs: privateKey, address and publicKey. 
+We then manually create two Ethereum account. We supply a random private key to the ecdsa.keyPairFromPrivate() method and in return get the outputs: privateKey, address and publicKey. 
 
-Next, a transaction is sent to this address. The transaction contains 0.5 ether - the purpose of this transaction is to load the account we have just created with ether. We will be spending some of this later/using it to pay for gas. 
+One account acts as a dummy test (for testing papers later) and the other will be used to send a transaction to the deployed contract. Both accounts are loaded with Ether, by transferring the Ganache pre-loaded accounts. 
 
-Following this, we create a raw transaction object using the open source 'ethereumjs-tx' library. The data field is defined by 
+After being loaded with ether, raw transaction objects are defined, signed and sent. The transaction hashes are stored, for potential use later.
 
-### Test
-There are four tests: 
+#### Test
+There are five tests: 
 
-#### Validate that we can get the transaction list from a block
-Extracts all the transactions in the block defined by an input blocknumber. It then loops through each of these transactions and checks to see if they equal the input transaction.
+##### Validate that we can detect the transaction in the block
+Extracts all the transactions in the block defined by an input blocknumber. It then checks to see if the extracted transactionArray contains the stored hash of the initial transaction - which was used to set the block number in the doorbell smart contract.
 
-#### Validate that given an array of tx-hashes and an address, we can recover the ecdsa parameters
-Calls the helpers.getECDSAParams() method to extract the ecdsa parameters for the input transaction and userAddress.
+##### validate that we can recover ecdsa params for a sending address from an array of tx hashes
+Adds the test transaction into the transactionArray. Then calls the helpers.getECDSAParams() method to extract the ecdsa parameters for the input transaction and userAddress. Checks that the data is extracted for the correct transaction hash. 
 
-#### Validate that the two methods that calculate the address from the public key, give consistent outputs
-Has two stages to it:
-1. Extracts the public key using helpers.getKey(web3, tx, v, r, s)
-2. Determiens the Ethereum address associated with the public key using two different methods. Checks if they output the same address
-
-#### Validate that the public key can be successfully extracted from ecdsa parameters
+##### Validate that the public key can be successfully extracted from ecdsa parameters
 Firstly extracts the public key, and converts the buffer type to a hexadecimal number. 
 
 It then performs a series of tests to check that the type, length and format of the outputted key are consistent with standard public key formats. 
 
 Lastly, it extracts the Ethereum address associated with the public key. It then checks that this address matches the original address from which the transaction was sent. 
+
+##### Validating that the extractPublicKey script successfully extracts the public key
+Checks that the extractPublicKey module correctly extracts the public key.
+
+##### Validate that an informative error is returned when attempting to get public key from address that has not rung
+Checks that the correct error is returned when an incorrect Ethereum address (one that has not rung the doorbell smart contract) attempts to extract it's public key.
 
 
