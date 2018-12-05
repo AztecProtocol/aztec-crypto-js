@@ -3,7 +3,7 @@ const web3Utils = require('web3-utils');
 const deployer = require('../deployer');
 const transactions = require('../transactions/transactions');
 const db = require('../../db/db');
-const { t2Formatted } = require('../../../params');
+const { t2 } = require('../../../params');
 const noteController = require('../../note/controller');
 
 const AZTECERC20Bridge = require('../../../../build/contracts/AZTECERC20Bridge.json');
@@ -28,7 +28,7 @@ aztecToken.deployAztecToken = async (address, aztecAddress, erc20Address, scalin
         aztecContract,
         wallet,
         bytecode,
-        t2Formatted,
+        t2,
         erc20Address,
         scalingFactor
     );

@@ -13,7 +13,7 @@ const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
 const sign = require('../../zk-crypto-js/utils/sign');
 const exceptions = require('../exceptions');
 
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 
 // Step 1: make a token contract
 // Step 2: make an aztec token contract
@@ -35,7 +35,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         AZTECERC20Bridge.link('AZTECInterface', aztec.address);
 
-        aztecToken = await AZTECERC20Bridge.new(t2Formatted, token.address, 100000, {
+        aztecToken = await AZTECERC20Bridge.new(t2, token.address, 100000, {
             from: accounts[0],
             gas: 5000000,
         });

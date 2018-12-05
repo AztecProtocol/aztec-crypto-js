@@ -6,7 +6,7 @@ const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 const exceptions = require('../exceptions');
 
 AZTEC.abi = AZTECInterface.abi;
@@ -19,11 +19,11 @@ contract('AZTEC', (accounts) => {
     it('succesfully validates an AZTEC JOIN-SPLIT zero-knowledge proof', async () => {
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [11, 22], kOut: [5, 28] });
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
-        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
-        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
@@ -36,11 +36,11 @@ contract('AZTEC', (accounts) => {
         const kPublic = 101;
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [113, 2212], kOut: [2222, 2] });
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
-        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
-        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
@@ -54,11 +54,11 @@ contract('AZTEC', (accounts) => {
         kPublic = GROUP_MODULUS.sub(new BN(kPublic));
         const { commitments, m } = await aztecProof.constructModifiedCommitmentSet({ kIn: [2513, 800, 100], kOut: [3936] });
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], kPublic);
-        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+        const result = await aztec.validateJoinSplit(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
-        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2Formatted, {
+        const gasUsed = await aztec.validateJoinSplit.estimateGas(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         });
@@ -75,7 +75,7 @@ contract('AZTEC', (accounts) => {
         const m = 1;
         const proofData = [[`0x${padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
 
-        await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+        await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         }));

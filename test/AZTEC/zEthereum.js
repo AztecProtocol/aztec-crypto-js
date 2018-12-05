@@ -1,4 +1,4 @@
-/* global artifacts, expect, contract, beforeEach, web3, it:true */
+/* global artifacts, expect, contract, beforeEach, it:true */
 /* eslint-disable no-console */
 const BN = require('bn.js');
 const web3Utils = require('web3-utils');
@@ -13,7 +13,7 @@ const aztecProof = require('../../zk-crypto-js/proof/proof');
 const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
 const sign = require('../../zk-crypto-js/utils/sign');
 
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 
 // Step 1: make a token contract
 // Step 2: make an aztec token contract
@@ -36,7 +36,7 @@ contract.only('ZEthereum Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         ZEthereum.link('AZTECInterface', aztec.address);
 
-        zEthereum = await ZEthereum.new(t2Formatted, {
+        zEthereum = await ZEthereum.new(t2, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -93,7 +93,7 @@ contract.only('ZEthereum Tests', (accounts) => {
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
 
-      // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x');
+        // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x');
         const transactionData = web3.eth.abi.encodeParameters(
             ['bytes32[6][]', 'uint', 'uint', 'bytes32[3][]'],
             [proofData, m, challenge, signatures]

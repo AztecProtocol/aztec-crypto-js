@@ -6,7 +6,7 @@ const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
 const aztec = require('./aztec');
 const aztecProof = require('../../../proof/proof');
-const { t2Formatted, GROUP_MODULUS } = require('../../../params');
+const { t2, GROUP_MODULUS } = require('../../../params');
 const noteController = require('../../note/controller');
 const web3 = require('../../web3Listener');
 
@@ -58,7 +58,7 @@ describe('aztec tests', () => {
             proofData,
             0,
             challenge,
-            t2Formatted
+            t2
         );
         expect(typeof (transactionHash)).to.equal('string');
         expect(transactionHash.length).to.equal(66);
