@@ -53,25 +53,22 @@ describe('Series of tests to validate Doorbell smart contract and utility script
 
             accounts = await web3.eth.getAccounts();
 
-            // Below returns an address that is not one of the ether pre-loaded testing accounts
             const userAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
             const userPrivateKey = userAccount.privateKey;
             userAddress = userAccount.address;
 
-            // Sending transaction to load our manually generated account with ether
             await web3.eth.sendTransaction({
                 from: accounts[0],
                 to: userAddress,
                 value: web3.utils.toHex(web3.utils.toWei('0.5', 'ether')),
                 gas: 100000,
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
-            });   
-            
+            });
+
             const testAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
             const testPrivateKey = testAccount.privateKey;
             testAddress = testAccount.address;
 
-            // Load another account with ether - will be used for testing purposes later
             await web3.eth.sendTransaction({
                 from: accounts[0],
                 to: testAddress,
@@ -80,7 +77,6 @@ describe('Series of tests to validate Doorbell smart contract and utility script
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
             });
 
-            // Creating raw transaction object for the getBlock() method on the smart contract
             const transaction = new Tx({
                 nonce: await web3.eth.getTransactionCount(userAddress),
                 gas: web3.utils.toHex(100000),
@@ -91,7 +87,6 @@ describe('Series of tests to validate Doorbell smart contract and utility script
                 chainId: web3.utils.toHex(await web3.eth.net.getId()),
             });
 
-            // Raw transaction object for testing purposes later
             const testTransaction = new Tx({
                 nonce: await web3.eth.getTransactionCount(testAddress),
                 gas: web3.utils.toHex(1000000),
@@ -107,11 +102,9 @@ describe('Series of tests to validate Doorbell smart contract and utility script
             const transactionReceipt = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
             const testTransactionReceipt = await web3.eth.sendSignedTransaction(`0x${testTransaction.serialize().toString('hex')}`);
 
-            // Store the transaction hashes
             initialTxHash = transactionReceipt.transactionHash;
             testTxHash = testTransactionReceipt.transactionHash;
 
-            // Query the addressBlockMap variable and store it
             extractedNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
         });
 
