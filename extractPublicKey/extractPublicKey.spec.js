@@ -7,19 +7,22 @@ const helpers = require('./helpers'); // convention is to not put exentions (e.g
 const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
 const extractPublicKey = require('./extractPublicKey');
 const web3 = require('./web3Config.js');
+const DOORBELL = require('../build/contracts/doorbell.json');
 
 const { expect } = chai;
 
 describe('Series of tests to validate Doorbell smart contract and utility script functionality', () => {
     describe('Validating on chain smart contract pinging script', () => {
-        let contractInstance;
+        let contractAddress;
         let accounts;
         let userAddress;
         let blockNumber;
         let extractedNumber;
-
+        let contractInstance;
+    
         before(async () => {
-            contractInstance = await helpers.deployContract();
+            contractAddress = await helpers.deployContract();
+            contractInstance = new web3.eth.Contract(DOORBELL.abi, contractAddress);
             accounts = await web3.eth.getAccounts();
             userAddress = accounts[0];
             blockNumber = await contractInstance.methods.setBlock().send({ from: userAddress });
@@ -32,7 +35,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
     });
 
     describe('Validating off chain utility script methods', () => {
-        let contractInstance;
+        let contractAddress;
         let accounts;
         let userAddress;
         let testAddress;
@@ -41,10 +44,12 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         let transactionArray;
         let testTxHash;
         let txData;
-
+        let contractInstance;
 
         before(async () => {
-            contractInstance = await helpers.deployContract();
+            contractAddress = await helpers.deployContract();
+            contractInstance = new web3.eth.Contract(DOORBELL.abi, contractAddress);
+
             accounts = await web3.eth.getAccounts();
 
             // Below returns an address that is not one of the ether pre-loaded testing accounts
@@ -81,7 +86,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
                 data: await contractInstance.methods.setBlock().encodeABI(),
                 from: userAddress,
-                to: contractInstance._address,
+                to: contractAddress,
                 chainId: web3.utils.toHex(await web3.eth.net.getId()),
             });
 
@@ -100,9 +105,6 @@ describe('Series of tests to validate Doorbell smart contract and utility script
 
             const transactionReceipt = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
             const testTransactionReceipt = await web3.eth.sendSignedTransaction(`0x${testTransaction.serialize().toString('hex')}`);
-
-            console.log(transactionReceipt.blockNumber);
-            console.log(testTransactionReceipt.blockNumber);
 
             // Store the transaction hashes
             initialTxHash = transactionReceipt.transactionHash;
@@ -132,7 +134,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('Validating that the extractPublicKey script successfully extracts the public key', async () => {
-            const publicKey = await extractPublicKey(userAddress, contractInstance);
+            const publicKey = await extractPublicKey(userAddress, contractAddress);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.length).to.equal(130);
             expect(helpers.publicKeyToAddress(publicKey)).to.equal(userAddress);

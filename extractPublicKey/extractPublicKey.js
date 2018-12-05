@@ -1,9 +1,13 @@
 const ethUtils = require('ethereumjs-util');
 
 const helpers = require('./helpers');
+const web3 = require('./web3Config.js');
+const doorbell = require('../build/contracts/doorbell.json');
 
 
-async function extractPublicKey(userAddress, contractInstance) {
+async function extractPublicKey(userAddress, contractAddress) {
+    const contractInstance = new web3.eth.Contract(doorbell.abi, contractAddress);
+
     const extractedBlockNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
 
     if (extractedBlockNumber === 0) {
@@ -11,10 +15,8 @@ async function extractPublicKey(userAddress, contractInstance) {
     }
     const transactionArray = await helpers.getTransactionHashesFromBlock(extractedBlockNumber);
 
-    // Get the ecdsa parameters and appropriate transaction hash
     const txData = await helpers.getECDSAParams(transactionArray, userAddress);
 
-    // Extract the public key
     const publicKeyBuffer = await helpers.getKey(txData);
     const publicKey = ethUtils.bufferToHex(publicKeyBuffer);
 
