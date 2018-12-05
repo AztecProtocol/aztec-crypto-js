@@ -4,9 +4,35 @@ const path = require('path');
 
 const setup = {};
 const { SIGNATURES_PER_FILE } = require('../params');
-const utils = require('../utils/utils');
+const bn128 = require('../bn128/bn128');
 
 const partialPath = path.posix.resolve(__dirname, '../setupDatabase');
+const compressionMask = new BN('8000000000000000000000000000000000000000000000000000000000000000', 16);
+
+// @param compressed: 32-byte representation of a bn128 G1 element in BN.js form
+setup.decompress = (compressed) => {
+    const yBit = compressed.testn(255);
+    const x = compressed.maskn(255).toRed(bn128.red);
+    const y2 = x.redSqr().redMul(x).redIAdd(bn128.b);
+    const yRoot = y2.redSqrt();
+    if (yRoot.redSqr().redSub(y2).fromRed().cmpn(0) !== 0) {
+        throw new Error('x^3 + 3 not a square, malformed input');
+    }
+    let y = yRoot.fromRed();
+    if (Boolean(y.isOdd()) !== Boolean(yBit)) {
+        y = bn128.p.sub(y);
+    }
+    return { x: x.fromRed(), y };
+};
+
+
+setup.compress = (x, y) => {
+    let compressed = x;
+    if (y.testn(0)) {
+        compressed = compressed.or(compressionMask);
+    }
+    return compressed;
+};
 
 setup.readSignature = (inputValue) => {
     const value = Number(inputValue);
@@ -26,7 +52,7 @@ setup.readSignature = (inputValue) => {
             data.copy(signatureBuf, 0, bytePosition, bytePosition + 32);
 
             const x = new BN(signatureBuf);
-            return resolve(utils.decompress(x));
+            return resolve(setup.decompress(x));
         });
     });
 };
@@ -46,6 +72,7 @@ setup.readSignatureSync = (inputValue) => {
     data.copy(signatureBuf, 0, bytePosition, bytePosition + 32);
 
     const x = new BN(signatureBuf);
-    return utils.decompress(x);
+    return setup.decompress(x);
 };
+
 module.exports = setup;

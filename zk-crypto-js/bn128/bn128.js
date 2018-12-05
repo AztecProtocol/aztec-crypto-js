@@ -36,6 +36,12 @@ function Bn128() {
         },
     });
 
+    curve.groupReduction = BN.red(curve.n);
+
+    curve.randomGroupScalar = () => {
+        return new BN(crypto.randomBytes(32), 16).toRed(curve.groupReduction);
+    };
+
     curve.randomPoint = function randomPoint() {
         function recurse() {
             const x = new BN(crypto.randomBytes(32), 16).toRed(curve.red);

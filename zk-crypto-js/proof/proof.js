@@ -80,8 +80,8 @@ proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
     rollingHash.keccak();
     let runningBk = new BN(0).toRed(groupReduction);
     const blindingFactors = notes.map((note, i) => {
-        let bk = utils.randomGroupScalar();
-        const ba = utils.randomGroupScalar();
+        let bk = bn128.randomGroupScalar();
+        const ba = bn128.randomGroupScalar();
         let B;
         let x = new BN(0).toRed(groupReduction);
         if (i === (notes.length - 1)) {
