@@ -9,7 +9,7 @@ const ERC20Mintable = artifacts.require('./contracts/ERC20/ERC20Mintable');
 AZTEC.abi = AZTECInterface.abi; // hon hon hon
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
+const secp256k1 = require('../../zk-crypto-js/secp256k1/secp256k1');
 const sign = require('../../zk-crypto-js/utils/sign');
 const exceptions = require('../exceptions');
 
@@ -43,7 +43,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
         const receipt = await web3.eth.getTransactionReceipt(aztecToken.transactionHash);
         console.log('gas spent creating contract = ', receipt.gasUsed);
 
-        aztecAccounts = accounts.map(() => ecdsa.generateKeyPair());
+        aztecAccounts = accounts.map(() => secp256k1.generateAccount());
         await Promise.all(accounts.map(account => token.mint(
             account,
             scalingFactor.mul(tokensTransferred),

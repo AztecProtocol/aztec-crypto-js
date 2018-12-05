@@ -12,7 +12,6 @@ const web3 = require('../../web3Listener');
 
 const { expect } = chai;
 
-
 describe('aztec tests', () => {
     let wallet;
     let wallets = [];

@@ -10,7 +10,7 @@ const { GROUP_MODULUS } = require('../../params');
 const { padLeft } = web3Utils;
 const { expect } = chai;
 
-describe.only('note tests', () => {
+describe('note tests', () => {
     it('notes.fromPublic and notes.fromViewKey create well formed notes', () => {
         const aBn = new BN(crypto.randomBytes(32, 16), 16).umod(GROUP_MODULUS);
         const a = padLeft(aBn.toString(16), 64);

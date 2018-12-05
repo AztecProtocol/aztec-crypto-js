@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const elliptic = require('elliptic');
 const web3Utils = require('web3-utils');
 
@@ -15,6 +16,10 @@ function Secp256k1() {
             publicKey: `0x${ecKey.getPublic(false, 'hex')}`,
             address,
         };
+    };
+
+    curve.generateAccount = function generateAccount() {
+        return curve.accountFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`);
     };
 
     return curve;
