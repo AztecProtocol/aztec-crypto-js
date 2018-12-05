@@ -21,8 +21,8 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         before(async () => {
             contractInstance = await helpers.deployContract();
             accounts = await web3.eth.getAccounts();
-            userAddress = accounts[7];
-            blockNumber = await contractInstance.methods.getBlock().send({ from: userAddress });
+            userAddress = accounts[0];
+            blockNumber = await contractInstance.methods.setBlock().send({ from: userAddress });
         });
 
         it('validate that we can recover the block number of an address', async () => {
@@ -35,45 +35,78 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         let contractInstance;
         let accounts;
         let userAddress;
+        let testAddress;
         let initialTxHash;
         let extractedNumber;
         let transactionArray;
-        let ecdsaParams;
-        let returnTx;
+        let testTxHash;
+        let txData;
 
 
         before(async () => {
             contractInstance = await helpers.deployContract();
             accounts = await web3.eth.getAccounts();
-            const { privateKey, address } = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
+
+            // Below returns an address that is not one of the ether pre-loaded testing accounts
+            const userAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
+            const userPrivateKey = userAccount.privateKey;
+            userAddress = userAccount.address;
 
             // Sending transaction to load our manually generated account with ether
             await web3.eth.sendTransaction({
-                from: accounts[3],
-                to: address,
+                from: accounts[0],
+                to: userAddress,
                 value: web3.utils.toHex(web3.utils.toWei('0.5', 'ether')),
                 gas: 100000,
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
             });
+            
+            const testAccount = ecdsa.keyPairFromPrivate(`0x${crypto.randomBytes(32).toString('hex')}`);
+            const testPrivateKey = testAccount.privateKey;
+            testAddress = testAccount.address;
 
-            userAddress = address;
+            // Load another account with ether - will be used for testing purposes later
+            await web3.eth.sendTransaction({
+                from: accounts[0],
+                to: testAddress,
+                value: web3.utils.toHex(web3.utils.toWei('0.5', 'ether')),
+                gas: 100000,
+                gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
+            });
 
             // Creating raw transaction object for the getBlock() method on the smart contract
             const transaction = new Tx({
                 nonce: await web3.eth.getTransactionCount(userAddress),
                 gas: web3.utils.toHex(100000),
                 gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
-                data: await contractInstance.methods.getBlock().encodeABI(),
+                data: await contractInstance.methods.setBlock().encodeABI(),
                 from: userAddress,
                 to: contractInstance._address,
                 chainId: web3.utils.toHex(await web3.eth.net.getId()),
             });
 
-            transaction.sign(Buffer.from(privateKey.slice(2), 'hex'));
-            const transactionReceipt = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+            // Raw transaction object for testing purposes later
+            const testTransaction = new Tx({
+                nonce: await web3.eth.getTransactionCount(testAddress),
+                gas: web3.utils.toHex(1000000),
+                gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
+                from: testAddress,
+                to: accounts[1],
+                chainId: web3.utils.toHex(await web3.eth.net.getId()),
+            });
 
-            // Store the transaction hash
+            transaction.sign(Buffer.from(userPrivateKey.slice(2), 'hex'));
+            testTransaction.sign(Buffer.from(testPrivateKey.slice(2), 'hex'));
+
+            const transactionReceipt = await web3.eth.sendSignedTransaction(`0x${transaction.serialize().toString('hex')}`);
+            const testTransactionReceipt = await web3.eth.sendSignedTransaction(`0x${testTransaction.serialize().toString('hex')}`);
+
+            console.log(transactionReceipt.blockNumber);
+            console.log(testTransactionReceipt.blockNumber);
+
+            // Store the transaction hashes
             initialTxHash = transactionReceipt.transactionHash;
+            testTxHash = testTransactionReceipt.transactionHash;
 
             // Query the addressBlockMap variable and store it
             extractedNumber = await contractInstance.methods.addressBlockMap(userAddress).call();
@@ -85,13 +118,18 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that we can recover ecdsa params for a sending address from an array of tx hashes', async () => {
-            transactionArray.push('o8xhek2omfhfgkl'); // this is an arbitary, fake transaction hash - used for testing purposes
-            [ecdsaParams, returnTx] = await helpers.getECDSAParams(transactionArray, userAddress);
-            expect(returnTx).to.equal(initialTxHash);
+            /*
+            Ganache does not appear to give the user control over which block their transactions are included in. 
+            So, unhelpfully, the real setBlock() transaction is not included in the same block as the test transaction
+            Here, we artificially push the test transaction hash into the transactionArray to account for this.
+            */
+            transactionArray.push(testTxHash);
+            txData = await helpers.getECDSAParams(transactionArray, userAddress);
+            expect(txData.hash).to.equal(initialTxHash);
         });
 
         it('validate that the public key can be successfully extracted from ecdsa parameters', async () => {
-            const publicKey = await helpers.getKey(returnTx, ecdsaParams.v, ecdsaParams.r, ecdsaParams.s);
+            const publicKey = await helpers.getKey(txData.hash, txData.v, txData.r, txData.s);
             expect(typeof (publicKey)).to.equal('string');
             expect(publicKey.slice(0, 2)).to.equal('0x');
             expect(publicKey.length).to.equal(130);
