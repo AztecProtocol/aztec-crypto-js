@@ -118,11 +118,6 @@ describe('Series of tests to validate Doorbell smart contract and utility script
         });
 
         it('validate that we can recover ecdsa params for a sending address from an array of tx hashes', async () => {
-            /*
-            Ganache does not appear to give the user control over which block their transactions are included in. 
-            So, unhelpfully, the real setBlock() transaction is not included in the same block as the test transaction
-            Here, we artificially push the test transaction hash into the transactionArray to account for this.
-            */
             transactionArray.push(testTxHash);
             txData = await helpers.getECDSAParams(transactionArray, userAddress);
             expect(txData.hash).to.equal(initialTxHash);
