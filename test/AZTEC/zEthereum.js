@@ -10,7 +10,7 @@ const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 const ZEthereum = artifacts.require('./contracts/AZTEC/ZEthereum');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
+const secp256k1 = require('../../zk-crypto-js/secp256k1/secp256k1');
 const sign = require('../../zk-crypto-js/utils/sign');
 
 const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
@@ -26,7 +26,7 @@ const web3 = getWeb3();
 const zEthereumToEthereum = new BN('10000000000000000', 10);
 
 AZTEC.abi = AZTECInterface.abi;
-contract.only('ZEthereum Tests', (accounts) => {
+contract('ZEthereum Tests', (accounts) => {
     let aztec;
     let zEthereum;
     let aztecAccounts = [];
@@ -44,7 +44,7 @@ contract.only('ZEthereum Tests', (accounts) => {
         const receipt = await web3.eth.getTransactionReceipt(zEthereum.transactionHash);
         console.log('gas spent creating contract = ', receipt.gasUsed);
 
-        aztecAccounts = accounts.map(() => ecdsa.generateKeyPair());
+        aztecAccounts = accounts.map(() => secp256k1.generateAccount());
     });
 
     it('successfully blinds 10 ethereum into 5 zero-knowledge notes', async () => {
