@@ -9,10 +9,14 @@
   },
   "dependencies": {
     "bn.js": "^4.11.8",
+    "bull": "^3.5.2",
     "elliptic": "^6.4.1",
     "ethereumjs-tx": "^1.3.7",
+    "ganache-cli": "^6.2.3",
     "js-sha3": "^0.8.0",
+    "lowdb": "^1.0.0",
     "openzeppelin-solidity": "^2.0.0",
+    "source-map-support": "^0.5.9",
     "truffle": "^4.1.14",
     "truffle-wallet-provider": "0.0.5",
     "web3": "^1.0.0-beta.36",
@@ -31,8 +35,12 @@
     "mocha": "^5.2.0"
   },
   "scripts": {
-    "test": "mocha ./zk-crypto-js/wallet --trace-warnings --exit --colors --recursive --reporter spec",
-    "demo": "node ./zk-crypto-js/demo/demo.js",
+    "test": "NODE_ENV=TEST mocha ./zk-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
+    "demoTest": "NODE_ENV=TEST mocha ./zk-crypto-js/demo --trace-warnings --exit --colors --recursive --reporter spec",
+    "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoDeploy.js",
+    "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTransactions.js",
+    "demoDeployMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoDeploy.js",
+    "demoTransactionsMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoTransactions.js",
     "initWallets": "node ./zk-crypto-js/demo/initWallets.js"
   },
   "repository": {
@@ -40,7 +48,7 @@
     "url": "git+https://github.com/CreditMint/smart-contracts.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "copyright Spilsbury Holdings Ltd 2018, all rights reserved",
   "bugs": {
     "url": "https://github.com/CreditMint/smart-contracts/issues"
   },

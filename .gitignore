@@ -21,3 +21,7 @@ bin/*
 build/*
 
 testWallet*
+cupboard_under_the_stairs/*
+dbTest.json*
+dbRinkeby.json*
+dbMainNet.json*
