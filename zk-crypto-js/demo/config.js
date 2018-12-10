@@ -5,7 +5,7 @@ const config = {
         gasPrice: '10',
         redisConfig: {
             redis: {
-                port: 6379,
+                port: 8545,
                 host: 'localhost',
             },
             queuePrefix: 'tests',
