@@ -37,7 +37,7 @@
   "scripts": {
     "test": "mocha ./extractPublicKey --trace-warnings --exit --colors --recursive --reporter spec",
     "demoTest": "NODE_ENV=TEST mocha ./zk-crypto-js/demo --trace-warnings --exit --colors --recursive --reporter spec",
-    "demoTestDeploy": "NODE_ENV=TEST node ./zk-crypto-js/demo/demoLocalDeploy.js",
+    "demoTestDeploy": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTestDeploy.js",
     "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoDeploy.js",
     "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTransactions.js",
     "demoDeployMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoDeploy.js",
