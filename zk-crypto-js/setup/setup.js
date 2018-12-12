@@ -25,7 +25,6 @@ setup.decompress = (compressed) => {
     return { x: x.fromRed(), y };
 };
 
-
 setup.compress = (x, y) => {
     let compressed = x;
     if (y.testn(0)) {

@@ -113,8 +113,8 @@ Note.prototype.getPublic = function getPublic() {
 /**
  * Get the viewing key of a note
  *
- * @method getSharedSigma
- * @returns {Ssring} hex-string concatenation of the note value and AZTEC viewing key
+ * @method getView
+ * @returns {string} hex-string concatenation of the note value and AZTEC viewing key
  */
 Note.prototype.getView = function getView() {
     const a = padLeft(this.a.fromRed().toString(16), 64);
@@ -126,7 +126,7 @@ Note.prototype.getView = function getView() {
 /**
  * Compute value of a note, from the public key and the spending key
  *
- * @method getSharedSigma
+ * @method derive
  * @returns {string} hex-string concatenation of the note coordinates and the ephemeral key (compressed)
  */
 Note.prototype.derive = function derive(spendingKey) {
@@ -139,7 +139,7 @@ Note.prototype.derive = function derive(spendingKey) {
 /**
  * Export note coordinates in a form that can be used by proof.js
  *
- * @method getSharedSigma
+ * @method exportNote
  * @returns {{ publicKey:string, viewKey: string, k: string, a: string, noteHash: string }}
  */
 Note.prototype.exportNote = function exportNote() {
@@ -177,7 +177,7 @@ Note.prototype.exportMetadata = function exportMetadata() {
  * Helper module to create Notes from public keys and view keys
  *
  * @module note
-  */
+ */
 const note = {};
 
 note.fromPublicKey = function fromPublicKey(publicKey) {

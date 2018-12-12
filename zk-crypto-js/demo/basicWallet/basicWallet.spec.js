@@ -35,7 +35,7 @@ describe('basicWallet tests', () => {
         expect(result.foo).to.equal('bar');
     });
 
-    it('address and public key are expected', () => {
+    it('address and public key are expected to be well-formed', () => {
         const privateKey = `0x${crypto.randomBytes(32).toString('hex')}`;
         const wallet = basicWallet.createFromPrivateKey(privateKey);
         const publicKey = secp256k1.keyFromPublic(wallet.publicKey.slice(2), 'hex');

@@ -1,6 +1,7 @@
 const BN = require('bn.js');
 const crypto = require('crypto');
-const utils = require('../utils/utils');
+const { padLeft } = require('web3-utils');
+
 const Hash = require('../utils/keccak');
 const bn128 = require('../bn128/bn128');
 const setup = require('../setup/setup');
@@ -135,17 +136,17 @@ proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
             kBar = kPublicBn;
         }
         return [
-            utils.bnToHex(kBar),
-            utils.bnToHex(aBar),
-            utils.bnToHex(notes[i].gamma.x.fromRed()),
-            utils.bnToHex(notes[i].gamma.y.fromRed()),
-            utils.bnToHex(notes[i].sigma.x.fromRed()),
-            utils.bnToHex(notes[i].sigma.y.fromRed()),
+            `0x${padLeft(kBar.toString(16), 64)}`,
+            `0x${padLeft(aBar.toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
         ];
     });
     return {
         proofData,
-        challenge: utils.bnToHex(challenge),
+        challenge: `0x${padLeft(challenge)}`,
     };
 };
 
