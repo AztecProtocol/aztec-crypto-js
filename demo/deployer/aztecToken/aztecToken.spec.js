@@ -10,8 +10,8 @@ const aztec = require('../aztec/aztec');
 const aztecToken = require('./aztecToken');
 const transactions = require('../transactions/transactions');
 const noteController = require('../../note/controller');
-const proof = require('../../../proof/proof');
-const { GROUP_MODULUS } = require('../../../params');
+const proof = require('../../../aztec-crypto-js/proof/proof');
+const { GROUP_MODULUS } = require('../../../aztec-crypto-js/params');
 
 const { expect } = chai;
 const web3 = require('../../web3Listener');

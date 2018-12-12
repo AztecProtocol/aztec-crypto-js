@@ -3,10 +3,10 @@ const web3Utils = require('web3-utils');
 const deployer = require('../deployer');
 const transactions = require('../transactions/transactions');
 const db = require('../../db/db');
-const { t2 } = require('../../../params');
+const { t2 } = require('../../../aztec-crypto-js/params');
 const noteController = require('../../note/controller');
 
-const AZTECERC20Bridge = require('../../../../build/contracts/AZTECERC20Bridge.json');
+const AZTECERC20Bridge = require('../../../build/contracts/AZTECERC20Bridge.json');
 
 const { web3 } = deployer;
 const { padLeft } = web3Utils;

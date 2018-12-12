@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const db = require('../db/db');
 const basicWallet = require('./basicWallet');
-const secp256k1 = require('../../secp256k1/secp256k1');
+const secp256k1 = require('../../aztec-crypto-js/secp256k1/secp256k1');
 
 const { expect } = chai;
 

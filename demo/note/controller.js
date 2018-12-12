@@ -1,11 +1,11 @@
 const BN = require('bn.js');
 
 const basicWallet = require('../basicWallet/basicWallet');
-const notes = require('../../note/note');
-const { GROUP_MODULUS } = require('../../params');
+const notes = require('../../aztec-crypto-js/note/note');
+const { GROUP_MODULUS } = require('../../aztec-crypto-js/params');
 const db = require('../db/db');
-const proof = require('../../proof/proof');
-const sign = require('../../utils/sign');
+const proof = require('../../aztec-crypto-js/proof/proof');
+const sign = require('../../aztec-crypto-js/utils/sign');
 
 const noteController = {};
 

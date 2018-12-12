@@ -3,7 +3,7 @@ const transactions = require('../transactions/transactions');
 
 const db = require('../../db/db');
 
-const ERC20Mintable = require('../../../../build/contracts/ERC20Mintable.json');
+const ERC20Mintable = require('../../../build/contracts/ERC20Mintable.json');
 
 const { web3 } = deployer;
 

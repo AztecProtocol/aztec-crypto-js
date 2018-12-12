@@ -5,8 +5,8 @@ const { padLeft, sha3 } = require('web3-utils');
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 
-const aztecProof = require('../../zk-crypto-js/proof/proof');
-const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const aztecProof = require('../../aztec-crypto-js/proof/proof');
+const { t2, GROUP_MODULUS } = require('../../aztec-crypto-js/params');
 const exceptions = require('../exceptions');
 
 AZTEC.abi = AZTECInterface.abi;

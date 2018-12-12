@@ -5,8 +5,8 @@ const BN = require('bn.js');
 const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
 const aztec = require('./aztec');
-const aztecProof = require('../../../proof/proof');
-const { t2, GROUP_MODULUS } = require('../../../params');
+const aztecProof = require('../../../aztec-crypto-js/proof/proof');
+const { t2, GROUP_MODULUS } = require('../../../aztec-crypto-js/params');
 const noteController = require('../../note/controller');
 const web3 = require('../../web3Listener');
 

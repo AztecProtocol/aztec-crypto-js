@@ -1,7 +1,7 @@
 const web3Utils = require('web3-utils');
 
 const db = require('../db/db');
-const secp256k1 = require('../../secp256k1/secp256k1');
+const secp256k1 = require('../../aztec-crypto-js/secp256k1/secp256k1');
 const web3 = require('../web3Listener');
 
 const basicWallet = {};

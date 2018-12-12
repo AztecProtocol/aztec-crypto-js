@@ -3,8 +3,8 @@ const transactions = require('../transactions/transactions');
 
 const db = require('../../db/db');
 
-const AZTEC = require('../../../../build/contracts/AZTEC.json');
-const AZTECInterface = require('../../../../build/contracts/AZTECInterface.json');
+const AZTEC = require('../../../build/contracts/AZTEC.json');
+const AZTECInterface = require('../../../build/contracts/AZTECInterface.json');
 
 const { web3 } = deployer;
 AZTEC.abi = AZTECInterface.abi; // hon hon hon
