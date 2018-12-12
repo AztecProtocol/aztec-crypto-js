@@ -48,6 +48,7 @@ function Bn128() {
         }
         return { x, y };
     };
+
     curve.h = curve.point(H_X, H_Y);
 
     // @dev method to brute-force recover k from (\gamma, \gamma^{k})
@@ -71,44 +72,6 @@ function Bn128() {
         return k;
     };
 
-    function AztecCompressed(p1, p2) {
-        if (p1.y.eq(p2.y)) {
-            this.beta = p1.y;
-            this.beta.setn(255, true);
-            this.alpha = p1.x;
-        } else {
-            this.beta = p1.y.redSub(p2.y);
-            this.alpha = this.beta.redInvm().redMul(p1.x.redSub(p2.x));
-        }
-        this.x2 = p2.x;
-        this.half = new BN(2).toRed(curve.red).redInvm();
-    }
-
-    AztecCompressed.prototype.aztecDecompress = function aztecDecompress() {
-        if (this.beta.testn(255)) {
-            const y1 = this.beta.maskn(256);
-            return {
-                p1: curve.point(this.alpha, y1),
-                p2: curve.point(this.x2, y1),
-            };
-        }
-        const x1 = this.alpha.redMul(this.beta).redAdd(this.x2);
-
-        const t1 = (x1.redSqr()).redAdd(this.x2.redSqr()).redAdd(x1.redMul(this.x2));
-
-        const y1 = (t1.redMul(this.alpha)).redAdd(this.beta).redMul(this.half);
-
-        const y2 = y1.redSub(this.beta);
-
-        return {
-            p1: curve.point(x1, y1),
-            p2: curve.point(this.x2, y2),
-        };
-    };
-
-    curve.aztecCompressed = (p1, p2) => {
-        return new AztecCompressed(p1, p2);
-    };
     return curve;
 }
 
