@@ -95,6 +95,12 @@ contract ZEthereum {
         require(noteRegistry[noteHash] == 0, "expected output note to not exist in registry");
         noteRegistry[noteHash] = owner;
     }
+    struct Proof {
+        bytes32[6][] notes;
+        bytes32[3][] inputSignatures;
+        uint m;
+        uint challenge;
+    }
 
     function extractDataFromProof(bytes proof) internal returns (Proof){
         bytes32 offsetToProofData;
@@ -163,6 +169,7 @@ contract ZEthereum {
 
         for (uint i = 0; i < m; i++) {
 */
+
     function confidentialTransaction(bytes proof, address[] outputOwners, bytes metadata) external payable {
         Proof memory proofData = extractDataFromProof(proof);
         
@@ -172,14 +179,14 @@ contract ZEthereum {
 
         require(AZTECInterface.validateJoinSplit(proofData.notes, proofData.m, proofData.challenge, setupPubKey), "proof not valid!");
 
-        if (kPublic > GROUP_MODULUS_BOUNDARY) {
+        if (kPublic > groupModulusBoundary) {
             // if value > group modulus boundary, this represents a commitment of a public value into confidential note form.
             // only proceed if the transaction sender has sent enough ether.
             // The AZTEC range proof constrains the size of the values that can be represented in confidential note form.
             // The technical demo taps out at 1048575, a full implementation could reach a cap of about 2^32
             // so we apply a scaling paramter when translating to/from confidential form
-            require(msg.value == ((GROUP_MODULUS - kPublic) * ZETHEREUM_SCALING_PARAMETER), "msg.value is not sufficient for this transaction!");
-            globalSupply = globalSupply.add((GROUP_MODULUS - kPublic) * ZETHEREUM_SCALING_PARAMETER);
+            require(msg.value == ((groupModulus - kPublic) * scalingFactor), "msg.value is not sufficient for this transaction!");
+            globalSupply = globalSupply.add((groupModulus - kPublic) * scalingFactor);
         }
 
         for (uint i = 0; i < proofData.m; i++) {

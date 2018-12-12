@@ -1,11 +1,11 @@
 const chai = require('chai');
-const Web3 = require('web3');
+const web3Utils = require('web3-utils');
+const web3EthAbi = require('web3-eth-abi');
 
 const { expect } = chai;
 
 const eip712 = require('./eip712');
 
-const web3 = new Web3();
 
 const { AZTEC_MAINNET_DOMAIN_PARAMS } = require('../params.js');
 
@@ -130,10 +130,10 @@ describe('eip712.js tests', () => {
     it('hashStruct correctly calculates the keccak256 hash of a struct', () => {
         const hashed = eip712.hashStruct(simple.primaryType, simple.types, simple.message);
         const typeData = 'Foo(first bytes32,second uint256,third address)';
-        const typeHash = web3.utils.soliditySha3(typeData);
+        const typeHash = web3Utils.sha3(web3EthAbi.encodeParameters(['string'], [typeData.slice(2)]), 'hex');
         // eslint-disable-next-line max-len
         const encodedData = '0x130000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000197980000000000000000000000001234567890abcdef10121234567890abcdef1012';
-        const expected = web3.utils.sha3(`${typeHash}${encodedData.slice(2)}`);
+        const expected = web3Utils.sha3(`${typeHash}${encodedData.slice(2)}`);
         expect(hashed).to.equal(expected);
     });
 

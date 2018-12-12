@@ -46,7 +46,7 @@ aztec.updateAztec = async (transactionHash) => {
     });
 };
 
-aztec.joinSplit = async (address, proofData, m, challenge, t2Formatted) => {
+aztec.joinSplit = async (address, proofData, m, challenge, t2) => {
     const wallet = db.wallets.get(address);
     const aztecDb = db.contracts.aztec.get();
     if (!aztecDb.latest.contractAddress) {
@@ -62,7 +62,7 @@ aztec.joinSplit = async (address, proofData, m, challenge, t2Formatted) => {
         proofData,
         m,
         challenge,
-        t2Formatted
+        t2
     );
 
     // add transaction

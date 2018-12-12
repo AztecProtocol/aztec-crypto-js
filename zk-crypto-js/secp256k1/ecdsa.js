@@ -3,7 +3,6 @@ const web3Utils = require('web3-utils');
 const Web3EthAccounts = require('web3-eth-accounts');
 
 const secp256k1 = require('./secp256k1');
-const utils = require('../utils/utils');
 
 const web3EthAccounts = new Web3EthAccounts();
 
@@ -30,34 +29,22 @@ ecdsa.accountFromPublicKey = function accountFromPublicKey(publicKey) {
     return address;
 };
 
-ecdsa.generateKeyPair = () => {
-    const account = web3EthAccounts.create();
-    const privateKey = `0x${utils.toBytes32(account.privateKey.slice(2))}`;
-    const { address } = account;
-    const publicKey = secp256k1.g.mul(new BN(privateKey.slice(2), 16));
-
-    return {
-        publicKey,
-        privateKey,
-        address,
-    };
-};
-
 ecdsa.signMessage = (hash, privateKey) => {
     const signature = secp256k1
         .keyFromPrivate(Buffer.from(privateKey.slice(2), 'hex'))
         .sign(Buffer.from(hash.slice(2), 'hex'), { canonical: true });
+
     return [
-        `0x${utils.toBytes32(Number(27 + Number(signature.recoveryParam)).toString(16))}`,
-        `${utils.bnToHex(signature.r)}`,
-        `${utils.bnToHex(signature.s)}`,
+        `0x${web3Utils.padLeft(Number(27 + Number(signature.recoveryParam)).toString(16), 64)}`,
+        `0x${web3Utils.padLeft(signature.r.toString(16), 64)}`,
+        `0x${web3Utils.padLeft(signature.s.toString(16), 64)}`,
     ];
 };
 
 ecdsa.verifyMessage = (hash, r, s, publicKey) => {
     const rBn = new BN(r.slice(2), 16);
     const sBn = new BN(s.slice(2), 16);
-    return secp256k1.verify(hash.slice(2), { r: rBn, s: sBn }, publicKey);
+    return secp256k1.verify(hash.slice(2), { r: rBn, s: sBn }, secp256k1.keyFromPublic(publicKey.slice(2), 'hex'));
 };
 
 ecdsa.recoverPublicKey = (hash, r, s, vn) => {
@@ -65,7 +52,7 @@ ecdsa.recoverPublicKey = (hash, r, s, vn) => {
     const sBn = new BN(s.slice(2), 16);
     const v = new BN(vn.slice(2), 16).toNumber();
     const ecPublicKey = secp256k1.recoverPubKey(
-        Buffer.from(utils.toBytes32(hash.slice(2)), 'hex'),
+        Buffer.from(web3Utils.padLeft(hash.slice(2), 64), 'hex'),
         { r: rBn, s: sBn },
         v < 2 ? v : 1 - (v % 2)
     );
