@@ -19,6 +19,7 @@ build/*
 bin/*
 
 build/*
+out
 docs
 testWallet*
 cupboard_under_the_stairs/*
