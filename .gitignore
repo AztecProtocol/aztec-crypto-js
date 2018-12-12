@@ -19,7 +19,7 @@ build/*
 bin/*
 
 build/*
-
+docs
 testWallet*
 cupboard_under_the_stairs/*
 dbTest.json*
