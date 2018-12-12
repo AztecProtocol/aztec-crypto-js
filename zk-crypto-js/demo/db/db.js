@@ -45,6 +45,14 @@ function initialState() {
                 },
                 deployed: [],
             },
+            doorbell: {
+                latest: {
+                    address: '',
+                    transactionHash: '',
+                    bytecode: '',
+                },
+                deployed: [],
+            },
         },
         notes: [],
     };
