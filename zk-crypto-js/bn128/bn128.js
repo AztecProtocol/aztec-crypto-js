@@ -72,8 +72,6 @@ function Bn128() {
         return k;
     };
 
-    curve.groupReduction = groupReduction;
-
     function AztecCompressed(p1, p2) {
         if (p1.y.eq(p2.y)) {
             this.beta = p1.y;
