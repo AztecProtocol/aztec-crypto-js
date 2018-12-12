@@ -7,7 +7,6 @@ const {
     GROUP_MODULUS,
     H_X,
     H_Y,
-    groupReduction,
     kMax,
 } = require('../params');
 
