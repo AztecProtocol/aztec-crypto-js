@@ -2,7 +2,6 @@ function generatedoorbell(database) {
     const doorbell = {};
 
     doorbell.get = () => {
-        console.log(database().get('contracts').value());
         const contract = database().get('contracts.doorbell').value();
         return contract;
     };
