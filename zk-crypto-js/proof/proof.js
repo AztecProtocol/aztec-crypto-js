@@ -5,9 +5,15 @@ const Hash = require('../utils/keccak');
 const bn128 = require('../bn128/bn128');
 const setup = require('../setup/setup');
 
+const { groupReduction } = bn128;
+
+/**
+ * Constructs AZTEC join-split zero-knowledge proofs
+ *
+ * @module proof
+  */
 const proof = {};
 
-const { groupReduction } = bn128;
 
 proof.generateCommitment = async (k) => {
     const kBn = new BN(k).toRed(groupReduction);
@@ -39,16 +45,6 @@ proof.constructCommitment = async (k, a) => {
     };
 };
 
-proof.constructCommitmentSet = async ({ kIn, kOut }) => {
-    const inputs = await Promise.all(kIn.map(async (k) => {
-        return proof.generateCommitment(k);
-    }));
-    const outputs = await Promise.all(kOut.map(async (k) => {
-        return proof.generateCommitment(k);
-    }));
-    return { inputs, outputs };
-};
-
 proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
     const inputs = await Promise.all(kIn.map(async (k) => {
         return proof.generateCommitment(k);
@@ -60,25 +56,43 @@ proof.constructModifiedCommitmentSet = async ({ kIn, kOut }) => {
     return { commitments, m: inputs.length };
 };
 
+/**
+ * Construct AZTEC join-split proof transcript
+ *
+ * @method constructJoinSplit
+ * @param {Array[Note]} notes array of AZTEC notes
+ * @param {Number} m number of input notes
+ * @param {string} sender Ethereum address of transaction sender
+ * @param {string|BN} kPublic public commitment being added to proof
+ * @returns {{proofData:Array[string]}, {challenge: string}} proof data and challenge
+ */
 proof.constructJoinSplit = (notes, m, sender, kPublic = 0) => {
+    // rolling hash is used to combine multiple bilinear pairing comparisons into a single comparison
     const rollingHash = new Hash();
+
+    // convert kPublic into a BN instance if it is not one
     let kPublicBn;
     if (BN.isBN(kPublic)) {
         kPublicBn = kPublic;
     } else {
         kPublicBn = new BN(kPublic);
     }
+
+    // construct initial hash of note commitments
     notes.forEach((note) => {
         rollingHash.append(note.gamma);
         rollingHash.append(note.sigma);
     });
 
+    // finalHash is used to create final proof challenge
     const finalHash = new Hash();
-    finalHash.appendBN(new BN(sender.slice(2), 16));
-    finalHash.appendBN(kPublicBn);
-    finalHash.appendBN(new BN(m));
-    finalHash.data = [...finalHash.data, ...rollingHash.data];
-    rollingHash.keccak();
+    finalHash.appendBN(new BN(sender.slice(2), 16)); // add message sender to hash
+    finalHash.appendBN(kPublicBn); // add kPublic to hash
+    finalHash.appendBN(new BN(m)); // add input note variable to hash
+    finalHash.data = [...finalHash.data, ...rollingHash.data]; // add note commitments into finalHash
+    rollingHash.keccak(); // create first iteration of rollingHash
+
+    // define 'running' blinding factor for the k-parameter in final note
     let runningBk = new BN(0).toRed(groupReduction);
     const blindingFactors = notes.map((note, i) => {
         let bk = bn128.randomGroupScalar();

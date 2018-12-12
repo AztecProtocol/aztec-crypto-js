@@ -17,7 +17,7 @@ describe('aztec tests', () => {
     let wallets = [];
     beforeEach(async () => {
         db.clear();
-        const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+        const privateKey = `0x${crypto.randomBytes(32).toString('hex')}`;
         wallet = await basicWallet.createFromPrivateKey(privateKey, 'test');
         wallets = [
             await basicWallet.createFromPrivateKey(privateKey, 'testB'),
@@ -61,5 +61,5 @@ describe('aztec tests', () => {
         );
         expect(typeof (transactionHash)).to.equal('string');
         expect(transactionHash.length).to.equal(66);
-    }).timeout(5000);
+    }).timeout(10000);
 });

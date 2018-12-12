@@ -14,7 +14,7 @@ describe('basicWallet tests', () => {
 
     it('can read and write', async () => {
         const name = 'test';
-        const publicKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+        const publicKey = `0x${crypto.randomBytes(32).toString('hex')}`;
         const expected = basicWallet.createFromPublicKey(publicKey, name);
         const result = basicWallet.get(expected.address);
         expect(!expected.name).to.equal(false);
@@ -27,7 +27,7 @@ describe('basicWallet tests', () => {
 
     it('can update', async () => {
         const expected = basicWallet.createFromPublicKey(
-            `0x${crypto.randomBytes(32, 16).toString('hex')}`,
+            `0x${crypto.randomBytes(32).toString('hex')}`,
             'test'
         );
         basicWallet.update(expected.address, { foo: 'bar' });
@@ -36,7 +36,7 @@ describe('basicWallet tests', () => {
     });
 
     it('address and public key are expected', () => {
-        const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+        const privateKey = `0x${crypto.randomBytes(32).toString('hex')}`;
         const wallet = basicWallet.createFromPrivateKey(privateKey);
         const publicKey = secp256k1.keyFromPublic(wallet.publicKey.slice(2), 'hex');
         const expected = secp256k1.g.mul(Buffer.from(privateKey.slice(2), 'hex'));
