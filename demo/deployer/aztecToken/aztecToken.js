@@ -1,9 +1,7 @@
 const web3Utils = require('web3-utils');
 
 const deployer = require('../deployer');
-const transactions = require('../transactions/transactions');
 const db = require('../../db/db');
-const { t2 } = require('../../../aztec-crypto-js/params');
 const noteController = require('../../note/controller');
 
 const AZTECERC20Bridge = require('../../../build/contracts/AZTECERC20Bridge.json');
@@ -13,58 +11,20 @@ const { padLeft } = web3Utils;
 
 const aztecToken = {};
 
-aztecToken.deployAztecToken = async (address, aztecAddress, erc20Address, scalingFactor) => {
-    const wallet = db.wallets.get(address);
-    const aztecDb = db.contracts.aztecToken.get();
-    const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, aztecDb.latest.contractAddress);
-
-    // link to aztec verifier
-    const bytecode = AZTECERC20Bridge.bytecode.replace('__AZTECInterface________________________', aztecAddress.slice(2));
-
-    if (aztecDb && aztecDb.latest.bytecode === bytecode) {
-        throw new Error('aztec contract already deployed at address ', aztecDb.latest.address);
+aztecToken.getContractAddress = async () => {
+    const networkId = await deployer.getNetwork();
+    if (!AZTECERC20Bridge.networks[networkId] || !AZTECERC20Bridge.networks[networkId].address) {
+        throw new Error('AZTECERC20Bridge.sol not deployed to network ', networkId);
     }
-
-    const transactionHash = await deployer.deployContract(
-        aztecContract,
-        wallet,
-        bytecode,
-        t2,
-        erc20Address,
-        scalingFactor
-    );
-    // add transaction
-    db.transactions.create({
-        status: 'SENT',
-        type: 'CREATE_AZTEC_TOKEN',
-        transactionHash,
-    });
-    db.contracts.aztecToken.create({
-        bytecode,
-        contractAddress: '',
-        transactionReceipt: {},
-        transactionHash,
-    });
-    return transactionHash;
-};
-
-aztecToken.updateAztecToken = async (transactionHash) => {
-    const transactionReceipt = await transactions.getTransactionReceipt(transactionHash);
-    return db.contracts.aztecToken.update(transactionHash, {
-        contractAddress: transactionReceipt.contractAddress,
-        transactionReceipt,
-        transactionHash,
-    });
+    return AZTECERC20Bridge.networks[networkId].address;
 };
 
 aztecToken.confidentialTransfer = async (address, proofData, m, challenge, inputSignatures, outputOwners, metadata) => {
     const wallet = db.wallets.get(address);
-    const aztecDb = db.contracts.aztecToken.get();
-    if (!aztecDb.latest.contractAddress) {
-        throw new Error('could not find deployed aztec contract');
-    }
-    const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, aztecDb.latest.contractAddress);
-    aztecContract.contractAddress = aztecDb.latest.contractAddress;
+    const contractAddress = await aztecToken.getContractAddress();
+
+    const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, contractAddress);
+    aztecContract.contractAddress = contractAddress;
 
     const transactionHash = await deployer.methodCall(
         aztecContract,

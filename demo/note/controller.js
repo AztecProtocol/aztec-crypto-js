@@ -25,15 +25,10 @@ noteController.createNote = (owner, value) => {
     if (!wallet) {
         throw new Error(`wallet at address ${owner} does not exist`);
     }
-    const parentToken = db.contracts.aztec.get().latest;
-    if (!parentToken || !parentToken.contractAddress) {
-        throw new Error(`expected contract ${parentToken} to exist`);
-    }
     const note = notes.create(wallet.publicKey, value);
     const exported = {
         ...note.exportNote(),
         owner,
-        parentToken: parentToken.contractAddress,
         status: 'OFF_CHAIN',
     };
     db.notes.create(exported);
@@ -59,15 +54,13 @@ noteController.encodeMetadata = (noteArr) => {
     return `0x${result}`;
 };
 
-noteController.createConfidentialTransfer = (inputNoteHashes, outputNoteData, v, senderAddress) => {
+noteController.createConfidentialTransfer = (inputNoteHashes, outputNoteData, v, senderAddress, aztecTokenAddress) => {
     let kPublic;
     if (v < 0) {
         kPublic = GROUP_MODULUS.sub(new BN(-v));
     } else {
         kPublic = new BN(v);
     }
-    const aztecTokenContract = db.contracts.aztecToken.get().latest;
-    const aztecTokenAddress = aztecTokenContract.contractAddress;
 
     const inputNotes = inputNoteHashes.map(noteHash => noteController.get(noteHash));
     const outputNotes = outputNoteData.map(([owner, value]) => noteController.createNote(owner, value));

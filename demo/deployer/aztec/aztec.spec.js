@@ -10,6 +10,8 @@ const { t2, GROUP_MODULUS } = require('../../../aztec-crypto-js/params');
 const noteController = require('../../note/controller');
 const web3 = require('../../web3Listener');
 
+const AZTEC = require('../../../build/contracts/AZTEC');
+
 const { expect } = chai;
 
 describe('aztec tests', () => {
@@ -23,7 +25,6 @@ describe('aztec tests', () => {
             await basicWallet.createFromPrivateKey(privateKey, 'testB'),
             await basicWallet.createFromPrivateKey(privateKey, 'testC'),
         ];
-
         const accounts = await web3.eth.getAccounts();
         await web3.eth.sendTransaction({
             from: accounts[0],
@@ -32,18 +33,16 @@ describe('aztec tests', () => {
         });
     });
 
-    it('can create transaction', async () => {
-        const transactionHash = await aztec.deployAztec(wallet.address);
-        await aztec.updateAztec(transactionHash);
-        expect(typeof (transactionHash)).to.equal('string');
-        expect(transactionHash.length).to.equal(66);
-        expect(db.transactions.get(transactionHash).status).to.equal('MINED');
-        expect(db.contracts.aztec.get().latest.transactionHash).to.equal(transactionHash);
+    it('AZTEC.sol is deployed to network', async () => {
+        const address = await aztec.getContractAddress();
+        expect(address).to.be.a('string');
+        expect(address.length).to.equal(42);
+
+        const deployedBytecode = await web3.eth.getCode(address);
+        expect(deployedBytecode).to.equal(AZTEC.deployedBytecode);
     });
 
     it('can create join split transaction', async () => {
-        const deployTransactionHash = await aztec.deployAztec(wallet.address);
-        await aztec.updateAztec(deployTransactionHash);
         const inputNotes = [
             noteController.createNote(wallets[0].address, 100),
             noteController.createNote(wallets[0].address, 73),

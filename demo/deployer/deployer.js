@@ -6,7 +6,7 @@ const web3 = require('../web3Listener');
 const basicWallet = require('../basicWallet/basicWallet'); // todo put in controllers
 
 function getTransactionHash(transaction) {
-    if (config.env === 'TEST') {
+    if (config.env === 'TEST' || config.env === 'DEVELOPMENT') {
         return `0x${transaction.hash(false).toString('hex')}`;
     }
     return `0x${transaction.hash(true).toString('hex')}`;
@@ -147,6 +147,10 @@ deployer.getTransaction = async (transactionHash) => {
         }
         await recurse();
     });
+};
+
+deployer.getNetwork = async () => {
+    return web3.eth.net.getId();
 };
 
 deployer.web3 = web3;

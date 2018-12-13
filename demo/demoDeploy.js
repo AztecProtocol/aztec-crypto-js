@@ -63,16 +63,16 @@ async function demoDeploy(useDai = false, reset = false) {
     return true;
 }
 
-if (config.env === 'RINKEBY') {
-    demoDeploy(false, true).then(() => {
-        console.log('deployed');
-    });
-} else if (config.env === 'TEST') {
-    demoDeploy(false, true).then(() => {
-        console.log('deployed');
-    });
-} else if (config.env === 'MAINNET') {
-    demoDeploy(true, false).then(() => {
-        console.log('finished');
-    });
-}
+// if (config.env === 'RINKEBY') {
+//     demoDeploy(false, true).then(() => {
+//         console.log('deployed');
+//     });
+// } else if (config.env === 'TEST') {
+//     demoDeploy(false, true).then(() => {
+//         console.log('deployed');
+//     });
+// } else if (config.env === 'MAINNET') {
+//     demoDeploy(true, false).then(() => {
+//         console.log('finished');
+//     });
+// }

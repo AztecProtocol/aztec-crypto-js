@@ -1,13 +1,13 @@
 const BN = require('bn.js');
 
 const config = require('./config');
-const db = require('./db/db');
 
 const erc20Deploy = require('./deployer/erc20/erc20');
 const aztecTokenDeploy = require('./deployer/aztecToken/aztecToken');
 const transactions = require('./deployer/transactions/transactions');
 const basicWallet = require('./basicWallet/basicWallet');
 const noteController = require('./note/controller');
+const web3 = require('./web3Listener');
 
 const scalingFactor = new BN('100000000000000000', 10);
 
@@ -20,7 +20,19 @@ async function demoTransactions(mint = false) {
     await basicWallet.init(accounts[0]);
     await basicWallet.init(accounts[1]);
     await basicWallet.init(accounts[2]);
-    const aztecTokenContract = db.contracts.aztecToken.get().latest;
+
+    if (config.env === 'DEVELOPMENT') {
+        const testAccounts = await web3.eth.getAccounts();
+        await Promise.all(accounts.map((account) => {
+            return web3.eth.sendTransaction({
+                from: testAccounts[0],
+                to: account,
+                value: web3.utils.toWei('0.5', 'ether'),
+            });
+        }));
+    }
+    const aztecTokenAddress = await aztecTokenDeploy.getContractAddress();
+
 
     // approve aztecToken for scalingFactor.mul(500) tokens from account 0
     // create 4 notes split between accounts 0, 1 and 2
@@ -42,7 +54,7 @@ async function demoTransactions(mint = false) {
     await transactions.getTransactionReceipt(
         await erc20Deploy.approve(
             accounts[0],
-            aztecTokenContract.contractAddress,
+            aztecTokenAddress,
             scalingFactor.mul(new BN(500)).toString(10)
         )
     );
@@ -54,7 +66,8 @@ async function demoTransactions(mint = false) {
         [],
         [[accounts[0], 107], [accounts[0], 83], [accounts[1], 204], [accounts[2], 106]],
         -500,
-        accounts[0]
+        accounts[0],
+        aztecTokenAddress
     );
     transactionHashes[0] = await aztecTokenDeploy.confidentialTransfer(
         accounts[0],
@@ -75,7 +88,8 @@ async function demoTransactions(mint = false) {
         [proofs[0].noteHashes[0], proofs[0].noteHashes[2]],
         [[accounts[0], 140], [accounts[2], 171]],
         0,
-        accounts[0]
+        accounts[0],
+        aztecTokenAddress
     );
     transactionHashes[1] = await aztecTokenDeploy.confidentialTransfer(
         accounts[0],
@@ -97,7 +111,8 @@ async function demoTransactions(mint = false) {
         [proofs[0].noteHashes[1], proofs[0].noteHashes[3]],
         [[accounts[0], 50], [accounts[2], 50]],
         89,
-        accounts[1]
+        accounts[1],
+        aztecTokenAddress
     );
     transactionHashes[2] = await aztecTokenDeploy.confidentialTransfer(
         accounts[1],
@@ -116,6 +131,10 @@ async function demoTransactions(mint = false) {
 }
 
 if (config.env === 'RINKEBY') {
+    demoTransactions(true).then(() => {
+        console.log('finished');
+    });
+} if (config.env === 'DEVELOPMENT') {
     demoTransactions(true).then(() => {
         console.log('finished');
     });

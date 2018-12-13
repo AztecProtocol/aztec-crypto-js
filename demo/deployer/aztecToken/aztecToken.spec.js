@@ -11,17 +11,16 @@ const aztecToken = require('./aztecToken');
 const transactions = require('../transactions/transactions');
 const noteController = require('../../note/controller');
 const proof = require('../../../aztec-crypto-js/proof/proof');
-const { GROUP_MODULUS } = require('../../../aztec-crypto-js/params');
-
-const { expect } = chai;
+const { GROUP_MODULUS, t2, erc20ScalingFactor: scalingFactor } = require('../../../aztec-crypto-js/params');
 const web3 = require('../../web3Listener');
 
-describe('aztecToken tests', function describe() {
+const AZTECERC20Bridge = require('../../../build/contracts/AZTECERC20Bridge');
+
+const { expect } = chai;
+
+describe.only('aztecToken tests', function describe() {
     this.timeout(10000);
     const wallets = [];
-    let scalingFactor;
-    let aztecAddress;
-    let erc20Address;
     beforeEach(async () => {
         db.clear();
         wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testA');
@@ -36,40 +35,37 @@ describe('aztecToken tests', function describe() {
                 value: web3.utils.toWei('0.5', 'ether'),
             });
         }));
-        scalingFactor = 10000;
-        await erc20.updateErc20(await erc20.deployErc20(wallets[0].address));
-        await transactions.getTransactionReceipt(await erc20.mint(wallets[0].address, wallets[1].address, scalingFactor * 10000));
-        await transactions.getTransactionReceipt(await erc20.mint(wallets[0].address, wallets[0].address, scalingFactor * 10000));
 
-        await aztec.updateAztec(await aztec.deployAztec(wallets[0].address));
-        aztecAddress = db.contracts.aztec.get().latest.contractAddress;
-        erc20Address = db.contracts.erc20.get().latest.contractAddress;
+        await transactions.getTransactionReceipt(
+            await erc20.mint(wallets[0].address, wallets[1].address, scalingFactor.mul(new BN(10000)).toString(10))
+        );
+        await transactions.getTransactionReceipt(
+            await erc20.mint(wallets[0].address, wallets[0].address, scalingFactor.mul(new BN(10000)).toString(10))
+        );
     });
 
-    it('can create aztecToken contract', async () => {
-        const transactionHash = await aztecToken.deployAztecToken(wallets[0].address, aztecAddress, erc20Address, scalingFactor);
+    it('ERC20Bridge.sol is deployed to network', async () => {
+        const address = await aztecToken.getContractAddress();
+        const aztecAddress = await aztec.getContractAddress();
+        expect(address).to.be.a('string');
+        expect(address.length).to.equal(42);
 
-        let transaction = db.transactions.get(transactionHash);
-        expect(transaction.transactionHash).to.equal(transactionHash);
-        expect(transaction.status).to.equal('SENT');
-
-        await aztecToken.updateAztecToken(transactionHash);
-
-        transaction = db.transactions.get(transactionHash);
-        expect(transaction.transactionHash).to.equal(transactionHash);
-        expect(transaction.status).to.equal('MINED');
+        const deployedBytecode = await web3.eth.getCode(address);
+        expect(deployedBytecode)
+            .to.equal(AZTECERC20Bridge.deployedBytecode.replace('__AZTEC________________________', aztecAddress.slice(2)));
+        const publicKey = await Promise.all(Array.from({ length: 4 }, (v, i) => web3.eth.getStorageAt(address, i)));
+        expect(t2[0]).to.equal(publicKey[0]);
+        expect(t2[1]).to.equal(publicKey[1]);
+        expect(t2[2]).to.equal(publicKey[2]);
+        expect(t2[3]).to.equal(publicKey[3]);
     });
 
 
     it('can issue a confidentialTransfer transaction', async () => {
-        await aztecToken.updateAztecToken(
-            await aztecToken.deployAztecToken(wallets[0].address, aztecAddress, erc20Address, scalingFactor)
-        );
-        const aztecTokenContract = db.contracts.aztecToken.get().latest;
-        const aztecTokenAddress = aztecTokenContract.contractAddress;
+        const aztecTokenAddress = await aztecToken.getContractAddress();
 
         await transactions.getTransactionReceipt(
-            await erc20.approve(wallets[0].address, aztecTokenAddress, scalingFactor * 10000)
+            await erc20.approve(wallets[0].address, aztecTokenAddress, scalingFactor.mul(new BN(10000)).toString(10))
         );
         const inputNotes = [
             noteController.createNote(wallets[0].address, 100),
@@ -118,6 +114,8 @@ describe('aztecToken tests', function describe() {
         expect(await contract.methods.noteRegistry(inputNotes[2].noteHash).call()).to.equal(wallets[1].address);
         expect(await contract.methods.noteRegistry(inputNotes[3].noteHash).call()).to.equal(wallets[1].address);
 
+        console.log(inputNotes[0].noteHash);
+        console.log(inputNotes[1].noteHash);
         const {
             proofData: newProofData,
             challenge: newChallenge,
@@ -129,7 +127,8 @@ describe('aztecToken tests', function describe() {
             [inputNotes[0].noteHash, inputNotes[1].noteHash],
             [[wallets[2].address, 20], [wallets[2].address, 3]],
             150,
-            wallets[1].address
+            wallets[1].address,
+            aztecTokenAddress
         );
 
         const redeemTransactionHash = await aztecToken.confidentialTransfer(
@@ -139,7 +138,8 @@ describe('aztecToken tests', function describe() {
             newChallenge,
             inputSignatures,
             outputOwners,
-            newMetadata
+            newMetadata,
+            aztecTokenAddress
         );
 
         await aztecToken.updateJoinSplitTransaction(redeemTransactionHash);
