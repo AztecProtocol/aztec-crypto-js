@@ -43,6 +43,31 @@ doorbell.updateDoorbell = async (transactionHash) => {
     });
 };
 
+doorbell.setBlock = async (from) => {
+    const doorbellDb = db.contracts.doorbell.get();
+    const fromWallet = db.wallets.get(from);
+    if (!doorbellDb.latest.contractAddress) {
+        throw new Error('could not find deployed doorbell contract');
+    }
+
+    const doorbellContract = new web3.eth.Contract(Doorbell.abi, doorbellDb.latest.contractAddress);
+    doorbellContract.contractAddress = doorbellDb.latest.contractAddress; // have to set this explicitly
+
+    const transactionHash = await deployer.methodCall(
+        doorbellContract,
+        fromWallet,
+        'setBlock'
+    );
+
+    // add transaction
+    db.transactions.create({
+        status: 'SET',
+        type: 'DOORBELL SET BLOCK',
+        transactionHash,
+    });
+    return transactionHash;
+};
+
 doorbell.contract = (contractAddress) => {
     return new web3.eth.Contract(Doorbell.abi, contractAddress);
 };
