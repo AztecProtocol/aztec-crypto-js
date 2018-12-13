@@ -16,6 +16,7 @@
     "js-sha3": "^0.8.0",
     "lowdb": "^1.0.0",
     "openzeppelin-solidity": "^2.0.0",
+    "solc": "^0.4.25",
     "source-map-support": "^0.5.9",
     "truffle": "^4.1.14",
     "truffle-wallet-provider": "0.0.5",
@@ -32,7 +33,8 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "solidity-coverage": "^0.5.11"
   },
   "scripts": {
     "test": "NODE_ENV=TEST mocha ./aztec-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
@@ -40,6 +42,7 @@
     "demoDeployTest": "NODE_ENV=TEST node ./demo/demoDeploy.js",
     "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./demo/demoDeploy.js",
     "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./demo/demoTransactions.js",
+    "demoTransactionsDevelopment": "NODE_ENV=DEVELOPMENT node ./demo/demoTransactions.js",
     "demoDeployMainnet": "NODE_ENV=MAINNET node ./demo/demoDeploy.js",
     "demoTransactionsMainnet": "NODE_ENV=MAINNET node ./demo/demoTransactions.js",
     "initWallets": "node ./demo/initWallets.js"
