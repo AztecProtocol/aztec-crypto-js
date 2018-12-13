@@ -46,7 +46,6 @@ describe('doorbell tests', function describe() {
     it('validate that the block number can be correctly set', async () => {
         const transactionHash = await doorbell.deployDoorbell(wallets[0].address);
         await doorbell.updateDoorbell(transactionHash);
-
         const setBlockTxHash = await doorbell.setBlock(wallets[0].address);
 
         // Extract the block number the transaction is sent in
@@ -57,7 +56,6 @@ describe('doorbell tests', function describe() {
 
         // Query the blockNumber stored by the smart contract
         const extractedBlockNumber = await contract.methods.addressBlockMap(wallets[0].address).call();
-
         expect(blockNumber.toString()).to.equal(extractedBlockNumber);
     });
 });
