@@ -2,7 +2,7 @@ const ethUtils = require('ethereumjs-util');
 
 const helpers = require('./helpers');
 const web3 = require('./web3Config.js');
-const doorbell = require('../build/contracts/doorbell.json');
+const doorbell = require('../build/contracts/Doorbell.json');
 
 
 async function extractPublicKey(userAddress, contractAddress) {

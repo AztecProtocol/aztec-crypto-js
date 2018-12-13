@@ -2,7 +2,7 @@ const web3Utils = require('web3-utils');
 const Tx = require('ethereumjs-tx');
 const ethUtils = require('ethereumjs-util');
 
-const doorbell = require('../build/contracts/doorbell.json');
+const doorbell = require('../build/contracts/Doorbell.json');
 const web3 = require('./web3Config.js');
 
 

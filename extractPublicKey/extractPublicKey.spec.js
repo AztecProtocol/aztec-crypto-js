@@ -7,7 +7,7 @@ const helpers = require('./helpers'); // convention is to not put exentions (e.g
 const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
 const extractPublicKey = require('./extractPublicKey');
 const web3 = require('./web3Config.js');
-const Doorbell = require('../build/contracts/doorbell.json');
+const Doorbell = require('../build/contracts/Doorbell.json');
 
 
 const { expect } = chai;
