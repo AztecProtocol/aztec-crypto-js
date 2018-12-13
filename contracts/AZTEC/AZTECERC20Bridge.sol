@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./AZTEC.sol";
 
@@ -23,11 +23,11 @@ contract ERC20Interface {
  * Stay tuned for updates!
  **/
 contract AZTECERC20Bridge {
+    bytes32[4] setupPubKey;
     uint private constant groupModulusBoundary = 10944121435919637611123202872628637544274182200208017171849102093287904247808;
     uint private constant groupModulus = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     uint public scalingFactor;
     mapping(bytes32 => address) public noteRegistry;
-    bytes32[4] setupPubKey;
     bytes32 domainHash;
     ERC20Interface token;
 

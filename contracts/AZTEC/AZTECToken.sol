@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./AZTEC.sol";
 import "../ERC20/ERC20Mintable.sol";

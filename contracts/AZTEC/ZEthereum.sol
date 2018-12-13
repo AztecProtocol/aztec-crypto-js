@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./AZTEC.sol";
 import "../ERC20/ERC20Mintable.sol";
@@ -102,7 +102,7 @@ contract ZEthereum {
         uint challenge;
     }
 
-    function extractDataFromProof(bytes proof) internal returns (Proof){
+    function extractDataFromProof(bytes) internal pure returns (Proof){
         bytes32 offsetToProofData;
         bytes32 proofBytes;
         bytes32 offsetToNotes;
@@ -170,7 +170,7 @@ contract ZEthereum {
         for (uint i = 0; i < m; i++) {
 */
 
-    function confidentialTransaction(bytes proof, address[] outputOwners, bytes metadata) external payable {
+    function confidentialTransaction(bytes proof, address[] outputOwners, bytes) external payable {
         Proof memory proofData = extractDataFromProof(proof);
         
         require(proofData.inputSignatures.length == proofData.m, "input signature length invalid");
