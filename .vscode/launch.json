@@ -39,6 +39,19 @@
                 "${workspaceRoot}/test/**/*"
             ],
             "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Truffle Migrate",
+            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+            "useWSL": true,
+            "args": ["migrate", "--reset"],
+            "cwd": "${workspaceRoot}",
+            "outFiles": [
+                "${workspaceRoot}/test/**/*"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
         }
     ]
 }
