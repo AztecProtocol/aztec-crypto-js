@@ -7,7 +7,7 @@ const helpers = require('./helpers'); // convention is to not put exentions (e.g
 const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
 const extractPublicKey = require('./extractPublicKey');
 const web3 = require('./web3Config.js');
-const DOORBELL = require('../build/contracts/doorbell.json');
+const Doorbell = require('../build/contracts/doorbell.json');
 
 
 const { expect } = chai;
@@ -23,7 +23,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
 
         before(async () => {
             contractAddress = await helpers.deployContract();
-            contractInstance = new web3.eth.Contract(DOORBELL.abi, contractAddress);
+            contractInstance = new web3.eth.Contract(Doorbell.abi, contractAddress);
             accounts = await web3.eth.getAccounts();
             userAddress = accounts[0];
             blockNumber = await contractInstance.methods.setBlock().send({ from: userAddress });
@@ -49,7 +49,7 @@ describe('Series of tests to validate Doorbell smart contract and utility script
 
         before(async () => {
             contractAddress = await helpers.deployContract();
-            contractInstance = new web3.eth.Contract(DOORBELL.abi, contractAddress);
+            contractInstance = new web3.eth.Contract(Doorbell.abi, contractAddress);
 
             accounts = await web3.eth.getAccounts();
 
