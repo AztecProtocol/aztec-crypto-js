@@ -1,0 +1,61 @@
+/* eslint-disable prefer-arrow-callback */
+
+const chai = require('chai');
+const crypto = require('crypto');
+
+const db = require('../../db/db');
+const basicWallet = require('../../basicWallet/basicWallet');
+const doorbell = require('./doorbell');
+const extractPublicKey = require('../../../../extractPublicKey/extractPublicKey');
+const helpers = require('../../../../extractPublicKey/helpers');
+const transactions = require('../transactions/transactions');
+
+
+const { expect } = chai;
+const web3 = require('../../web3Listener');
+
+describe('doorbell tests', function describe() {
+    this.timeout(100000);
+    const wallets = [];
+    beforeEach(async () => {
+        db.clear();
+        wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testA');
+        wallets[1] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testB');
+
+        const accounts = await web3.eth.getAccounts();
+        await Promise.all(wallets.map((wallet) => {
+            return web3.eth.sendTransaction({
+                from: accounts[0],
+                to: wallet.address,
+                value: web3.utils.toWei('0.5', 'ether'),
+            });
+        }));
+    });
+
+    it('validate that the doorbell smart contract can be created', async () => {
+        const transactionHash = await doorbell.deployDoorbell(wallets[0].address);
+
+        const result = await doorbell.updateDoorbell(transactionHash);
+        const { transactionReceipt } = result.latest;
+        expect(typeof (transactionHash)).to.equal('string');
+        expect(transactionHash).to.equal(transactionReceipt.transactionHash);
+        expect(db.transactions.get(transactionHash).status).to.equal('MINED');
+        expect(db.contracts.doorbell.get().latest.transactionHash).to.equal(transactionHash);
+    });
+
+    it('validate that the block number can be correctly set', async () => {
+        const transactionHash = await doorbell.deployDoorbell(wallets[0].address);
+        await doorbell.updateDoorbell(transactionHash);
+        const setBlockTxHash = await doorbell.setBlock(wallets[0].address);
+
+        // Extract the block number the transaction is sent in
+        const { blockNumber } = await transactions.getTransactionReceipt(setBlockTxHash);
+
+        const { contractAddress } = db.contracts.doorbell.get().latest;
+        const contract = doorbell.contract(contractAddress);
+
+        // Query the blockNumber stored by the smart contract
+        const extractedBlockNumber = await contract.methods.addressBlockMap(wallets[0].address).call();
+        expect(blockNumber.toString()).to.equal(extractedBlockNumber);
+    });
+});

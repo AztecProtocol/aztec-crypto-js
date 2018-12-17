@@ -21,6 +21,7 @@ build/*
 bin/*
 
 build/*
+
 out
 docs
 testWallet*
