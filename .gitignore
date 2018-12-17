@@ -20,8 +20,12 @@ bin/*
 
 build/*
 
+out
+docs
+testWallet*
 cupboard_under_the_stairs/*
 dbTest.json*
 dbRinkeby.json*
 dbMainNet.json*
-testWallet*
+test.json
+none.json

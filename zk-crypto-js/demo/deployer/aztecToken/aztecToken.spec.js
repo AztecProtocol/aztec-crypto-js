@@ -24,9 +24,9 @@ describe('aztecToken tests', function describe() {
     let erc20Address;
     beforeEach(async () => {
         db.clear();
-        wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testA');
-        wallets[1] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testB');
-        wallets[2] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32, 16).toString('hex')}`, 'testC');
+        wallets[0] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testA');
+        wallets[1] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testB');
+        wallets[2] = await basicWallet.createFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`, 'testC');
 
         const accounts = await web3.eth.getAccounts();
         await Promise.all(wallets.map((wallet) => {

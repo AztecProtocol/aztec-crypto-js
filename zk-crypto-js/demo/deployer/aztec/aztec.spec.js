@@ -6,19 +6,18 @@ const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
 const aztec = require('./aztec');
 const aztecProof = require('../../../proof/proof');
-const { t2Formatted, GROUP_MODULUS } = require('../../../params');
+const { t2, GROUP_MODULUS } = require('../../../params');
 const noteController = require('../../note/controller');
 const web3 = require('../../web3Listener');
 
 const { expect } = chai;
-
 
 describe('aztec tests', () => {
     let wallet;
     let wallets = [];
     beforeEach(async () => {
         db.clear();
-        const privateKey = `0x${crypto.randomBytes(32, 16).toString('hex')}`;
+        const privateKey = `0x${crypto.randomBytes(32).toString('hex')}`;
         wallet = await basicWallet.createFromPrivateKey(privateKey, 'test');
         wallets = [
             await basicWallet.createFromPrivateKey(privateKey, 'testB'),
@@ -58,9 +57,9 @@ describe('aztec tests', () => {
             proofData,
             0,
             challenge,
-            t2Formatted
+            t2
         );
         expect(typeof (transactionHash)).to.equal('string');
         expect(transactionHash.length).to.equal(66);
-    }).timeout(5000);
+    }).timeout(10000);
 });

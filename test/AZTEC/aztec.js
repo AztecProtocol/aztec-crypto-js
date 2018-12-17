@@ -27,7 +27,7 @@ contract('AZTEC', (accounts) => {
             aztec = await AZTEC.new(accounts[0]);
         });
 
-        /*
+      /*
         General structure of the success state unit tests:
         1) Construct the commitments from a selection of k_in and k_out (input and output values)
         2) Generate the proofData and random challenge. Proof data contains notes, and each note contains 6 pieces of information:
@@ -117,7 +117,6 @@ contract('AZTEC', (accounts) => {
                 from: accounts[0],
                 gas: 4000000,
             });
-
             console.log('gas used = ', gasUsed);
             expect(result).to.equal(true);
         });
@@ -373,7 +372,7 @@ contract('AZTEC', (accounts) => {
         const m = 1;
         const proofData = [[`0x${padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
 
-        await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2Formatted, {
+        await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2, {
             from: accounts[0],
             gas: 4000000,
         }));

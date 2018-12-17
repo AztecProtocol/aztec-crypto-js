@@ -22,6 +22,8 @@ eip712.encodeTypedData = function encodeTypedData(typedData) {
 eip712.hashStruct = function hashStruct(primaryType, types, message) {
     const typeString = eip712.encodeStruct(primaryType, types);
 
+    // Note to self, why on Earth was I slicing 2 chars off this string? It's not hex!
+    // TODO: figure out what to do about this, our deployed contracts use an incorrect type hash...
     const typeHash = web3Utils.sha3(web3EthAbi.encodeParameters(['string'], [typeString.slice(2)]), 'hex');
     const encodedData = eip712.encodeMessageData(message, types, types[primaryType]);
     const hashedStruct = web3Utils.sha3(`${typeHash}${encodedData.slice(2)}`, 'hex');

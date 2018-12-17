@@ -7,10 +7,10 @@ const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 const AZTECToken = artifacts.require('./contracts/AZTEC/AZTECToken');
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
+const secp256k1 = require('../../zk-crypto-js/secp256k1/secp256k1');
 const sign = require('../../zk-crypto-js/utils/sign');
 
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 
 // Step 1: make a token contract
 // Step 2: make an aztec token contract
@@ -30,7 +30,7 @@ contract('AZTEC Token Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         AZTECToken.link('AZTECInterface', aztec.address);
 
-        aztecToken = await AZTECToken.new(t2Formatted, {
+        aztecToken = await AZTECToken.new(t2, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -38,7 +38,7 @@ contract('AZTEC Token Tests', (accounts) => {
         const receipt = await web3.eth.getTransactionReceipt(aztecToken.transactionHash);
         console.log('gas spent creating contract = ', receipt.gasUsed);
 
-        aztecAccounts = accounts.map(() => ecdsa.generateKeyPair());
+        aztecAccounts = accounts.map(() => secp256k1.generateAccount());
         await Promise.all(accounts.map(acc => aztecToken.mint(acc, 1000000, { from: accounts[0], gas: 5000000 })));
         await Promise.all(accounts.map(acc => aztecToken.approve(aztecToken.address, 1000000, { from: acc, gas: 5000000 })));
     });

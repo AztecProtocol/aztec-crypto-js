@@ -51,6 +51,10 @@ const config = {
         },
         env: 'MAINNET',
     },
+    NONE: {
+        env: 'NONE',
+        db: 'none.json',
+    },
 };
 
 function getConfig() {

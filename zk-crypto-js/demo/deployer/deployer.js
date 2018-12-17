@@ -13,13 +13,14 @@ function getTransactionHash(transaction) {
 }
 
 // utility function to add 0 - 999 gas to the amount of gas sent in a transaction.
-// This is a nasty hack to work around the fact that ganache-core incorrectly calculates transaction hashes,
-// and uses EIP-155 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md) to get the transaction hash,
-// instead of hashing the rlp-encoded data of the *signed* transaction.
-// This makes the transaction hash not unique, as the same transaction sent by different accounts resolves to the same tx hash.
+// This is a nasty hack to work around how ganache-core calculates transaction hashes,
+// it uses EIP-155 (https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md) to get the transaction hash,
+// instead of hashing the rlp-encoded data of the signed transaction.
+// This makes the same transaction sent by different accounts resolve to the same tx hash.
 // Adding in a bit of noise to the amount of gas sent creates transaction hashes that are more collision resistant.
-// This is needed because of the way we identify mined transactions - we poll our node for a transactionReceipt at regular intervals.
-// However this was causing ganache-cli to give us the transactionReceipt of a previously mined transaction (with the same transaction hash).
+// This is needed because of the way we identify mined transactions - we poll our node for a transactionReceipt at
+// regular intervals. However this was causing ganache-cli to give us the transactionReceipt
+// of a previously mined transaction (with the same transaction hash).
 // (we use this polling method because websockets time out after 30 mins, and main-net calls can take longer than that to resolve)
 function addNoise() {
     return Math.ceil(Math.random() * 1000);

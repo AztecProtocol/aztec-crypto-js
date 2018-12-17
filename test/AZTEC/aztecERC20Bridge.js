@@ -9,11 +9,11 @@ const ERC20Mintable = artifacts.require('./contracts/ERC20/ERC20Mintable');
 AZTEC.abi = AZTECInterface.abi; // hon hon hon
 
 const aztecProof = require('../../zk-crypto-js/proof/proof');
-const ecdsa = require('../../zk-crypto-js/secp256k1/ecdsa');
+const secp256k1 = require('../../zk-crypto-js/secp256k1/secp256k1');
 const sign = require('../../zk-crypto-js/utils/sign');
 const exceptions = require('../exceptions');
 
-const { t2Formatted, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
 
 // Step 1: make a token contract
 // Step 2: make an aztec token contract
@@ -31,7 +31,7 @@ contract('AZTEC - ERC20 Token Bridge Tests', (accounts) => {
     let scalingFactor;
     const tokensTransferred = new BN(100000);
 
-    describe('success states', () => {
+  describe('success states', () => {
         before(async () => {
             token = await ERC20Mintable.new();
             aztec = await AZTEC.new(accounts[0]);

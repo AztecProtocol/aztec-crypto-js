@@ -6,15 +6,15 @@ const bn128 = require('../bn128/bn128');
 const ecdsa = require('../secp256k1/ecdsa');
 const secp256k1 = require('../secp256k1/secp256k1');
 const proof = require('../proof/proof');
-const { toBytes32 } = require('../utils/utils');
 
+const { padLeft } = web3Utils;
 
 function createWallet(path, privateKey = null) {
     let issueKey;
     if (privateKey) {
         issueKey = ecdsa.keyPairFromPrivate(privateKey);
     } else {
-        issueKey = ecdsa.generateKeyPair();
+        ({ privateKey: issueKey } = secp256k1.accountFromPrivateKey(`0x${crypto.randomBytes(32).toString('hex')}`));
     }
     const scanKey = ecdsa.generateKeyPair();
     const wallet = {
@@ -50,8 +50,8 @@ function createWallet(path, privateKey = null) {
 }
 
 function createNoteHash(gamma, sigma) {
-    const gammaString = `${toBytes32(gamma.x.fromRed().toString(16))}${toBytes32(gamma.y.fromRed().toString(16))}`;
-    const sigmaString = `${toBytes32(sigma.x.fromRed().toString(16))}${toBytes32(sigma.y.fromRed().toString(16))}`;
+    const gammaString = `${padLeft(gamma.x.fromRed().toString(16), 64)}${padLeft(gamma.y.fromRed().toString(16), 64)}`;
+    const sigmaString = `${padLeft(sigma.x.fromRed().toString(16), 64)}${padLeft(sigma.y.fromRed().toString(16), 64)}`;
     return web3Utils.sha3(`0x${gammaString}${sigmaString}`, 'hex');
 }
 
@@ -98,14 +98,14 @@ Wallet.prototype.generateNote = async function generateNote(recipient, value) {
         .mul(Buffer.from(ephemeralKey.privateKey.slice(2), 'hex'));
 
     const sharedSecretScalar = web3Utils.sha3(
-        `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
+        `0x${padLeft(sharedSecret.x.fromRed().toString(16), 64)}${padLeft(sharedSecret.y.fromRed().toString(16), 64)}`,
         'hex'
     );
 
     const issueKey = secp256k1.curve.point(recipient.issueKey.publicKey.x, recipient.issueKey.publicKey.y);
     const ownerPublicKey = secp256k1.g.mul(Buffer.from(sharedSecretScalar.slice(2), 'hex')).add(issueKey);
 
-    const metadata = `0x${toBytes32(ephemeralKey.publicKey.x.fromRed().toString(16))}${ephemeralKey.publicKey.y.isOdd() ? '1' : '0'}`;
+    const metadata = `0x${padLeft(ephemeralKey.publicKey.x.fromRed().toString(16), 64)}${ephemeralKey.publicKey.y.isOdd() ? '1' : '0'}`;
 
     const {
         gamma,
@@ -139,7 +139,7 @@ Wallet.prototype.generateNote = async function generateNote(recipient, value) {
 Wallet.prototype.getNotePrivateKey = function getNotePrivateKey(sharedSecretScalar) {
     const secretBn = new BN(sharedSecretScalar.slice(2), 'hex');
     const issueKeyBn = new BN(this.wallet.issueKey.privateKey.slice(2), 'hex');
-    const privateKeyHex = `0x${toBytes32(issueKeyBn.add(secretBn).umod(secp256k1.n).toString(16))}`;
+    const privateKeyHex = `0x${padLeft(issueKeyBn.add(secretBn).umod(secp256k1.n).toString(16), 64)}`;
     return privateKeyHex;
 };
 
@@ -149,7 +149,7 @@ Wallet.prototype.validateNote = function validateNote(note, recipient /* , value
         .mul(Buffer.from(recipient.scanKey.privateKey.slice(2), 'hex'));
     const noteSecret = web3Utils
         .sha3(
-            `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
+            `0x${padLeft(sharedSecret.x.fromRed().toString(16), 64)}${padLeft(sharedSecret.y.fromRed().toString(16), 64)}`,
             'hex'
         );
     return (noteSecret === note.privateKey);
@@ -229,7 +229,7 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
             .mul(Buffer.from(this.wallet.scanKey.privateKey.slice(2), 'hex'));
         const noteSecret = web3Utils
             .sha3(
-                `0x${toBytes32(sharedSecret.x.fromRed().toString(16))}${toBytes32(sharedSecret.y.fromRed().toString(16))}`,
+                `0x${padLeft(sharedSecret.x.fromRed().toString(16), 64)}${padLeft(sharedSecret.y.fromRed().toString(16), 64)}`,
                 'hex'
             );
         const secretBn = new BN(noteSecret.slice(2), 'hex');
@@ -248,7 +248,7 @@ Wallet.prototype.checkForOwnedNotes = function checkForOwnedNotes(notes, ephemer
             const gammaK = bn128.h.mul(secretBn).neg().add(sigma);
             const k = bn128.recoverMessage(gamma, gammaK);
             const issuePrivateKey = new BN(this.wallet.issueKey.privateKey.slice(2), 16);
-            const privateKeyHex = `0x${toBytes32(secretBn.add(issuePrivateKey).umod(secp256k1.n))}`;
+            const privateKeyHex = `0x${padLeft(secretBn.add(issuePrivateKey).umod(secp256k1.n), 64)}`;
 
             const account = ecdsa.keyPairFromPrivate(privateKeyHex);
 

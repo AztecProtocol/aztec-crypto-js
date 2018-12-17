@@ -35,10 +35,9 @@
     "mocha": "^5.2.0"
   },
   "scripts": {
-    "test": "NODE_ENV=TEST mocha ./zk-crypto-js/demo/deployer/doorbell --trace-warnings --exit --colors --recursive --reporter spec",
-    "demoTestDoorbell": "NODE_ENV=TEST mocha ./zk-crypto-js/demo/deployer/doorbell --trace-warnings --exit --colors --recursive --reporter spec",
-    "demoTestERC20": "NODE_ENV=TEST mocha ./zk-crypto-js/demo/deployer/erc20 --trace-warnings --exit --colors --recursive --reporter spec",
-    "demoTestDeploy": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTestDeploy.js",
+    "test": "NODE_ENV=TEST mocha ./zk-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
+    "demoTest": "NODE_ENV=TEST mocha ./zk-crypto-js/demo --trace-warnings --exit --colors --recursive --reporter spec",
+    "demoDeployTest": "NODE_ENV=TEST node ./zk-crypto-js/demo/demoDeploy.js",
     "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoDeploy.js",
     "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./zk-crypto-js/demo/demoTransactions.js",
     "demoDeployMainnet": "NODE_ENV=MAINNET node ./zk-crypto-js/demo/demoDeploy.js",
