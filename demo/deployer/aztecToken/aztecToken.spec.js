@@ -18,7 +18,7 @@ const AZTECERC20Bridge = require('../../../build/contracts/AZTECERC20Bridge');
 
 const { expect } = chai;
 
-describe.only('aztecToken tests', function describe() {
+describe('aztecToken tests', function describe() {
     this.timeout(10000);
     const wallets = [];
     beforeEach(async () => {
@@ -114,8 +114,6 @@ describe.only('aztecToken tests', function describe() {
         expect(await contract.methods.noteRegistry(inputNotes[2].noteHash).call()).to.equal(wallets[1].address);
         expect(await contract.methods.noteRegistry(inputNotes[3].noteHash).call()).to.equal(wallets[1].address);
 
-        console.log(inputNotes[0].noteHash);
-        console.log(inputNotes[1].noteHash);
         const {
             proofData: newProofData,
             challenge: newChallenge,

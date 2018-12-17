@@ -18,5 +18,5 @@ module.exports = (deployer, network) => {
             }
             return deployer.deploy(ERC20Mintable);
         })
-        .then(({ address: erc20Address }) => deployer.deploy(AZTECERC20Bridge, t2, erc20Address, erc20ScalingFactor));
+        .then(({ address: erc20Address }) => deployer.deploy(AZTECERC20Bridge, t2, erc20Address, erc20ScalingFactor, 1));
 };

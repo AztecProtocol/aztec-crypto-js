@@ -4,6 +4,8 @@ node_modules
 transcripts
 testWallets
 
+aztec-crypto-js/bn128/hashToPoint.js
+
 lib/core/metadata.js
 lib/core/MetadataBlog.js
 

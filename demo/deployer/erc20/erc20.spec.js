@@ -12,7 +12,7 @@ const ERC20Mintable = require('../../../build/contracts/ERC20Mintable');
 
 const { expect } = chai;
 
-describe.only('erc20 tests', function describe() {
+describe('erc20 tests', function describe() {
     this.timeout(10000);
     const wallets = [];
     beforeEach(async () => {
