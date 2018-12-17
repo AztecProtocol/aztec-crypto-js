@@ -10,4 +10,9 @@ utils.bnToHex = function bnToHex(bignum) {
     return `0x${padLeft(bignum.toString(16), 64)}`;
 };
 
+
+utils.randomBytes32 = function randomBytes32() {
+    return `0x${toBytes32(new BN(crypto.randomBytes(32), 16).toString(16))}`;
+};
+
 module.exports = utils;
