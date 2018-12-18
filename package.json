@@ -39,7 +39,7 @@
     "solidity-coverage": "^0.5.11"
   },
   "scripts": {
-    "test": "NODE_ENV=TEST mocha ./zk-crypto-js/proof/testAtomicSwapProof --trace-warnings --exit --colors --recursive --reporter spec",
+    "test": "NODE_ENV=TEST mocha ./aztec-crypto-js/proof/testAtomicSwapProof.spec.js --trace-warnings --exit --colors --recursive --reporter spec",
     "demoTest": "NODE_ENV=TEST mocha ./demo --trace-warnings --exit --colors --recursive --reporter spec",
     "doorbellTest": "NODE_ENV=TEST mocha ./extractPublicKey --trace-warnings --exit --colors --recursive --reporter spec",
     "demoDeployTest": "NODE_ENV=TEST node ./demo/demoDeploy.js",
