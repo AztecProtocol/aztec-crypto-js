@@ -20,6 +20,9 @@ const { t2, GROUP_MODULUS } = require('../../aztec-crypto-js/params');
 // Step 6: redeem tokens from confidential form
 
 AZTEC.abi = AZTECInterface.abi;
+
+const fakeNetworkId = 100;
+
 contract('AZTEC Token Tests', (accounts) => {
     let aztec;
     let aztecToken;
@@ -30,7 +33,7 @@ contract('AZTEC Token Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         AZTECToken.link('AZTECInterface', aztec.address);
 
-        aztecToken = await AZTECToken.new(t2, {
+        aztecToken = await AZTECToken.new(t2, fakeNetworkId, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -69,8 +72,8 @@ contract('AZTEC Token Tests', (accounts) => {
         const m = 2;
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
         const signatures = [
-            sign.signNote(proofData[0], challenge, accounts[0], aztecToken.address, aztecAccounts[2].privateKey),
-            sign.signNote(proofData[1], challenge, accounts[0], aztecToken.address, aztecAccounts[3].privateKey),
+            sign.signNote(proofData[0], challenge, accounts[0], aztecToken.address, aztecAccounts[2].privateKey, fakeNetworkId),
+            sign.signNote(proofData[1], challenge, accounts[0], aztecToken.address, aztecAccounts[3].privateKey, fakeNetworkId),
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
@@ -84,8 +87,8 @@ contract('AZTEC Token Tests', (accounts) => {
         const m = 2;
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[3], 11999);
         const signatures = [
-            sign.signNote(proofData[0], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey),
-            sign.signNote(proofData[1], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey),
+            sign.signNote(proofData[0], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey, fakeNetworkId),
+            sign.signNote(proofData[1], challenge, accounts[3], aztecToken.address, aztecAccounts[0].privateKey, fakeNetworkId),
         ].map(r => r.signature);
         const outputOwners = [aztecAccounts[0].address];
         const result = await aztecToken.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x', {

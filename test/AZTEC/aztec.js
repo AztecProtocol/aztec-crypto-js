@@ -1,25 +1,24 @@
 /* global artifacts, expect, contract, beforeEach, it:true */
+// ### External Dependencies
 const BN = require('bn.js');
 const { padLeft, sha3 } = require('web3-utils');
 const crypto = require('crypto');
 
+// ### Internal Dependencies
+const aztecProof = require('../../aztec-crypto-js/proof/proof');
+const aztecFakeProof = require('../../aztec-crypto-js/proof/fakeProof/fakeProof'); // Proofs constructed using a fake setup key
+const exceptions = require('../exceptions');
+const { t2, GROUP_MODULUS } = require('../../aztec-crypto-js/params');
+
+// ### Artifacts
 const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
-const exceptions = require('../exceptions');
 
-const exceptions = require('../exceptions');
-const aztecProof = require('../../zk-crypto-js/proof/proof');
-const aztecFakeProof = require('../../zk-crypto-js/proof/fakeProof/fakeProof'); // Proofs constructed using a fake setup key
-
-const {
-    t2,
-    GROUP_MODULUS,
-} = require('../../zk-crypto-js/params');
-const { toBytes32 } = require('../../zk-crypto-js/utils/utils');
+const { toBytes32 } = require('../../aztec-crypto-js/utils/utils');
 
 AZTEC.abi = AZTECInterface.abi;
 
-contract.only('AZTEC', (accounts) => {
+contract('AZTEC', (accounts) => {
     let aztec;
     // Creating a collection of tests that should pass
     describe('success states', () => {
@@ -30,7 +29,8 @@ contract.only('AZTEC', (accounts) => {
         /*
           General structure of the success state unit tests:
           1) Construct the commitments from a selection of k_in and k_out (input and output values)
-          2) Generate the proofData and random challenge. Proof data contains notes, and each note contains 6 pieces of information:
+          2) Generate the proofData and random challenge. Proof data contains notes,
+             and each note contains 6 pieces of information:
               a) gamma_x
               b) gamma_y
               c) sigma_x
@@ -38,7 +38,8 @@ contract.only('AZTEC', (accounts) => {
               e) k^bar
               f) a^bar
               Note: a), b), c) and d) are the Pedersen commitment data
-              Note: Syntax to access proof data for one note: proofData[]. Syntax to access gamma_x for a particular note: proofData[][0]
+              Note: Syntax to access proof data for one note: proofData[].
+              Syntax to access gamma_x for a particular note: proofData[][0]
           3) Validate that these result in a successfull join-split transaction
           4) Calculate the gas used in validating this join-split transaction
           */
@@ -256,20 +257,6 @@ contract.only('AZTEC', (accounts) => {
             console.log('gas used = ', gasUsed);
             expect(result).to.equal(true);
         });
-
-        it('validates that points are on curve', async () => {
-            const zeroes = `${padLeft('0', 64)}`;
-            const noteString = `${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}`;
-            const challengeString = `0x${padLeft(accounts[0].slice(2), 64)}${padLeft('132', 64)}${padLeft('1', 64)}${noteString}`;
-            const challenge = sha3(challengeString, 'hex');
-            const m = 1;
-            const proofData = [[`0x${padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
-
-            await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2, {
-                from: accounts[0],
-                gas: 4000000,
-            }));
-        });
     });
 
     describe('failure states', () => {
@@ -371,6 +358,20 @@ contract.only('AZTEC', (accounts) => {
             } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
 
             exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2, {
+                from: accounts[0],
+                gas: 4000000,
+            }));
+        });
+
+        it('validate failure when points not on curve', async () => {
+            const zeroes = `${padLeft('0', 64)}`;
+            const noteString = `${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}`;
+            const challengeString = `0x${padLeft(accounts[0].slice(2), 64)}${padLeft('132', 64)}${padLeft('1', 64)}${noteString}`;
+            const challenge = sha3(challengeString, 'hex');
+            const m = 1;
+            const proofData = [[`0x${padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
+
+            await exceptions.catchRevert(aztec.validateJoinSplit(proofData, m, challenge, t2, {
                 from: accounts[0],
                 gas: 4000000,
             }));

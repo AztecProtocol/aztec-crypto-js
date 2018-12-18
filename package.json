@@ -41,6 +41,7 @@
   "scripts": {
     "test": "NODE_ENV=TEST mocha ./aztec-crypto-js --trace-warnings --exit --colors --recursive --reporter spec",
     "demoTest": "NODE_ENV=TEST mocha ./demo --trace-warnings --exit --colors --recursive --reporter spec",
+    "doorbellTest": "NODE_ENV=TEST mocha ./extractPublicKey --trace-warnings --exit --colors --recursive --reporter spec",
     "demoDeployTest": "NODE_ENV=TEST node ./demo/demoDeploy.js",
     "demoDeployRinkeby": "NODE_ENV=RINKEBY node ./demo/demoDeploy.js",
     "demoTransactionsRinkeby": "NODE_ENV=RINKEBY node ./demo/demoTransactions.js",

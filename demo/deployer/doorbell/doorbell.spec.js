@@ -6,10 +6,7 @@ const crypto = require('crypto');
 const db = require('../../db/db');
 const basicWallet = require('../../basicWallet/basicWallet');
 const doorbell = require('./doorbell');
-const extractPublicKey = require('../../../../extractPublicKey/extractPublicKey');
-const helpers = require('../../../../extractPublicKey/helpers');
 const transactions = require('../transactions/transactions');
-
 
 const { expect } = chai;
 const web3 = require('../../web3Listener');

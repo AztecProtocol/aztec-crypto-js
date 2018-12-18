@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const Tx = require('ethereumjs-tx'); // a module for creating, manipulating and signing ethereum transactions
 
 const helpers = require('./helpers'); // convention is to not put exentions (e.g. .js) for relative imports
-const ecdsa = require('../zk-crypto-js/secp256k1/ecdsa');
+const ecdsa = require('../aztec-crypto-js/secp256k1/ecdsa');
 const extractPublicKey = require('./extractPublicKey');
 const web3 = require('./web3Config.js');
 const Doorbell = require('../build/contracts/Doorbell.json');

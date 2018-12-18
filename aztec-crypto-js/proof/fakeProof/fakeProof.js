@@ -1,11 +1,9 @@
 const BN = require('bn.js');
 const crypto = require('crypto');
-const utils = require('../../utils/utils');
-const Hash = require('../../utils/keccak');
-const { groupReduction } = require('../../params');
 const bn128 = require('../../bn128/bn128');
 const untrustedSetup = require('../../setup/untrustedSetup');
 
+const { groupReduction } = bn128;
 const fakeProof = {};
 
 // This generates the commitment

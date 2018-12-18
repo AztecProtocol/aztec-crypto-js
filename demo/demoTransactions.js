@@ -62,7 +62,7 @@ async function demoTransactions(mint = false) {
     const transactionHashes = [];
     console.log('issuing first join-split transaction');
 
-    proofs[0] = noteController.createConfidentialTransfer(
+    proofs[0] = await noteController.createConfidentialTransfer(
         [],
         [[accounts[0], 107], [accounts[0], 83], [accounts[1], 204], [accounts[2], 106]],
         -500,
@@ -84,7 +84,7 @@ async function demoTransactions(mint = false) {
 
     console.log('first join-split transaction mined, issuing second join-split transaction');
 
-    proofs[1] = noteController.createConfidentialTransfer(
+    proofs[1] = await noteController.createConfidentialTransfer(
         [proofs[0].noteHashes[0], proofs[0].noteHashes[2]],
         [[accounts[0], 140], [accounts[2], 171]],
         0,
@@ -107,7 +107,7 @@ async function demoTransactions(mint = false) {
 
     console.log('second join-split transaction mined, issuing third join-split transaction');
 
-    proofs[2] = noteController.createConfidentialTransfer(
+    proofs[2] = await noteController.createConfidentialTransfer(
         [proofs[0].noteHashes[1], proofs[0].noteHashes[3]],
         [[accounts[0], 50], [accounts[2], 50]],
         89,

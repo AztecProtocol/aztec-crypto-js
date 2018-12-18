@@ -26,6 +26,9 @@ const web3 = getWeb3();
 const zEthereumToEthereum = new BN('10000000000000000', 10);
 
 AZTEC.abi = AZTECInterface.abi;
+
+const fakeNetworkId = 100;
+
 contract('ZEthereum Tests', (accounts) => {
     let aztec;
     let zEthereum;
@@ -36,7 +39,7 @@ contract('ZEthereum Tests', (accounts) => {
         aztec = await AZTEC.new(accounts[0]);
         ZEthereum.link('AZTECInterface', aztec.address);
 
-        zEthereum = await ZEthereum.new(t2, {
+        zEthereum = await ZEthereum.new(t2, fakeNetworkId, {
             from: accounts[0],
             gas: 5000000,
         });
@@ -87,8 +90,8 @@ contract('ZEthereum Tests', (accounts) => {
         const m = 2;
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[0], 0);
         const signatures = [
-            sign.signNote(proofData[0], challenge, accounts[0], zEthereum.address, aztecAccounts[2].privateKey),
-            sign.signNote(proofData[1], challenge, accounts[0], zEthereum.address, aztecAccounts[3].privateKey),
+            sign.signNote(proofData[0], challenge, accounts[0], zEthereum.address, aztecAccounts[2].privateKey, fakeNetworkId),
+            sign.signNote(proofData[1], challenge, accounts[0], zEthereum.address, aztecAccounts[3].privateKey, fakeNetworkId),
         ].map(r => r.signature);
 
         const outputOwners = [aztecAccounts[0].address, aztecAccounts[2].address];
@@ -110,8 +113,8 @@ contract('ZEthereum Tests', (accounts) => {
         const m = 2;
         const { proofData, challenge } = aztecProof.constructJoinSplit(commitments, m, accounts[3], 119);
         const signatures = [
-            sign.signNote(proofData[0], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
-            sign.signNote(proofData[1], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey),
+            sign.signNote(proofData[0], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey, fakeNetworkId),
+            sign.signNote(proofData[1], challenge, accounts[3], zEthereum.address, aztecAccounts[0].privateKey, fakeNetworkId),
         ].map(r => r.signature);
         const outputOwners = [aztecAccounts[0].address];
         // const result = await zEthereum.confidentialTransfer(proofData, m, challenge, signatures, outputOwners, '0x', {

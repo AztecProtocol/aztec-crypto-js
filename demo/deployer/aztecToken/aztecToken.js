@@ -22,7 +22,7 @@ aztecToken.getContractAddress = async () => {
 aztecToken.confidentialTransfer = async (address, proofData, m, challenge, inputSignatures, outputOwners, metadata) => {
     const wallet = db.wallets.get(address);
     const contractAddress = await aztecToken.getContractAddress();
-
+    console.log('contract address = ', contractAddress);
     const aztecContract = new web3.eth.Contract(AZTECERC20Bridge.abi, contractAddress);
     aztecContract.contractAddress = contractAddress;
 

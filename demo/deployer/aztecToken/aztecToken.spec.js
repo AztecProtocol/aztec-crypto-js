@@ -98,7 +98,7 @@ describe('aztecToken tests', function describe() {
         expect(noteController.get(inputNotes[3].noteHash).status).to.equal('OFF_CHAIN');
 
         await aztecToken.updateJoinSplitTransaction(transactionHash);
-
+        console.log('first?');
         expect(noteController.get(inputNotes[0].noteHash).status).to.equal('UNSPENT');
         expect(noteController.get(inputNotes[1].noteHash).status).to.equal('UNSPENT');
         expect(noteController.get(inputNotes[2].noteHash).status).to.equal('UNSPENT');
@@ -113,7 +113,10 @@ describe('aztecToken tests', function describe() {
         expect(await contract.methods.noteRegistry(inputNotes[1].noteHash).call()).to.equal(wallets[0].address);
         expect(await contract.methods.noteRegistry(inputNotes[2].noteHash).call()).to.equal(wallets[1].address);
         expect(await contract.methods.noteRegistry(inputNotes[3].noteHash).call()).to.equal(wallets[1].address);
-
+        console.log('network id recovered = ');
+        console.log(await web3.eth.getStorageAt(aztecTokenAddress, 4));
+        console.log(await contract.methods.noteRegistry(inputNotes[0].noteHash).call());
+        console.log('got notes?');
         const {
             proofData: newProofData,
             challenge: newChallenge,
@@ -121,14 +124,14 @@ describe('aztecToken tests', function describe() {
             outputOwners,
             metadata: newMetadata,
             noteHashes,
-        } = noteController.createConfidentialTransfer(
+        } = await noteController.createConfidentialTransfer(
             [inputNotes[0].noteHash, inputNotes[1].noteHash],
             [[wallets[2].address, 20], [wallets[2].address, 3]],
             150,
             wallets[1].address,
             aztecTokenAddress
         );
-
+        console.log('about to send 2');
         const redeemTransactionHash = await aztecToken.confidentialTransfer(
             wallets[1].address,
             newProofData,
@@ -141,6 +144,7 @@ describe('aztecToken tests', function describe() {
         );
 
         await aztecToken.updateJoinSplitTransaction(redeemTransactionHash);
+        console.log('sent 2');
         expect(noteController.get(noteHashes[0]).status).to.equal('SPENT');
         expect(noteController.get(noteHashes[1]).status).to.equal('SPENT');
         expect(noteController.get(noteHashes[2]).status).to.equal('UNSPENT');

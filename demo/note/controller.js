@@ -6,6 +6,7 @@ const { GROUP_MODULUS } = require('../../aztec-crypto-js/params');
 const db = require('../db/db');
 const proof = require('../../aztec-crypto-js/proof/proof');
 const sign = require('../../aztec-crypto-js/utils/sign');
+const deployer = require('../deployer/deployer.js');
 
 const noteController = {};
 
@@ -54,7 +55,9 @@ noteController.encodeMetadata = (noteArr) => {
     return `0x${result}`;
 };
 
-noteController.createConfidentialTransfer = (inputNoteHashes, outputNoteData, v, senderAddress, aztecTokenAddress) => {
+noteController.createConfidentialTransfer = async (inputNoteHashes, outputNoteData, v, senderAddress, aztecTokenAddress) => {
+    const chainId = await deployer.getNetwork();
+    console.log('chainId = ', chainId);
     let kPublic;
     if (v < 0) {
         kPublic = GROUP_MODULUS.sub(new BN(-v));
@@ -75,7 +78,7 @@ noteController.createConfidentialTransfer = (inputNoteHashes, outputNoteData, v,
     const inputSignatures = inputNotes.map((inputNote, index) => {
         const { owner } = inputNote;
         const wallet = basicWallet.get(owner);
-        return sign.signNote(proofData[index], challenge, senderAddress, aztecTokenAddress, wallet.privateKey).signature;
+        return sign.signNote(proofData[index], challenge, senderAddress, aztecTokenAddress, wallet.privateKey, chainId).signature;
     });
 
     const noteHashes = noteData.map(n => n.noteHash);
