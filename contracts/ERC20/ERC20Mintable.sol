@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "./MinterRole.sol";
 import "./ERC20.sol";
-
 /**
  * @title ERC20Mintable
  * @dev ERC20 minting logic
- * Sourced from https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol
+ * Sourced from OpenZeppelin and thoroughly butchered to remove security guards.
+ * Anybody can mint - STRICTLY FOR TEST PURPOSES
  */
-contract ERC20Mintable is ERC20, MinterRole {
+contract ERC20Mintable is ERC20 {
   /**
    * @dev Function to mint tokens
    * @param to The address that will receive the minted tokens.
@@ -20,7 +19,6 @@ contract ERC20Mintable is ERC20, MinterRole {
     uint256 value
   )
     public
-    onlyMinter
     returns (bool)
   {
     _mint(to, value);

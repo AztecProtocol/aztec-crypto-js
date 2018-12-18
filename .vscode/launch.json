@@ -14,7 +14,7 @@
                 "-u", "tdd",
                 "--timeout", "999999",
                 "--colors", "--recursive",
-                "./doorbell"
+                "aztec-crypto-js"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -22,7 +22,7 @@
             "type": "node",
             "request": "launch",
             "name": "Deployer",
-            "program": "${workspaceFolder}/zk-crypto-js/web3Utils/deployer.js",
+            "program": "${workspaceFolder}/aztec-crypto-js/web3Utils/deployer.js",
             "useWSL": true,
             "args": [],
             "internalConsoleOptions": "openOnSessionStart"
@@ -34,6 +34,19 @@
             "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
             "useWSL": true,
             "args": ["test"],
+            "cwd": "${workspaceRoot}",
+            "outFiles": [
+                "${workspaceRoot}/test/**/*"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Truffle Migrate",
+            "program": "${workspaceRoot}/node_modules/truffle/build/cli.bundled.js",
+            "useWSL": true,
+            "args": ["migrate", "--reset"],
             "cwd": "${workspaceRoot}",
             "outFiles": [
                 "${workspaceRoot}/test/**/*"

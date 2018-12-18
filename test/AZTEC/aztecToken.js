@@ -6,11 +6,11 @@ const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 const AZTECToken = artifacts.require('./contracts/AZTEC/AZTECToken');
 
-const aztecProof = require('../../zk-crypto-js/proof/proof');
-const secp256k1 = require('../../zk-crypto-js/secp256k1/secp256k1');
-const sign = require('../../zk-crypto-js/utils/sign');
+const aztecProof = require('../../aztec-crypto-js/proof/proof');
+const secp256k1 = require('../../aztec-crypto-js/secp256k1/secp256k1');
+const sign = require('../../aztec-crypto-js/utils/sign');
 
-const { t2, GROUP_MODULUS } = require('../../zk-crypto-js/params');
+const { t2, GROUP_MODULUS } = require('../../aztec-crypto-js/params');
 
 // Step 1: make a token contract
 // Step 2: make an aztec token contract

@@ -7,6 +7,7 @@ const AZTEC = artifacts.require('./contracts/AZTEC/AZTEC');
 const AZTECInterface = artifacts.require('./contracts/AZTEC/AZTECInterface');
 const exceptions = require('../exceptions');
 
+const exceptions = require('../exceptions');
 const aztecProof = require('../../zk-crypto-js/proof/proof');
 const aztecFakeProof = require('../../zk-crypto-js/proof/fakeProof/fakeProof'); // Proofs constructed using a fake setup key
 

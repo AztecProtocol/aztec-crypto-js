@@ -4,6 +4,8 @@ node_modules
 transcripts
 testWallets
 
+aztec-crypto-js/bn128/hashToPoint.js
+
 lib/core/metadata.js
 lib/core/MetadataBlog.js
 
@@ -27,5 +29,6 @@ cupboard_under_the_stairs/*
 dbTest.json*
 dbRinkeby.json*
 dbMainNet.json*
+dbDevelopment.json*
 test.json
 none.json

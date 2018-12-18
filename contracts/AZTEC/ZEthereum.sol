@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./AZTEC.sol";
 import "../ERC20/ERC20Mintable.sol";
@@ -25,20 +25,19 @@ contract ZEthereum {
     event ConfidentialTransfer();
 
     /// @dev Set the trusted setup public key, the address of the AZTEC verification smart contract and the ERC20 token we're linking to
-    constructor(bytes32[4] _setupPubKey) public {
+    constructor(bytes32[4] _setupPubKey, uint256 _chainId) public {
         setupPubKey = _setupPubKey;
 
         // calculate the EIP712 domain hash, for hashing structured data
         bytes32 _domainHash;
         assembly {
             let m := mload(0x40)
-            mstore(m, 0x8d4b25bfecb769291b71726cd5ec8a497664cc7292c02b1868a0534306741fd9)
-            mstore(add(m, 0x20), 0x87a23625953c9fb02b3570c86f75403039bbe5de82b48ca671c10157d91a991a) // name = "AZTEC_MAINNET_DOMAIN"
-            mstore(add(m, 0x40), 0x25130290f410620ec94e7cf11f1cdab5dea284e1039a83fa7b87f727031ff5f4) // version = "0.1.0"
-            mstore(add(m, 0x60), 1) // chain id
-            mstore(add(m, 0x80), 0x210db872dec2e06c375dd40a5a354307bb4ba52ba65bd84594554580ae6f0639)
-            mstore(add(m, 0xa0), address) // verifying contract
-            _domainHash := keccak256(m, 0xc0)
+            mstore(m, 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f) // "EIP712Domain(string name, string version, uint256 chainId, address verifyingContract)"
+            mstore(add(m, 0x20), 0x60d177492a60de7c666b3e3d468f14d59def1d4b022d08b6adf554d88da60d63) // name = "AZTECERC20BRIDGE_DOMAIN"
+            mstore(add(m, 0x40), 0x28a43689b8932fb9695c28766648ed3d943ff8a6406f8f593738feed70039290) // version = "0.1.1"
+            mstore(add(m, 0x60), _chainId) // chain id
+            mstore(add(m, 0x80), address) // verifying contract
+            _domainHash := keccak256(m, 0xa0)
         }
         domainHash = _domainHash;
         emit Created(_domainHash, this);
@@ -63,7 +62,7 @@ contract ZEthereum {
             mstore(add(m, 0x40), mload(add(note, 0x80)))
             mstore(add(m, 0x60), mload(add(note, 0xa0)))
             noteHash := keccak256(m, 0x80)
-            mstore(m, 0x1aba5d08f7cd777136d3fa7eb7baa742ab84001b34c9de5b17d922fc2ca75cce) // keccak256 hash of "AZTEC_NOTE_SIGNATURE(bytes32[4] note,uint256 challenge,address sender)"
+            mstore(m, 0x0f1ea84c0ceb3ad2f38123d94a164612e1a0c14a694dc5bfa16bc86ea1f3eabd) // keccak256 hash of "AZTEC_NOTE_SIGNATURE(bytes32[4] note,uint256 challenge,address sender)"
             mstore(add(m, 0x20), noteHash)
             mstore(add(m, 0x40), challenge)
             mstore(add(m, 0x60), caller)
@@ -102,7 +101,7 @@ contract ZEthereum {
         uint challenge;
     }
 
-    function extractDataFromProof(bytes proof) internal returns (Proof){
+    function extractDataFromProof(bytes) internal pure returns (Proof){
         bytes32 offsetToProofData;
         bytes32 proofBytes;
         bytes32 offsetToNotes;
@@ -170,7 +169,7 @@ contract ZEthereum {
         for (uint i = 0; i < m; i++) {
 */
 
-    function confidentialTransaction(bytes proof, address[] outputOwners, bytes metadata) external payable {
+    function confidentialTransaction(bytes proof, address[] outputOwners, bytes) external payable {
         Proof memory proofData = extractDataFromProof(proof);
         
         require(proofData.inputSignatures.length == proofData.m, "input signature length invalid");

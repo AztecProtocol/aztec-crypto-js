@@ -7,13 +7,17 @@ const rinkebyPrivateKey = Buffer.from('a5c9dede5aba72f88f6abf01ea768d78ad7c3bcfb
 const rinkebyWallet = Wallet.fromPrivateKey(rinkebyPrivateKey);
 const rinkebyProvider = new WalletProvider(rinkebyWallet, 'https://rinkeby.infura.io/FPuvsFyuZmA7p9xKUc9Q');
 
+// how should this work...
+// Create a file 'privateKeys' with an array of keys. Use them here and in demoTransactions when requiring wallets.
+// Reasonable? I think so...
+// Separate out wallets and other db structures
 module.exports = {
     // See <http://truffleframework.com/docs/advanced/configuration>
     // to customize your Truffle configuration!
     networks: {
         development: {
             host: '127.0.0.1',
-            port: 9545, // use port 7545, ganache's rpc port
+            port: 8545, // use port 7545, ganache's rpc port
             network_id: '*', // Match any network id
         },
         rinkeby: {
