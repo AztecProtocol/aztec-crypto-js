@@ -41,7 +41,7 @@ describe.only('Validating atomic swap proof construction and verification algos'
             },
         };
     });
-    it.only('check that the note array correctly represents the note object', async () => {
+    it('check that the note array correctly represents the note object', async () => {
         const noteArray = await helpers.makeNoteArray(testNotes);
         const numNotes = await helpers.checkNumberNotes(testNotes);
         expect(noteArray.length).to.equal(numNotes);
@@ -51,18 +51,18 @@ describe.only('Validating atomic swap proof construction and verification algos'
         expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
     });
 
-    it.only('validate that the atomic swap will not work for a number of notes not equal to 4', async () => {
+    it('validate that the atomic swap will not work for a number of notes not equal to 4', async () => {
         testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
         testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
 
         try {
-            const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+            await atomicProof.constructAtomicSwap(testNotes);
         } catch (err) {
             console.log('Incorrect number of notes');
         }
     });
 
-    it.only('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
+    it('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
         const noteArray = await helpers.makeNoteArray(testNotes);
         const finalHash = new Hash();
 
@@ -71,7 +71,7 @@ describe.only('Validating atomic swap proof construction and verification algos'
             finalHash.append(note.sigma);
         });
 
-        const { blindingFactors, challenge } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+        const { blindingFactors } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
         const testk1 = (blindingFactors[0].bk).toString(16);
         const testk2 = (blindingFactors[1].bk).toString(16);
@@ -82,8 +82,14 @@ describe.only('Validating atomic swap proof construction and verification algos'
         expect(testk2).to.equal(testk4);
     });
 
-    it('validate that the proof data is correctly formed', async () => {
+    it('validate that the proof data contains correct number of proof variables and is well formed', async () => {
+        const { proofData } = await atomicProof.constructAtomicSwap(testNotes);
 
+        expect(proofData.length).to.equal(4);
+        expect(proofData[0].length).to.equal(6);
+        expect(proofData[1].length).to.equal(6);
+        expect(proofData[2].length).to.equal(6);
+        expect(proofData[3].length).to.equal(6);
     });
 
     it('validate that the proof is correct, using the validation algo', async () => {
