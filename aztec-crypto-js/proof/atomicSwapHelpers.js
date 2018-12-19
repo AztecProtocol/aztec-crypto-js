@@ -1,3 +1,5 @@
+const BN = require('bn.js');
+
 const bn128 = require('../bn128/bn128');
 
 const { groupReduction } = bn128;
@@ -53,6 +55,20 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
     finalHash.keccak();
     const challenge = finalHash.toGroupScalar(groupReduction);
     return { blindingFactors, challenge };
+};
+
+atomicSwapHelpers.convertToBn = async (proofData) => {
+    const proofDataBn = proofData.map((noteData) => {
+        return [
+            new BN(noteData[0].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[1].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[2].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[3].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[4].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[5].slice(2), 16).toRed(groupReduction),
+        ];
+    });
+    return proofDataBn;
 };
 
 
