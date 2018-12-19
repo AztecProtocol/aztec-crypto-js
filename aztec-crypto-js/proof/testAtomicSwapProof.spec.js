@@ -93,8 +93,8 @@ describe.only('Validating atomic swap proof construction and verification algos'
     });
 
     it('validate that the proof is correct, using the validation algo', async () => {
-    });
-
-    it('validate that there are 4 input notes', async () => {
+        const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+        const result = await atomicProof.verifyAtomicSwap(testNotes, proofData, challenge);
+        expect(result).to.equal(1);
     });
 });
