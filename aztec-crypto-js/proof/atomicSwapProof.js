@@ -21,12 +21,10 @@ const atomicSwapProof = {};
  *
  * @method constructProof
  * @param {Array[Note]} notes array of AZTEC notes
- * @param {Number} m number of input notes
- * @param {string} sender Ethereum address of transaction sender
  * @returns {{proofData:Array[string]}, {challenge: string}} proof data and challenge
  */
 atomicSwapProof.constructAtomicSwap = async (notes) => {
-    const numNotes = await helpers.checkNumberNotes(notes);
+    await helpers.checkNumberNotes(notes);
     const noteArray = await helpers.makeNoteArray(notes);
 
     // finalHash is used to create final proof challenge
@@ -38,7 +36,7 @@ atomicSwapProof.constructAtomicSwap = async (notes) => {
         finalHash.append(note.sigma);
     });
 
-    const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+    const { blindingFactors, challenge } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((noteArray[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
