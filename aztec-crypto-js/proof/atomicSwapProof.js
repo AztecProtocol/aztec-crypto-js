@@ -5,6 +5,7 @@ const { padLeft } = require('web3-utils');
 const Hash = require('../utils/keccak');
 const bn128 = require('../bn128/bn128');
 const setup = require('../setup/setup');
+const helpers = require('./atomicSwapHelpers');
 
 const { groupReduction } = bn128;
 
@@ -14,19 +15,6 @@ const { groupReduction } = bn128;
  * @module proof
 */
 const atomicSwapProof = {};
-
-atomicSwapProof.checkNumberNotes = async (notes) => {
-    const numMakerNotes = Object.keys(notes.makerNotes).length;
-    const numTakerNotes = Object.keys(notes.takerNotes).length;
-    const numNotes = numMakerNotes + numTakerNotes;
-
-    if (numNotes !== 4) {
-        Error('Incorrect number of notes');
-    } else {
-        console.log('success');
-        return numNotes;
-    }
-};
 
 /**
  * Construct AZTEC atomic swap proof transcript
@@ -38,51 +26,19 @@ atomicSwapProof.checkNumberNotes = async (notes) => {
  * @returns {{proofData:Array[string]}, {challenge: string}} proof data and challenge
  */
 atomicSwapProof.constructAtomicSwap = async (notes) => {
-    const numNotes = await atomicSwapProof.checkNumberNotes(notes);
-
-    // Restructure input object into an array
-    const makerNotes = Object.values(notes.makerNotes);
-    const takerNotes = Object.values(notes.takerNotes);
-    const noteArray = [makerNotes[0], makerNotes[1], takerNotes[0], takerNotes[1]];
+    const numNotes = await helpers.checkNumberNotes(notes);
+    const noteArray = await helpers.makeNoteArray(notes);
 
     // finalHash is used to create final proof challenge
     const finalHash = new Hash();
+
     // Append all notes into finalHash
     noteArray.forEach((note) => {
         finalHash.append(note.gamma);
         finalHash.append(note.sigma);
     });
 
-    // Array of all bk
-    const bkArray = [];
-    console.log('finalHash: ', finalHash);
-    
-    // Generate the blinding factors
-    const blindingFactors = noteArray.map((note, i) => { // creating the blinding factors
-        // Create the blinding scalars
-        let bk = bn128.randomGroupScalar();
-        const ba = bn128.randomGroupScalar();
-        let B;
-
-        // Maker notes
-        if (i <= 2) {
-            B = note.gamma.mul(bk).add(bn128.h.mul(ba));
-        } else { // Output notes
-            bk = bkArray[i-2];
-            B = note.gamma.mul(bk).add(bn128.h.mul(ba));
-        }
-
-        finalHash.append(B);
-        bkArray.push(bk);
-
-        return {
-            bk,
-            ba,
-            B,
-        };
-    });
-    finalHash.keccak();
-    const challenge = finalHash.toGroupScalar(groupReduction);
+    const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((noteArray[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
