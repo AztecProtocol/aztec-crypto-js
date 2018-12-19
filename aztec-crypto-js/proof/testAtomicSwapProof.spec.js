@@ -51,6 +51,17 @@ describe.only('Validating atomic swap proof construction and verification algos'
         expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
     });
 
+    it.only('validate that the atomic swap will not work for a number of notes not equal to 4', async () => {
+        testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
+        testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
+
+        try {
+            const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+        } catch (err) {
+            console.log('Incorrect number of notes');
+        }
+    });
+
     it.only('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
         const noteArray = await helpers.makeNoteArray(testNotes);
         const finalHash = new Hash();
