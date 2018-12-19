@@ -4,10 +4,12 @@ const { padLeft, sha3 } = require('web3-utils');
 const crypto = require('crypto');
 const chai = require('chai');
 
-
 const atomicProof = require('./atomicSwapProof');
 const secp256k1 = require('../secp256k1/secp256k1');
 const notes = require('../note/note');
+const helpers = require('./atomicSwapHelpers');
+const Hash = require('../utils/keccak');
+
 
 const { expect } = chai;
 
@@ -39,18 +41,41 @@ describe.only('Validating atomic swap proof construction and verification algos'
             },
         };
     });
+    it.only('check that the note array correctly represents the note object', async () => {
+        const noteArray = await helpers.makeNoteArray(testNotes);
+        const numNotes = await helpers.checkNumberNotes(testNotes);
+        expect(noteArray.length).to.equal(numNotes);
+        expect(noteArray[0]).to.equal(testNotes.makerNotes.bidNote);
+        expect(noteArray[1]).to.equal(testNotes.makerNotes.askNote);
+        expect(noteArray[2]).to.equal(testNotes.takerNotes.bidNote);
+        expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
+    });
 
-    it.only('validate that the proof data is correctly formed', async () => {
-        const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+    it.only('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
+        const noteArray = await helpers.makeNoteArray(testNotes);
+        const finalHash = new Hash();
 
-        expect(true).to.equal(true);
+        noteArray.forEach((note) => {
+            finalHash.append(note.gamma);
+            finalHash.append(note.sigma);
+        });
+
+        const { blindingFactors, challenge } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+
+        const testk1 = (blindingFactors[0].bk).toString(16);
+        const testk2 = (blindingFactors[1].bk).toString(16);
+        const testk3 = (blindingFactors[2].bk).toString(16);
+        const testk4 = (blindingFactors[3].bk).toString(16);
+
+        expect(testk1).to.equal(testk3);
+        expect(testk2).to.equal(testk4);
+    });
+
+    it('validate that the proof data is correctly formed', async () => {
+
     });
 
     it('validate that the proof is correct, using the validation algo', async () => {
-        const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
-
-        const result = await atomicProof.validateAtomicSwap(notes, proofData);
-        expect(result).to.equal(true);
     });
 
     it('validate that there are 4 input notes', async () => {
