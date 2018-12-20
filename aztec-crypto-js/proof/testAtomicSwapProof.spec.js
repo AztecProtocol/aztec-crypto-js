@@ -19,7 +19,6 @@ describe('Validating atomic swap proof construction and verification algos', () 
         let testNotes;
 
         beforeEach(async () => {
-            // Spending keys for the notes
             const spendingKeys = [
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
@@ -27,10 +26,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
             ];
 
-            // Note value array
             const noteValues = [10, 20, 10, 20];
 
-            // Construct the test note object
             testNotes = {
                 makerNotes: {
                     bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
@@ -85,7 +82,6 @@ describe('Validating atomic swap proof construction and verification algos', () 
 
         it('validate that the proof data contains correct number of proof variables and is well formed', async () => {
             const { proofData } = await atomicProof.constructAtomicSwap(testNotes);
-
             expect(proofData.length).to.equal(4);
             expect(proofData[0].length).to.equal(6);
             expect(proofData[1].length).to.equal(6);
@@ -105,7 +101,6 @@ describe('Validating atomic swap proof construction and verification algos', () 
         let challenge;
 
         beforeEach(async () => {
-            // Spending keys for the notes
             const spendingKeys = [
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
@@ -113,10 +108,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
             ];
 
-            // Note value array
             const noteValues = [10, 20, 10, 20];
 
-            // Construct the test note object
             const testNotes = {
                 makerNotes: {
                     bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
@@ -128,22 +121,17 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 },
             };
 
-            // Generate the proof data and challenge
             const constructProofData = await atomicProof.constructAtomicSwap(testNotes);
             proofData = constructProofData.proofData;
             challenge = constructProofData.challenge;
         });
 
         it('validate that the kbar relations are satisfied i.e. kbar1 = kbar3 and kbar2 = kbar4', async () => {
-            // Convert the proofData back into BN form - everything now in reduction context
             const proofDataBn = await helpers.convertToBn(proofData);
             const formattedChallenge = new BN(challenge.slice(2), 16);
-            console.log('type of formatted challenge: ', typeof (formattedChallenge));
 
-            // finalHash is used to regenerate the challenge created by constructAtomicSwap
             const finalHash = new Hash();
 
-            // Append all notes into finalHash
             proofDataBn.forEach((proofElement) => {
                 finalHash.append(proofElement[6]);
                 finalHash.append(proofElement[7]);
@@ -159,19 +147,12 @@ describe('Validating atomic swap proof construction and verification algos', () 
             expect(testkBar1).to.equal(testkBar3);
             expect(testkBar2).to.equal(testkBar4);
         });
-
-        it('validate that challenge has been correctly converted back into bn form', async () => {
-            const formattedChallenge = new BN(challenge.slice(2), 16);
-            console.log('challenge: ', challenge);
-            expect(formattedChallenge).to.equal(challenge);
-        });
     });
 
-    describe.only('validate that proof construction algo is valid, using validation algo', async () => {
+    describe('validate that proof construction algo is valid, using validation algo', async () => {
         let testNotes;
 
         beforeEach(async () => {
-            // Spending keys for the notes
             const spendingKeys = [
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
@@ -179,10 +160,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
             ];
 
-            // Note value array
             const noteValues = [10, 20, 10, 20];
 
-            // Construct the test note object
             testNotes = {
                 makerNotes: {
                     bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
@@ -195,10 +174,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
             };
         });
 
-        it.only('validate that the proof is correct, using the validation algo', async () => {
+        it('validate that the proof is correct, using the validation algo', async () => {
             const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
-            console.log('length of proof data for element 3: ', proofData[2].length);
-
             const result = await atomicProof.verifyAtomicSwap(proofData, challenge);
             expect(result).to.equal(1);
         });
