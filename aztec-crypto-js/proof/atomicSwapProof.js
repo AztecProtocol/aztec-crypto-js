@@ -18,20 +18,19 @@ const atomicSwapProof = {};
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-atomicSwapProof.constructAtomicSwap = async (notes) => {
-    await helpers.checkNumberNotes(notes);
-    const noteArray = await helpers.makeNoteArray(notes);
+atomicSwapProof.constructAtomicSwap = (notes) => {
+    helpers.checkNumberNotes(notes);
+    const noteArray = helpers.makeNoteArray(notes);
 
     // finalHash is used to create final proof challenge
     const finalHash = new Hash();
 
-    // Append all notes into finalHash
     noteArray.forEach((note) => {
         finalHash.append(note.gamma);
         finalHash.append(note.sigma);
     });
 
-    const { blindingFactors, challenge } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+    const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((noteArray[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
@@ -60,8 +59,8 @@ atomicSwapProof.constructAtomicSwap = async (notes) => {
  * @param {big number instance} challenge - challenge variable used in zero-knowledge protocol 
  * @returns {number} - returns 1 if proof is validated, throws an error if not
  */
-atomicSwapProof.verifyAtomicSwap = async (proofData, challenge) => {
-    const proofDataBn = await helpers.convertToBn(proofData);
+atomicSwapProof.verifyAtomicSwap = (proofData, challenge) => {
+    const proofDataBn = helpers.convertToBn(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
     const finalHash = new Hash();
@@ -71,7 +70,7 @@ atomicSwapProof.verifyAtomicSwap = async (proofData, challenge) => {
         finalHash.append(proofElement[7]);
     });
 
-    const { recoveredChallenge } = await helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
+    const { recoveredChallenge } = helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated

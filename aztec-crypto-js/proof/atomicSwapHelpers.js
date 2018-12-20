@@ -7,7 +7,7 @@ const { groupReduction } = bn128;
 
 const atomicSwapHelpers = {};
 
-atomicSwapHelpers.checkNumberNotes = async (notes) => {
+atomicSwapHelpers.checkNumberNotes = (notes) => {
     const numMakerNotes = Object.keys(notes.makerNotes).length;
     const numTakerNotes = Object.keys(notes.takerNotes).length;
     const numNotes = numMakerNotes + numTakerNotes;
@@ -19,7 +19,7 @@ atomicSwapHelpers.checkNumberNotes = async (notes) => {
     }
 };
 
-atomicSwapHelpers.makeNoteArray = async (notes) => {
+atomicSwapHelpers.makeNoteArray = (notes) => {
     const makerNotes = Object.values(notes.makerNotes);
     const takerNotes = Object.values(notes.takerNotes);
     const noteArray = [makerNotes[0], makerNotes[1], takerNotes[0], takerNotes[1]];
@@ -30,11 +30,11 @@ atomicSwapHelpers.validateOnCurve = (x, y) => {
     const rhs = x.redSqr().redMul(x).redAdd(bn128.b);
     const lhs = y.redSqr();
     if (!rhs.fromRed().eq(lhs.fromRed())) {
-        throw new Error('no! bad!');
+        throw new Error('point not on the curve');
     }
 };
 
-atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) => {
+atomicSwapHelpers.getBlindingFactorsAndChallenge = (noteArray, finalHash) => {
     const bkArray = [];
     const blindingFactors = noteArray.map((note, i) => {
         let bk = bn128.randomGroupScalar();
@@ -48,7 +48,6 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
             bk = bkArray[i-2];
             B = note.gamma.mul(bk).add(bn128.h.mul(ba));
         }
-        console.log('constructed B = ', B.x.fromRed().toString(16));
         finalHash.append(B);
         bkArray.push(bk);
 
@@ -64,7 +63,7 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
     return { blindingFactors, challenge };
 };
 
-atomicSwapHelpers.convertToBn = async (proofData) => {
+atomicSwapHelpers.convertToBn = (proofData) => {
     const proofDataBn = proofData.map((noteData) => {
         // Reconstruct gamma
         const xGamma = new BN(noteData[2].slice(2), 16).toRed(bn128.red);
@@ -91,8 +90,15 @@ atomicSwapHelpers.convertToBn = async (proofData) => {
     return proofDataBn;
 };
 
-atomicSwapHelpers.recoverBlindingFactorsAndChallenge = async (proofDataBn, formattedChallenge, finalHash) => {
+atomicSwapHelpers.recoverBlindingFactorsAndChallenge = (proofDataBn, formattedChallenge, finalHash) => {
     const kBarArray = [];
+
+    // Validate that the commitments lie on the bn128 curve
+    proofDataBn.map((proofElement) => {
+        atomicSwapHelpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
+        atomicSwapHelpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
+    });
+
     const recoveredBlindingFactors = proofDataBn.map((proofElement, i) => {
         let kBar = proofElement[0];
         const aBar = proofElement[1];
@@ -107,7 +113,6 @@ atomicSwapHelpers.recoverBlindingFactorsAndChallenge = async (proofDataBn, forma
             kBar = kBarArray[i-2];
             B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
         }
-        console.log('recovered blinding factor = ', B.x.fromRed().toString(16));
         finalHash.append(B);
         kBarArray.push(kBar);
 
