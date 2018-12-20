@@ -48,7 +48,7 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
             bk = bkArray[i-2];
             B = note.gamma.mul(bk).add(bn128.h.mul(ba));
         }
-
+        console.log('constructed B = ', B.x.fromRed().toString(16));
         finalHash.append(B);
         bkArray.push(bk);
 
@@ -64,7 +64,7 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
     return { blindingFactors, challenge };
 };
 
-atomicSwapHelpers.convertToBn = async (proofData, challenge) => {
+atomicSwapHelpers.convertToBn = async (proofData) => {
     const proofDataBn = proofData.map((noteData) => {
         // Reconstruct gamma
         const xGamma = new BN(noteData[2].slice(2), 16).toRed(bn128.red);
@@ -74,7 +74,7 @@ atomicSwapHelpers.convertToBn = async (proofData, challenge) => {
         // Reconstruct sigma
         const xSigma = new BN(noteData[4].slice(2), 16).toRed(bn128.red);
         const ySigma = new BN(noteData[5].slice(2), 16).toRed(bn128.red);
-        const sigma = bn128.point(xGamma, yGamma);
+        const sigma = bn128.point(xSigma, ySigma);
 
         return [
             new BN(noteData[0].slice(2), 16).toRed(groupReduction), // kbar
@@ -88,11 +88,10 @@ atomicSwapHelpers.convertToBn = async (proofData, challenge) => {
         ];
     });
 
-    const challengeBn = new BN(challenge.slice(2).toRed(bn128.red));
-    return { proofDataBn, challengeBn };
+    return proofDataBn;
 };
 
-atomicSwapHelpers.recoverBlindingFactors = async (proofDataBn, challengeBn, finalHash) => {
+atomicSwapHelpers.recoverBlindingFactorsAndChallenge = async (proofDataBn, formattedChallenge, finalHash) => {
     const kBarArray = [];
     const recoveredBlindingFactors = proofDataBn.map((proofElement, i) => {
         let kBar = proofElement[0];
@@ -103,20 +102,20 @@ atomicSwapHelpers.recoverBlindingFactors = async (proofDataBn, challengeBn, fina
 
         // Maker notes
         if (i <= 1) {
-            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(challengeBn.neg()));
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
         } else { // taker notes
             kBar = kBarArray[i-2];
-            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(challengeBn.neg()));
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
         }
-
+        console.log('recovered blinding factor = ', B.x.fromRed().toString(16));
         finalHash.append(B);
         kBarArray.push(kBar);
 
         return {
+            kBar,
             B,
         };
     });
-
     finalHash.keccak();
     const recoveredChallenge = finalHash.toGroupScalar(groupReduction);
     return { recoveredBlindingFactors, recoveredChallenge };
