@@ -1,18 +1,13 @@
 const BN = require('bn.js');
-const crypto = require('crypto');
 const { padLeft } = require('web3-utils');
 
 const Hash = require('../utils/keccak');
-const bn128 = require('../bn128/bn128');
-const setup = require('../setup/setup');
 const helpers = require('./atomicSwapHelpers');
-
-const { groupReduction } = bn128;
 
 /**
  * Constructs AZTEC atomic swaps
  *
- * @module proof
+ * @module atomicSwapProof
 */
 const atomicSwapProof = {};
 
@@ -21,7 +16,7 @@ const atomicSwapProof = {};
  *
  * @method constructProof
  * @param {Array[Note]} notes array of AZTEC notes
- * @returns {{proofData:Array[string]}, {challenge: string}} proof data and challenge
+ * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
 atomicSwapProof.constructAtomicSwap = async (notes) => {
     await helpers.checkNumberNotes(notes);
@@ -57,29 +52,27 @@ atomicSwapProof.constructAtomicSwap = async (notes) => {
     };
 };
 
+/**
+ * Verify AZTEC atomic swap proof transcript
+ *
+ * @method verifyAtomicSwap
+ * @param {Array[proofData]} proofData - proofData array of AZTEC notes
+ * @param {big number instance} challenge - challenge variable used in zero-knowledge protocol 
+ * @returns {number} - returns 1 if proof is validated, throws an error if not
+ */
 atomicSwapProof.verifyAtomicSwap = async (proofData, challenge) => {
     const proofDataBn = await helpers.convertToBn(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
     const finalHash = new Hash();
 
-    // Append all notes into finalHash
     proofDataBn.forEach((proofElement) => {
         finalHash.append(proofElement[6]);
         finalHash.append(proofElement[7]);
     });
 
-    // Validate that the commitments lie on the bn128 curve
-    proofDataBn.map((proofElement) => {
-        helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
-        helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
-    });
-
     const { recoveredChallenge } = await helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
-
-    console.log('final challenge: ', finalChallenge);
-    console.log('original challenge: ', challenge);
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
     if (finalChallenge === challenge) {
