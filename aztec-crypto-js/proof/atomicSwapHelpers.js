@@ -41,8 +41,17 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = (noteArray, finalHash) => {
         const ba = bn128.randomGroupScalar();
         let B;
 
+        /*
+        Explanation of the below if/else
+        - The purpose is to set bk1 = bk3 and bk2 = bk4
+        - i is used as an indexing variable, to keep track of whether we are at a maker note or taker note
+        - All bks are stored in a bkArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding 
+          maker note. This is achieved by 'jumping back' 2 index positions (i - 2) in the bkArray, and setting the current
+          bk equal to the element at the resulting position.
+        */
+
         // Maker notes
-        if (i <= 1) { // i (index) === 1 is the half way point - the boundary between maker and taker notes
+        if (i <= 1) {
             B = note.gamma.mul(bk).add(bn128.h.mul(ba));
         } else { // taker notes
             bk = bkArray[i-2];
@@ -106,6 +115,16 @@ atomicSwapHelpers.recoverBlindingFactorsAndChallenge = (proofDataBn, formattedCh
         const sigma = proofElement[7];
         let B;
 
+        /*
+        Explanation of the below if/else
+        - The purpose is to set kBar1 = kBar3 and kBar2 = kBar4
+        - i is used as an indexing variable, to keep track of whether we are at a maker note or taker note
+        - All kBars are stored in a kBarArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding 
+          maker note. This is achieved by 'jumping back' 2 index positions (i - 2) in the kBarArray, and setting the current
+          kBar equal to the element at the resulting position.
+        */
+
+
         // Maker notes
         if (i <= 1) {
             B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
@@ -125,6 +144,5 @@ atomicSwapHelpers.recoverBlindingFactorsAndChallenge = (proofDataBn, formattedCh
     const recoveredChallenge = finalHash.toGroupScalar(groupReduction);
     return { recoveredBlindingFactors, recoveredChallenge };
 };
-
 
 module.exports = atomicSwapHelpers;
