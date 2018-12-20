@@ -57,4 +57,36 @@ atomicSwapProof.constructAtomicSwap = async (notes) => {
     };
 };
 
+atomicSwapProof.verifyAtomicSwap = async (proofData, challenge) => {
+    const proofDataBn = await helpers.convertToBn(proofData);
+    const formattedChallenge = new BN(challenge.slice(2), 16);
+
+    const finalHash = new Hash();
+
+    // Append all notes into finalHash
+    proofDataBn.forEach((proofElement) => {
+        finalHash.append(proofElement[6]);
+        finalHash.append(proofElement[7]);
+    });
+
+    // Validate that the commitments lie on the bn128 curve
+    proofDataBn.map((proofElement) => {
+        helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
+        helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
+    });
+
+    const { recoveredChallenge } = await helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
+    const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
+
+    console.log('final challenge: ', finalChallenge);
+    console.log('original challenge: ', challenge);
+
+    // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
+    if (finalChallenge === challenge) {
+        return 1;
+    } else {
+        throw new Error('proof validation failed');
+    }
+};
+
 module.exports = atomicSwapProof;
