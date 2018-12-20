@@ -14,87 +14,193 @@ const Hash = require('../utils/keccak');
 const { expect } = chai;
 
 
-describe.only('Validating atomic swap proof construction and verification algos', () => {
-    let testNotes;
+describe('Validating atomic swap proof construction and verification algos', () => {
+    describe('Validate properties of the proof construction algo', () => {
+        let testNotes;
 
-    beforeEach(async () => {
-        // Spending keys for the notes
-        const spendingKeys = [
-            secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-        ];
+        beforeEach(async () => {
+            // Spending keys for the notes
+            const spendingKeys = [
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+            ];
 
-        // Note value array
-        const noteValues = [10, 20, 20, 10];
+            // Note value array
+            const noteValues = [10, 20, 10, 20];
 
-        // Construct the test note object
-        testNotes = {
-            makerNotes: {
-                bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
-                askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
-            },
-            takerNotes: {
-                bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
-                askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
-            },
-        };
-    });
-    it('check that the note array correctly represents the note object', async () => {
-        const noteArray = await helpers.makeNoteArray(testNotes);
-        const numNotes = await helpers.checkNumberNotes(testNotes);
-        expect(noteArray.length).to.equal(numNotes);
-        expect(noteArray[0]).to.equal(testNotes.makerNotes.bidNote);
-        expect(noteArray[1]).to.equal(testNotes.makerNotes.askNote);
-        expect(noteArray[2]).to.equal(testNotes.takerNotes.bidNote);
-        expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
-    });
-
-    it('validate that the atomic swap will not work for a number of notes not equal to 4', async () => {
-        testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
-        testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
-
-        try {
-            await atomicProof.constructAtomicSwap(testNotes);
-        } catch (err) {
-            console.log('Incorrect number of notes');
-        }
-    });
-
-    it('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
-        const noteArray = await helpers.makeNoteArray(testNotes);
-        const finalHash = new Hash();
-
-        noteArray.forEach((note) => {
-            finalHash.append(note.gamma);
-            finalHash.append(note.sigma);
+            // Construct the test note object
+            testNotes = {
+                makerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
+                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
+                },
+                takerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
+                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
+                },
+            };
+        });
+        it('check that the note array correctly represents the note object', async () => {
+            const noteArray = await helpers.makeNoteArray(testNotes);
+            const numNotes = await helpers.checkNumberNotes(testNotes);
+            expect(noteArray.length).to.equal(numNotes);
+            expect(noteArray[0]).to.equal(testNotes.makerNotes.bidNote);
+            expect(noteArray[1]).to.equal(testNotes.makerNotes.askNote);
+            expect(noteArray[2]).to.equal(testNotes.takerNotes.bidNote);
+            expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
         });
 
-        const { blindingFactors } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+        it('validate that the atomic swap will not work for a number of notes not equal to 4', async () => {
+            testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
+            testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
 
-        const testk1 = (blindingFactors[0].bk).toString(16);
-        const testk2 = (blindingFactors[1].bk).toString(16);
-        const testk3 = (blindingFactors[2].bk).toString(16);
-        const testk4 = (blindingFactors[3].bk).toString(16);
+            try {
+                await atomicProof.constructAtomicSwap(testNotes);
+            } catch (err) {
+                console.log('Incorrect number of notes');
+            }
+        });
 
-        expect(testk1).to.equal(testk3);
-        expect(testk2).to.equal(testk4);
+        it('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', async () => {
+            const noteArray = await helpers.makeNoteArray(testNotes);
+            const finalHash = new Hash();
+
+            noteArray.forEach((note) => {
+                finalHash.append(note.gamma);
+                finalHash.append(note.sigma);
+            });
+
+            const { blindingFactors } = await helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+
+            const testk1 = (blindingFactors[0].bk).toString(16);
+            const testk2 = (blindingFactors[1].bk).toString(16);
+            const testk3 = (blindingFactors[2].bk).toString(16);
+            const testk4 = (blindingFactors[3].bk).toString(16);
+
+            expect(testk1).to.equal(testk3);
+            expect(testk2).to.equal(testk4);
+        });
+
+        it('validate that the proof data contains correct number of proof variables and is well formed', async () => {
+            const { proofData } = await atomicProof.constructAtomicSwap(testNotes);
+
+            expect(proofData.length).to.equal(4);
+            expect(proofData[0].length).to.equal(6);
+            expect(proofData[1].length).to.equal(6);
+            expect(proofData[2].length).to.equal(6);
+            expect(proofData[3].length).to.equal(6);
+        });
+
+        it('validate that the proof is correct, using the validation algo', async () => {
+            const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+            const result = await atomicProof.verifyAtomicSwap(proofData, challenge);
+            expect(result).to.equal(1);
+        });
     });
 
-    it('validate that the proof data contains correct number of proof variables and is well formed', async () => {
-        const { proofData } = await atomicProof.constructAtomicSwap(testNotes);
+    describe('validate properties of the proof validation algo', () => {
+        let proofData;
+        let challenge;
 
-        expect(proofData.length).to.equal(4);
-        expect(proofData[0].length).to.equal(6);
-        expect(proofData[1].length).to.equal(6);
-        expect(proofData[2].length).to.equal(6);
-        expect(proofData[3].length).to.equal(6);
+        beforeEach(async () => {
+            // Spending keys for the notes
+            const spendingKeys = [
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+            ];
+
+            // Note value array
+            const noteValues = [10, 20, 10, 20];
+
+            // Construct the test note object
+            const testNotes = {
+                makerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
+                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
+                },
+                takerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
+                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
+                },
+            };
+
+            // Generate the proof data and challenge
+            const constructProofData = await atomicProof.constructAtomicSwap(testNotes);
+            proofData = constructProofData.proofData;
+            challenge = constructProofData.challenge;
+        });
+
+        it('validate that the kbar relations are satisfied i.e. kbar1 = kbar3 and kbar2 = kbar4', async () => {
+            // Convert the proofData back into BN form - everything now in reduction context
+            const proofDataBn = await helpers.convertToBn(proofData);
+            const formattedChallenge = new BN(challenge.slice(2), 16);
+            console.log('type of formatted challenge: ', typeof (formattedChallenge));
+
+            // finalHash is used to regenerate the challenge created by constructAtomicSwap
+            const finalHash = new Hash();
+
+            // Append all notes into finalHash
+            proofDataBn.forEach((proofElement) => {
+                finalHash.append(proofElement[6]);
+                finalHash.append(proofElement[7]);
+            });
+
+            const { recoveredBlindingFactors } = await helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
+
+            const testkBar1 = (recoveredBlindingFactors[0].kBar).toString(16);
+            const testkBar2 = (recoveredBlindingFactors[1].kBar).toString(16);
+            const testkBar3 = (recoveredBlindingFactors[2].kBar).toString(16);
+            const testkBar4 = (recoveredBlindingFactors[3].kBar).toString(16);
+
+            expect(testkBar1).to.equal(testkBar3);
+            expect(testkBar2).to.equal(testkBar4);
+        });
+
+        it('validate that challenge has been correctly converted back into bn form', async () => {
+            const formattedChallenge = new BN(challenge.slice(2), 16);
+            console.log('challenge: ', challenge);
+            expect(formattedChallenge).to.equal(challenge);
+        });
     });
 
-    it('validate that the proof is correct, using the validation algo', async () => {
-        const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
-        const result = await atomicProof.verifyAtomicSwap(testNotes, proofData, challenge);
-        expect(result).to.equal(1);
+    describe.only('validate that proof construction algo is valid, using validation algo', async () => {
+        let testNotes;
+
+        beforeEach(async () => {
+            // Spending keys for the notes
+            const spendingKeys = [
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
+            ];
+
+            // Note value array
+            const noteValues = [10, 20, 10, 20];
+
+            // Construct the test note object
+            testNotes = {
+                makerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
+                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
+                },
+                takerNotes: {
+                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
+                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
+                },
+            };
+        });
+
+        it.only('validate that the proof is correct, using the validation algo', async () => {
+            const { proofData, challenge } = await atomicProof.constructAtomicSwap(testNotes);
+            console.log('length of proof data for element 3: ', proofData[2].length);
+
+            const result = await atomicProof.verifyAtomicSwap(proofData, challenge);
+            expect(result).to.equal(1);
+        });
     });
 });
