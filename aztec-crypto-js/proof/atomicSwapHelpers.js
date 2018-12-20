@@ -26,10 +26,17 @@ atomicSwapHelpers.makeNoteArray = async (notes) => {
     return noteArray;
 };
 
+atomicSwapHelpers.validateOnCurve = (x, y) => {
+    const rhs = x.redSqr().redMul(x).redAdd(bn128.b);
+    const lhs = y.redSqr();
+    if (!rhs.fromRed().eq(lhs.fromRed())) {
+        throw new Error('no! bad!');
+    }
+};
+
 atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) => {
     const bkArray = [];
     const blindingFactors = noteArray.map((note, i) => {
-        // Create the blinding scalars
         let bk = bn128.randomGroupScalar();
         const ba = bn128.randomGroupScalar();
         let B;
@@ -57,18 +64,62 @@ atomicSwapHelpers.getBlindingFactorsAndChallenge = async (noteArray, finalHash) 
     return { blindingFactors, challenge };
 };
 
-atomicSwapHelpers.convertToBn = async (proofData) => {
+atomicSwapHelpers.convertToBn = async (proofData, challenge) => {
     const proofDataBn = proofData.map((noteData) => {
+        // Reconstruct gamma
+        const xGamma = new BN(noteData[2].slice(2), 16).toRed(bn128.red);
+        const yGamma = new BN(noteData[3].slice(2), 16).toRed(bn128.red);
+        const gamma = bn128.point(xGamma, yGamma);
+
+        // Reconstruct sigma
+        const xSigma = new BN(noteData[4].slice(2), 16).toRed(bn128.red);
+        const ySigma = new BN(noteData[5].slice(2), 16).toRed(bn128.red);
+        const sigma = bn128.point(xGamma, yGamma);
+
         return [
-            new BN(noteData[0].slice(2), 16).toRed(groupReduction),
-            new BN(noteData[1].slice(2), 16).toRed(groupReduction),
-            new BN(noteData[2].slice(2), 16).toRed(groupReduction),
-            new BN(noteData[3].slice(2), 16).toRed(groupReduction),
-            new BN(noteData[4].slice(2), 16).toRed(groupReduction),
-            new BN(noteData[5].slice(2), 16).toRed(groupReduction),
+            new BN(noteData[0].slice(2), 16).toRed(groupReduction), // kbar
+            new BN(noteData[1].slice(2), 16).toRed(groupReduction), // aBar
+            xGamma,
+            yGamma,
+            xSigma,
+            ySigma,
+            gamma,
+            sigma,
         ];
     });
-    return proofDataBn;
+
+    const challengeBn = new BN(challenge.slice(2).toRed(bn128.red));
+    return { proofDataBn, challengeBn };
+};
+
+atomicSwapHelpers.recoverBlindingFactors = async (proofDataBn, challengeBn, finalHash) => {
+    const kBarArray = [];
+    const recoveredBlindingFactors = proofDataBn.map((proofElement, i) => {
+        let kBar = proofElement[0];
+        const aBar = proofElement[1];
+        const gamma = proofElement[6];
+        const sigma = proofElement[7];
+        let B;
+
+        // Maker notes
+        if (i <= 1) {
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(challengeBn.neg()));
+        } else { // taker notes
+            kBar = kBarArray[i-2];
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(challengeBn.neg()));
+        }
+
+        finalHash.append(B);
+        kBarArray.push(kBar);
+
+        return {
+            B,
+        };
+    });
+
+    finalHash.keccak();
+    const recoveredChallenge = finalHash.toGroupScalar(groupReduction);
+    return { recoveredBlindingFactors, recoveredChallenge };
 };
 
 
