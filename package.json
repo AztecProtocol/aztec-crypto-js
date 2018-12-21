@@ -40,6 +40,7 @@
   },
   "scripts": {
     "test": "NODE_ENV=TEST mocha ./aztec-crypto-js/proof/testAtomicSwapProof.spec.js --trace-warnings --exit --colors --recursive --reporter spec",
+    "coverage": "nyc --reporter html --reporter text npm test",
     "demoTest": "NODE_ENV=TEST mocha ./demo --trace-warnings --exit --colors --recursive --reporter spec",
     "doorbellTest": "NODE_ENV=TEST mocha ./extractPublicKey --trace-warnings --exit --colors --recursive --reporter spec",
     "demoDeployTest": "NODE_ENV=TEST node ./demo/demoDeploy.js",
