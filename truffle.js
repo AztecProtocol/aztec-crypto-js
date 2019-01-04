@@ -17,7 +17,7 @@ module.exports = {
     networks: {
         development: {
             host: '127.0.0.1',
-            port: 8545, // use port 7545, ganache's rpc port
+            port: 9545, // use port 7545, ganache's rpc port
             network_id: '*', // Match any network id
         },
         rinkeby: {
