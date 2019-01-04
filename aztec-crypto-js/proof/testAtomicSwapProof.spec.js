@@ -1,6 +1,5 @@
-/* global artifacts, beforeEach, it:true */
+/* global, beforeEach, it:true */
 const BN = require('bn.js');
-const { padLeft, sha3 } = require('web3-utils');
 const crypto = require('crypto');
 const chai = require('chai');
 
