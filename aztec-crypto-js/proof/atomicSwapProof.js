@@ -1,8 +1,13 @@
 const BN = require('bn.js');
 const { padLeft } = require('web3-utils');
 
+
 const Hash = require('../utils/keccak');
 const helpers = require('./atomicSwapHelpers');
+const bn128 = require('../bn128/bn128');
+
+const { groupReduction } = bn128;
+
 
 /**
  * Constructs AZTEC atomic swaps
@@ -25,12 +30,12 @@ atomicSwapProof.constructAtomicSwap = (notes, sender) => {
     // finalHash is used to create final proof challenge
     const finalHash = new Hash();
 
+    finalHash.appendBN(new BN(sender.slice(2), 16));
+
     noteArray.forEach((note) => {
         finalHash.append(note.gamma);
         finalHash.append(note.sigma);
     });
-
-    finalHash.appendBN(new BN(sender.slice(2), 16));
 
     const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
@@ -67,19 +72,19 @@ atomicSwapProof.verifyAtomicSwap = (proofData, challenge, sender) => {
 
     const finalHash = new Hash();
 
+    finalHash.appendBN(new BN(sender.slice(2), 16));
+
     proofDataBn.forEach((proofElement) => {
         finalHash.append(proofElement[6]);
         finalHash.append(proofElement[7]);
     });
-
-    finalHash.appendBN(new BN(sender.slice(2), 16));
 
     const { recoveredChallenge } = helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
     if (finalChallenge === challenge) {
-        return 1;
+        return true;
     } else {
         throw new Error('proof validation failed');
     }
