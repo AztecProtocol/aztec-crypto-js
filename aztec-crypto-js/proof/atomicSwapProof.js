@@ -18,7 +18,7 @@ const atomicSwapProof = {};
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-atomicSwapProof.constructAtomicSwap = (notes) => {
+atomicSwapProof.constructAtomicSwap = (notes, sender) => {
     helpers.checkNumberNotes(notes);
     const noteArray = helpers.makeNoteArray(notes);
 
@@ -30,12 +30,14 @@ atomicSwapProof.constructAtomicSwap = (notes) => {
         finalHash.append(note.sigma);
     });
 
+    finalHash.appendBN(new BN(sender.slice(2), 16));
+
     const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((noteArray[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
         const aBar = ((noteArray[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();
-
+        
         return [
             `0x${padLeft(kBar.toString(16), 64)}`,
             `0x${padLeft(aBar.toString(16), 64)}`,
@@ -59,7 +61,7 @@ atomicSwapProof.constructAtomicSwap = (notes) => {
  * @param {big number instance} challenge - challenge variable used in zero-knowledge protocol 
  * @returns {number} - returns 1 if proof is validated, throws an error if not
  */
-atomicSwapProof.verifyAtomicSwap = (proofData, challenge) => {
+atomicSwapProof.verifyAtomicSwap = (proofData, challenge, sender) => {
     const proofDataBn = helpers.convertToBn(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
@@ -69,6 +71,8 @@ atomicSwapProof.verifyAtomicSwap = (proofData, challenge) => {
         finalHash.append(proofElement[6]);
         finalHash.append(proofElement[7]);
     });
+
+    finalHash.appendBN(new BN(sender.slice(2), 16));
 
     const { recoveredChallenge } = helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
