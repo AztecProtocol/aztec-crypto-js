@@ -1,11 +1,33 @@
 const BN = require('bn.js');
+const crypto = require('crypto');
+
 
 const bn128 = require('../bn128/bn128');
+const secp256k1 = require('../../aztec-crypto-js/secp256k1/secp256k1');
+const notesConstruct = require('../../aztec-crypto-js/note/note');
+
 
 const { groupReduction } = bn128;
 
 
 const atomicSwapHelpers = {};
+
+atomicSwapHelpers.makeTestNotes = (makerNoteValues, takerNoteValues) => {
+    const noteValues = makerNoteValues.concat(takerNoteValues);
+    const numNotes = noteValues.length;
+
+    let i;
+    const spendingKeys = [];
+    for (i = 0; i < numNotes; i += 1) {
+        spendingKeys.push(secp256k1.keyFromPrivate(crypto.randomBytes(32)));
+    }
+
+    const testNotes = spendingKeys.map((spendingKey, j) => {
+        return notesConstruct.create(`0x${spendingKey.getPublic(true, 'hex')}`, noteValues[j]);
+    });
+
+    return testNotes;
+};
 
 atomicSwapHelpers.checkNumberNotes = (notes) => {
     const numMakerNotes = Object.keys(notes.makerNotes).length;
