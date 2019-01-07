@@ -132,6 +132,7 @@ atomicSwapHelpers.recoverBlindingFactorsAndChallenge = (proofDataBn, formattedCh
             kBar = kBarArray[i-2];
             B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
         }
+
         finalHash.append(B);
         kBarArray.push(kBar);
 
