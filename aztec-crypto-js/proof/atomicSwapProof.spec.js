@@ -2,6 +2,7 @@
 const BN = require('bn.js');
 const crypto = require('crypto');
 const chai = require('chai');
+const web3Utils = require('web3-utils');
 
 const atomicProof = require('./atomicSwapProof');
 const secp256k1 = require('../secp256k1/secp256k1');
@@ -16,6 +17,7 @@ const { expect } = chai;
 describe('Validating atomic swap proof construction and verification algos', () => {
     describe('Validate properties of the proof construction algo', () => {
         let testNotes;
+        let sender;
 
         beforeEach(() => {
             const spendingKeys = [
@@ -24,7 +26,6 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
                 secp256k1.keyFromPrivate(crypto.randomBytes(32)),
             ];
-
             const noteValues = [10, 20, 10, 20];
 
             testNotes = {
@@ -37,6 +38,9 @@ describe('Validating atomic swap proof construction and verification algos', () 
                     askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
                 },
             };
+
+            // Dummy, random sender address for proof of concept
+            sender = web3Utils.randomHex(20);
         });
         it('check that the note array correctly represents the note object', () => {
             const noteArray = helpers.makeNoteArray(testNotes);
@@ -53,7 +57,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
             testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
 
             try {
-                atomicProof.constructAtomicSwap(testNotes);
+                atomicProof.constructAtomicSwap(testNotes, sender);
             } catch (err) {
                 console.log('Incorrect number of notes');
             }
@@ -80,7 +84,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
         });
 
         it('validate that the proof data contains correct number of proof variables and is well formed', () => {
-            const { proofData } = atomicProof.constructAtomicSwap(testNotes);
+            const { proofData } = atomicProof.constructAtomicSwap(testNotes, sender);
             expect(proofData.length).to.equal(4);
             expect(proofData[0].length).to.equal(6);
             expect(proofData[1].length).to.equal(6);
@@ -89,8 +93,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
         });
 
         it('validate that the proof is correct, using the validation algo', () => {
-            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes);
-            const result = atomicProof.verifyAtomicSwap(proofData, challenge);
+            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender);
+            const result = atomicProof.verifyAtomicSwap(proofData, challenge, sender);
             expect(result).to.equal(1);
         });
     });
@@ -98,6 +102,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
     describe('validate properties of the proof validation algo', () => {
         let proofData;
         let challenge;
+        let sender;
 
         beforeEach(() => {
             const spendingKeys = [
@@ -120,7 +125,10 @@ describe('Validating atomic swap proof construction and verification algos', () 
                 },
             };
 
-            const constructProofData = atomicProof.constructAtomicSwap(testNotes);
+            // Dummy, random sender address for proof of concept
+            sender = web3Utils.randomHex(20);
+
+            const constructProofData = atomicProof.constructAtomicSwap(testNotes, sender);
             proofData = constructProofData.proofData;
             challenge = constructProofData.challenge;
         });
@@ -150,6 +158,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
 
     describe('validate that proof construction algo is valid, using validation algo', () => {
         let testNotes;
+        let sender;
 
         beforeEach(() => {
             const spendingKeys = [
@@ -171,11 +180,14 @@ describe('Validating atomic swap proof construction and verification algos', () 
                     askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
                 },
             };
+
+            // Dummy, random sender address for proof of concept
+            sender = web3Utils.randomHex(20);
         });
 
         it('validate that the proof is correct, using the validation algo', () => {
-            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes);
-            const result = atomicProof.verifyAtomicSwap(proofData, challenge);
+            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender);
+            const result = atomicProof.verifyAtomicSwap(proofData, challenge, sender);
             expect(result).to.equal(1);
         });
     });
