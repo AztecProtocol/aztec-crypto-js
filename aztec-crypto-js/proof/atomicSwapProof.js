@@ -4,10 +4,6 @@ const { padLeft } = require('web3-utils');
 
 const Hash = require('../utils/keccak');
 const helpers = require('./atomicSwapHelpers');
-const bn128 = require('../bn128/bn128');
-
-const { groupReduction } = bn128;
-
 
 /**
  * Constructs AZTEC atomic swaps
