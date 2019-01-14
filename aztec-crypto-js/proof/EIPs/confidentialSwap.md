@@ -1,19 +1,6 @@
----
-eip: <>
-title: <Confidential swap proof>
-author: <a list of the author's or authors' name(s) and/or username(s), or name(s) and email(s), e.g. (use with the parentheses or triangular brackets): FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
-discussions-to: <URL>
-status: Draft
-type: <Standards Track (Core, Networking, Interface, ERC)  | Informational | Meta>
-category (*only required for Standard Track): <Core | Networking | Interface | ERC>
-created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
-requires (*optional): <EIP number(s)>
-replaces (*optional): <EIP number(s)>
----
-
-
+WORK IN PROGRESS
 # Simple Summary
-This EIP defines the interface and behaviour of the AZTEC based zero-knowledge confidential swap functionality.
+This EIP defines the interface, behaviour and specification of the AZTEC based zero-knowledge cross-asset swap functionality.
 
 # Abstract
 The confidential swap proof construction and validation EIP tackles the problem of two entities not being able to exchange assets on a public blockchain confidentially. The AZTEC protocol is used to first represent these digital assets in confidential form, via AZTEC notes, and then a zero knowledge confidential swap proof as described in x is implemented. There are two distinct parts of the code base. Firstly, a client side Javascript proof construction module and secondly a verification smart contract. 
