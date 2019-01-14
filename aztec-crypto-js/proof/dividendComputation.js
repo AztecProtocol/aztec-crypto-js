@@ -9,9 +9,9 @@ const { groupReduction } = bn128;
 
 
 /**
- * Constructs AZTEC interest payments
+ * Constructs AZTEC dividend computations
  *
- * @module interestPaymentProof
+ * @module dividendComputation
 */
 const dividendComputation = {};
 
