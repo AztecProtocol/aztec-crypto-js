@@ -1,9 +1,12 @@
 const BN = require('bn.js');
 const { padLeft } = require('web3-utils');
 
-
+const bn128 = require('../bn128/bn128');
 const Hash = require('../utils/keccak');
-const helpers = require('./atomicSwapHelpers');
+const helpers = require('./helpers');
+
+const { groupReduction } = bn128;
+
 
 /**
  * Constructs AZTEC atomic swaps
@@ -30,7 +33,40 @@ atomicSwapProof.constructAtomicSwap = (notes, sender) => {
         finalHash.append(note.sigma);
     });
 
-    const { blindingFactors, challenge } = helpers.getBlindingFactorsAndChallenge(notes, finalHash);
+    const bkArray = [];
+    const blindingFactors = notes.map((note, i) => {
+        let bk = bn128.randomGroupScalar();
+        const ba = bn128.randomGroupScalar();
+        let B;
+
+        /*
+        Explanation of the below if/else
+        - The purpose is to set bk1 = bk3 and bk2 = bk4
+        - i is used as an indexing variable, to keep track of whether we are at a maker note or taker note
+        - All bks are stored in a bkArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding 
+          maker note. This is achieved by 'jumping back' 2 index positions (i - 2) in the bkArray, and setting the current
+          bk equal to the element at the resulting position.
+        */
+
+        // Maker notes
+        if (i <= 1) {
+            B = note.gamma.mul(bk).add(bn128.h.mul(ba));
+        } else { // taker notes
+            bk = bkArray[i-2];
+            B = note.gamma.mul(bk).add(bn128.h.mul(ba));
+        }
+        finalHash.append(B);
+        bkArray.push(bk);
+
+        return {
+            bk,
+            ba,
+            B,
+        };
+    });
+
+    finalHash.keccak();
+    const challenge = finalHash.toGroupScalar(groupReduction);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
@@ -72,7 +108,48 @@ atomicSwapProof.verifyAtomicSwap = (proofData, challenge, sender) => {
         finalHash.append(proofElement[7]);
     });
 
-    const { recoveredChallenge } = helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
+    const kBarArray = [];
+
+    // Validate that the commitments lie on the bn128 curve
+    proofDataBn.map((proofElement) => {
+        helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
+        helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
+    });
+
+    proofDataBn.map((proofElement, i) => {
+        let kBar = proofElement[0];
+        const aBar = proofElement[1];
+        const gamma = proofElement[6];
+        const sigma = proofElement[7];
+        let B;
+
+        /*
+        Explanation of the below if/else
+        - The purpose is to set kBar1 = kBar3 and kBar2 = kBar4
+        - i is used as an indexing variable, to keep track of whether we are at a maker note or taker note
+        - All kBars are stored in a kBarArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding 
+          maker note. This is achieved by 'jumping back' 2 index positions (i - 2) in the kBarArray, and setting the current
+          kBar equal to the element at the resulting position.
+        */
+
+        // Maker notes
+        if (i <= 1) {
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
+        } else { // taker notes
+            kBar = kBarArray[i-2];
+            B = gamma.mul(kBar).add(bn128.h.mul(aBar)).add(sigma.mul(formattedChallenge).neg());
+        }
+
+        finalHash.append(B);
+        kBarArray.push(kBar);
+
+        return {
+            kBar,
+            B,
+        };
+    });
+    finalHash.keccak();
+    const recoveredChallenge = finalHash.toGroupScalar(groupReduction);
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
