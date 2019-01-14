@@ -7,7 +7,7 @@ const web3Utils = require('web3-utils');
 const atomicProof = require('./atomicSwapProof');
 const secp256k1 = require('../secp256k1/secp256k1');
 const notes = require('../note/note');
-const helpers = require('./atomicSwapHelpers');
+const helpers = require('./helpers');
 const Hash = require('../utils/keccak');
 
 
@@ -20,24 +20,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
         let sender;
 
         beforeEach(() => {
-            const spendingKeys = [
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            ];
-            const noteValues = [10, 20, 10, 20];
-
-            testNotes = {
-                makerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
-                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
-                },
-                takerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
-                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
-                },
-            };
+            testNotes = helpers.makeTestNotes([10, 20], [10, 20]);
 
             // Dummy, random sender address for proof of concept
             sender = web3Utils.randomHex(20);
@@ -105,32 +88,12 @@ describe('Validating atomic swap proof construction and verification algos', () 
         let sender;
 
         beforeEach(() => {
-            const spendingKeys = [
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            ];
-
-            const noteValues = [10, 20, 10, 20];
-
-            const testNotes = {
-                makerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
-                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
-                },
-                takerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
-                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
-                },
-            };
+            const testNotes = helpers.makeTestNotes([10, 20], [10, 20]);
 
             // Dummy, random sender address for proof of concept
             sender = web3Utils.randomHex(20);
 
-            const constructProofData = atomicProof.constructAtomicSwap(testNotes, sender);
-            proofData = constructProofData.proofData;
-            challenge = constructProofData.challenge;
+            ({ proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender));
         });
 
         it('validate that the kbar relations are satisfied i.e. kbar1 = kbar3 and kbar2 = kbar4', () => {
@@ -161,25 +124,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
         let sender;
 
         beforeEach(() => {
-            const spendingKeys = [
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-                secp256k1.keyFromPrivate(crypto.randomBytes(32)),
-            ];
-
-            const noteValues = [10, 20, 10, 20];
-
-            testNotes = {
-                makerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[0].getPublic(true, 'hex')}`, noteValues[0]),
-                    askNote: notes.create(`0x${spendingKeys[1].getPublic(true, 'hex')}`, noteValues[1]),
-                },
-                takerNotes: {
-                    bidNote: notes.create(`0x${spendingKeys[2].getPublic(true, 'hex')}`, noteValues[2]),
-                    askNote: notes.create(`0x${spendingKeys[3].getPublic(true, 'hex')}`, noteValues[3]),
-                },
-            };
+            testNotes = helpers.makeTestNotes([10, 20], [10, 20]);
 
             // Dummy, random sender address for proof of concept
             sender = web3Utils.randomHex(20);
