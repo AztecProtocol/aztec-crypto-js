@@ -9,20 +9,20 @@ const { groupReduction } = bn128;
 
 
 /**
- * Constructs AZTEC atomic swaps
+ * Constructs AZTEC bilateral swaps
  *
- * @module atomicSwapProof
+ * @module bilateralSwapProof
 */
-const atomicSwapProof = {};
+const bilateralSwapProof = {};
 
 /**
- * Construct AZTEC atomic swap proof transcript
+ * Construct AZTEC bilateral swap proof transcript
  *
  * @method constructProof
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-atomicSwapProof.constructAtomicSwap = (notes, sender) => {
+bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
     // finalHash is used to create final proof challenge
     const finalHash = new Hash();
 
@@ -88,14 +88,14 @@ atomicSwapProof.constructAtomicSwap = (notes, sender) => {
 };
 
 /**
- * Verify AZTEC atomic swap proof transcript
+ * Verify AZTEC bilateral swap proof transcript
  *
- * @method verifyAtomicSwap
+ * @method verifyBilateralSwap
  * @param {Array[proofData]} proofData - proofData array of AZTEC notes
  * @param {big number instance} challenge - challenge variable used in zero-knowledge protocol 
  * @returns {number} - returns 1 if proof is validated, throws an error if not
  */
-atomicSwapProof.verifyAtomicSwap = (proofData, challenge, sender) => {
+bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
     const proofDataBn = helpers.convertToBn(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
@@ -153,11 +153,11 @@ atomicSwapProof.verifyAtomicSwap = (proofData, challenge, sender) => {
     const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
-    if (finalChallenge === challenge) {
-        return true;
-    } else {
+    if (finalChallenge !== challenge) {
         throw new Error('proof validation failed');
+    } else {
+        return true;
     }
 };
 
-module.exports = atomicSwapProof;
+module.exports = bilateralSwapProof;

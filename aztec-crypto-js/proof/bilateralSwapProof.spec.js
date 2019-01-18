@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const chai = require('chai');
 const web3Utils = require('web3-utils');
 
-const atomicProof = require('./atomicSwapProof');
+const bilateralProof = require('./bilateralSwapProof');
 const secp256k1 = require('../secp256k1/secp256k1');
 const notes = require('../note/note');
 const helpers = require('./helpers');
@@ -14,7 +14,7 @@ const Hash = require('../utils/keccak');
 const { expect } = chai;
 
 
-describe('Validating atomic swap proof construction and verification algos', () => {
+describe('Validating bilateral swap proof construction and verification algos', () => {
     describe('Validate properties of the proof construction algo', () => {
         let testNotes;
         let sender;
@@ -35,18 +35,18 @@ describe('Validating atomic swap proof construction and verification algos', () 
             expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
         });
 
-        it('validate that the atomic swap will not work for a number of notes not equal to 4', () => {
+        it('validate that the bilateral swap will not work for a number of notes not equal to 4', () => {
             testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
             testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
 
             try {
-                atomicProof.constructAtomicSwap(testNotes, sender);
+                bilateralProof.constructBilateralSwap(testNotes, sender);
             } catch (err) {
                 console.log('Incorrect number of notes');
             }
         });
 
-        it('validate that the atomic swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', () => {
+        it('validate that the bilateral swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', () => {
             const noteArray = helpers.makeNoteArray(testNotes);
             const finalHash = new Hash();
 
@@ -67,7 +67,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
         });
 
         it('validate that the proof data contains correct number of proof variables and is well formed', () => {
-            const { proofData } = atomicProof.constructAtomicSwap(testNotes, sender);
+            const { proofData } = bilateralProof.constructBilateralSwap(testNotes, sender);
             expect(proofData.length).to.equal(4);
             expect(proofData[0].length).to.equal(6);
             expect(proofData[1].length).to.equal(6);
@@ -76,8 +76,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
         });
 
         it('validate that the proof is correct, using the validation algo', () => {
-            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender);
-            const result = atomicProof.verifyAtomicSwap(proofData, challenge, sender);
+            const { proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender);
+            const result = bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
             expect(result).to.equal(1);
         });
     });
@@ -93,7 +93,7 @@ describe('Validating atomic swap proof construction and verification algos', () 
             // Dummy, random sender address for proof of concept
             sender = web3Utils.randomHex(20);
 
-            ({ proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender));
+            ({ proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender));
         });
 
         it('validate that the kbar relations are satisfied i.e. kbar1 = kbar3 and kbar2 = kbar4', () => {
@@ -131,8 +131,8 @@ describe('Validating atomic swap proof construction and verification algos', () 
         });
 
         it('validate that the proof is correct, using the validation algo', () => {
-            const { proofData, challenge } = atomicProof.constructAtomicSwap(testNotes, sender);
-            const result = atomicProof.verifyAtomicSwap(proofData, challenge, sender);
+            const { proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender);
+            const result = bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
             expect(result).to.equal(1);
         });
     });
