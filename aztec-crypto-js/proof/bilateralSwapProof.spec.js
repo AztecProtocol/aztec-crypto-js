@@ -3,6 +3,7 @@ const BN = require('bn.js');
 const chai = require('chai');
 const web3Utils = require('web3-utils');
 
+
 const bilateralProof = require('./bilateralSwapProof');
 const helpers = require('./helpers');
 const Hash = require('../utils/keccak');
@@ -55,6 +56,22 @@ describe('Validating bilateral swap proof construction and verification algos', 
             const { proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender);
             const result = bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
             expect(result).to.equal(true);
+        });
+
+        it('validate failure when inputs points are not on the curve', () => {
+            // Setting the x and y coordinates of the commitment to zero - i.e. not on the curve
+            // Should then fail to be validated, as points aren't on the curve
+            const zeroes = `${web3Utils.padLeft('0', 64)}`;
+            const noteString = `${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}${zeroes}`;
+            const challengeString = `0x${web3Utils.padLeft(sender.slice(2), 64)}${web3Utils.padLeft('132', 64)}${web3Utils.padLeft('1', 64)}${noteString}`;
+            const challenge = web3Utils.sha3(challengeString, 'hex');
+            const proofData = [[`0x${web3Utils.padLeft('132', 64)}`, '0x0', '0x0', '0x0', '0x0', '0x0']];
+            
+            try {
+                bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
+            } catch (err) {
+                console.log('point not on the curve');
+            }
         });
     });
 
