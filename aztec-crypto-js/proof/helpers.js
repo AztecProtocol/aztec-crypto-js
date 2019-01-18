@@ -29,30 +29,6 @@ helpers.makeTestNotes = (makerNoteValues, takerNoteValues) => {
     return testNotes;
 };
 
-helpers.checkNumberNotes = (notes) => {
-    const numMakerNotes = Object.keys(notes.makerNotes).length;
-    const numTakerNotes = Object.keys(notes.takerNotes).length;
-    const numNotes = numMakerNotes + numTakerNotes;
-
-    if (numNotes !== 4) {
-        throw new Error('Incorrect number of notes');
-    }
-};
-
-helpers.makeNoteArray = (notes) => {
-    const makerNotes = Object.values(notes.makerNotes);
-    const takerNotes = Object.values(notes.takerNotes);
-    const noteArray = [makerNotes[0], makerNotes[1], takerNotes[0], takerNotes[1]];
-    return noteArray;
-};
-
-helpers.makeIncorrectArray = (notes) => {
-    const makerNotes = Object.values(notes.makerNotes);
-    const takerNotes = Object.values(notes.takerNotes);
-    const noteArray = [makerNotes[0], makerNotes[1], makerNotes[2], takerNotes[0], takerNotes[1], takerNotes[2]];
-    return noteArray;
-};
-
 helpers.validateOnCurve = (x, y) => {
     const rhs = x.redSqr().redMul(x).redAdd(bn128.b);
     const lhs = y.redSqr();
