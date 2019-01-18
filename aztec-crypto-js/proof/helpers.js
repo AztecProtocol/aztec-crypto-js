@@ -14,13 +14,8 @@ const helpers = {};
 
 helpers.makeTestNotes = (makerNoteValues, takerNoteValues) => {
     const noteValues = makerNoteValues.concat(takerNoteValues);
-    const numNotes = noteValues.length;
 
-    let i;
-    const spendingKeys = [];
-    for (i = 0; i < numNotes; i += 1) {
-        spendingKeys.push(secp256k1.keyFromPrivate(crypto.randomBytes(32)));
-    }
+    const spendingKeys = [...new Array(noteValues.length)].map(() => secp256k1.keyFromPrivate(crypto.randomBytes(32)));
 
     const testNotes = spendingKeys.map((spendingKey, j) => {
         return notesConstruct.create(`0x${spendingKey.getPublic(true, 'hex')}`, noteValues[j]);
