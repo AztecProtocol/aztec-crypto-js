@@ -99,7 +99,7 @@ helpers.getBlindingFactorsAndChallenge = (noteArray, finalHash) => {
     return { blindingFactors, challenge };
 };
 
-helpers.convertToBn = (proofData) => {
+helpers.toBnAndAppendPoints = (proofData) => {
     const proofDataBn = proofData.map((noteData) => {
         // Reconstruct gamma
         const xGamma = new BN(noteData[2].slice(2), 16).toRed(bn128.red);
