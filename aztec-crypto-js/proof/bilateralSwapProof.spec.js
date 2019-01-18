@@ -1,12 +1,9 @@
 /* global, beforeEach, it:true */
 const BN = require('bn.js');
-const crypto = require('crypto');
 const chai = require('chai');
 const web3Utils = require('web3-utils');
 
 const bilateralProof = require('./bilateralSwapProof');
-const secp256k1 = require('../secp256k1/secp256k1');
-const notes = require('../note/note');
 const helpers = require('./helpers');
 const Hash = require('../utils/keccak');
 
@@ -25,37 +22,16 @@ describe('Validating bilateral swap proof construction and verification algos', 
             // Dummy, random sender address for proof of concept
             sender = web3Utils.randomHex(20);
         });
-        it('check that the note array correctly represents the note object', () => {
-            const noteArray = helpers.makeNoteArray(testNotes);
-            const numNotes = helpers.checkNumberNotes(testNotes);
-            expect(noteArray.length).to.equal(numNotes);
-            expect(noteArray[0]).to.equal(testNotes.makerNotes.bidNote);
-            expect(noteArray[1]).to.equal(testNotes.makerNotes.askNote);
-            expect(noteArray[2]).to.equal(testNotes.takerNotes.bidNote);
-            expect(noteArray[3]).to.equal(testNotes.takerNotes.askNote);
-        });
-
-        it('validate that the bilateral swap will not work for a number of notes not equal to 4', () => {
-            testNotes.makerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
-            testNotes.takerNotes.extraNote = notes.create(`0x${secp256k1.keyFromPrivate(crypto.randomBytes(32)).getPublic(true, 'hex')}`, 50);
-
-            try {
-                bilateralProof.constructBilateralSwap(testNotes, sender);
-            } catch (err) {
-                console.log('Incorrect number of notes');
-            }
-        });
 
         it('validate that the bilateral swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', () => {
-            const noteArray = helpers.makeNoteArray(testNotes);
             const finalHash = new Hash();
 
-            noteArray.forEach((note) => {
+            testNotes.forEach((note) => {
                 finalHash.append(note.gamma);
                 finalHash.append(note.sigma);
             });
 
-            const { blindingFactors } = helpers.getBlindingFactorsAndChallenge(noteArray, finalHash);
+            const { blindingFactors } = helpers.getBlindingFactorsAndChallenge(testNotes, finalHash);
 
             const testk1 = (blindingFactors[0].bk).toString(16);
             const testk2 = (blindingFactors[1].bk).toString(16);
@@ -78,7 +54,7 @@ describe('Validating bilateral swap proof construction and verification algos', 
         it('validate that the proof is correct, using the validation algo', () => {
             const { proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender);
             const result = bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
-            expect(result).to.equal(1);
+            expect(result).to.equal(true);
         });
     });
 
@@ -133,7 +109,7 @@ describe('Validating bilateral swap proof construction and verification algos', 
         it('validate that the proof is correct, using the validation algo', () => {
             const { proofData, challenge } = bilateralProof.constructBilateralSwap(testNotes, sender);
             const result = bilateralProof.verifyBilateralSwap(proofData, challenge, sender);
-            expect(result).to.equal(1);
+            expect(result).to.equal(true);
         });
     });
 });
