@@ -73,7 +73,7 @@ describe('Validating bilateral swap proof construction and verification algos', 
         });
 
         it('validate that the kbar relations are satisfied i.e. kbar1 = kbar3 and kbar2 = kbar4', () => {
-            const proofDataBn = helpers.convertToBn(proofData);
+            const proofDataBn = helpers.toBnAndAppendPoints(proofData);
             const formattedChallenge = new BN(challenge.slice(2), 16);
 
             const finalHash = new Hash();

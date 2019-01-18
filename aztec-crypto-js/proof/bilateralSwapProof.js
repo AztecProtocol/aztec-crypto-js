@@ -96,7 +96,7 @@ bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
  * @returns {number} - returns 1 if proof is validated, throws an error if not
  */
 bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
-    const proofDataBn = helpers.convertToBn(proofData);
+    const proofDataBn = helpers.toBnAndAppendPoints(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
     const finalHash = new Hash();
