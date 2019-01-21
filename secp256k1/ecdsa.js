@@ -24,12 +24,18 @@ const ecdsa = {};
  * @returns {string} address
  */
 ecdsa.accountFromPublicKey = (publicKey) => {
-    const ecKey = secp256k1.ec.keyFromPublic(publicKey);
-    const publicKeyHex = `0x${ecKey.getPublic(false, 'hex').slice(2)}`;
-    const publicHash = web3Utils.sha3(publicKeyHex);
+    let publicHash;
+    if (typeof (publicKey) === 'string') {
+        publicHash = web3Utils.sha3(`0x${publicKey.slice(4)}`);
+    } else {
+        const ecKey = secp256k1.ec.keyFromPublic(publicKey);
+        const publicKeyHex = `0x${ecKey.getPublic(false, 'hex').slice(2)}`;
+        publicHash = web3Utils.sha3(publicKeyHex);
+    }
     const address = web3Utils.toChecksumAddress(`0x${publicHash.slice(-40)}`);
     return address;
 };
+
 
 /**
  * Sign a message hash with a given private key

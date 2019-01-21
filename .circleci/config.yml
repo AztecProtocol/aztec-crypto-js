@@ -16,7 +16,7 @@ jobs: # a collection of steps
           key: dependency-cache-{{ checksum "package.json" }}
       - run: # weird bug when installing modules otherwise
           name: "Remove Package Lock"
-          command: rm -f package-lock.json
+          command: rm package-lock.json || true
       - run: # simply installing the modules
           name: "Install Node Modules"
           command: npm install
