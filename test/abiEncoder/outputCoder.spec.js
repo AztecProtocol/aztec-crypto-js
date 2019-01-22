@@ -260,4 +260,31 @@ describe('abiEncioder.outputCoder tests', () => {
             }
         }
     });
+
+    it('outputCoder can get an individual proof output from proofOutputs', () => {
+        const proofOutputs = [{
+            inputNotes: [notes[0], notes[1]],
+            outputNotes: [notes[2], notes[3]],
+            publicOwner: notes[3].owner,
+            publicValue: 123456789,
+        }, {
+            inputNotes: [notes[4], notes[5]],
+            outputNotes: [notes[7], notes[6]],
+            publicOwner: notes[8].owner,
+            publicValue: 987654321,
+        }];
+        const encodedFull = outputCoder.encodeProofOutputs(proofOutputs);
+        const encodedBytes = `0x${encodedFull.slice(0x42)}`;
+
+        const result = [
+            outputCoder.getProofOutput(encodedBytes, 0),
+            outputCoder.getProofOutput(encodedBytes, 1),
+        ];
+        const expected = [
+            outputCoder.encodeProofOutput(proofOutputs[0]),
+            outputCoder.encodeProofOutput(proofOutputs[1]),
+        ];
+        expect(result[0]).to.equal(expected[0].toLowerCase());
+        expect(result[1]).to.equal(expected[1].toLowerCase());
+    });
 });
