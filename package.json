@@ -37,6 +37,7 @@
     "lint": "./node_modules/.bin/eslint .",
     "lint:fix": "./node_modules/.bin/eslint . --fix",
     "test": "NODE_ENV=TEST ./node_modules/.bin/mocha ./test --trace-warnings --exit --colors --recursive --reporter spec",
+    "bilateralTest": "NODE_ENV=TEST ./test/abiEncoder/bilateralSwap.spec.js --trace-warnings --exit --colors --recursive --reporter spec",
     "test:coverage": "NODE_ENV=TEST ./node_modules/.bin/nyc ./node_modules/.bin/mocha ./test --trace-warnings --exit --colors --recursive --reporter spec",
     "docs": "./node_modules/.bin/jsdoc -c jsdocConf.json"
   },

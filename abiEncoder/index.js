@@ -3,5 +3,6 @@ const outputCoder = require('./outputCoder');
 
 module.exports = {
     joinSplit,
+    bilateralSwap,
     outputCoder,
 };
