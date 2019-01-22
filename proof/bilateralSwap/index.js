@@ -1,20 +1,18 @@
+/**
+ * Constructs AZTEC bilateral swap zero-knowledge proofs
+ *
+ * @module proof
+ */
 const BN = require('bn.js');
 const { padLeft } = require('web3-utils');
-
-const bn128 = require('../bn128/bn128');
-const Hash = require('../utils/keccak');
+const Keccak = require('../../keccak');
+const bn128 = require('../../bn128');
+const { K_MAX } = require('../../params');
 const helpers = require('./helpers');
 
 const { groupReduction } = bn128;
 
-
-/**
- * Constructs AZTEC bilateral swaps
- *
- * @module bilateralSwapProof
-*/
-const bilateralSwapProof = {};
-
+const proof = {};
 /**
  * Construct AZTEC bilateral swap proof transcript
  *
@@ -22,9 +20,11 @@ const bilateralSwapProof = {};
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
+proof.constructBilateralSwap = (notes, sender) => {
+    helpers.checkNumberNotes(notes, 4);
+
     // finalHash is used to create final proof challenge
-    const finalHash = new Hash();
+    const finalHash = new Keccak();
 
     finalHash.appendBN(new BN(sender.slice(2), 16));
 
@@ -43,7 +43,7 @@ bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
         Explanation of the below if/else
         - The purpose is to set bk1 = bk3 and bk2 = bk4
         - i is used as an indexing variable, to keep track of whether we are at a maker note or taker note
-        - All bks are stored in a bkArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding 
+        - All bks are stored in a bkArray. When we arrive at the taker notes, we set bk equal to the bk of the corresponding
           maker note. This is achieved by 'jumping back' 2 index positions (i - 2) in the bkArray, and setting the current
           bk equal to the element at the resulting position.
         */
@@ -65,8 +65,8 @@ bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
         };
     });
 
-    finalHash.keccak();
-    const challenge = finalHash.toGroupScalar(groupReduction);
+    
+    const challenge = finalHash.keccak(groupReduction);
 
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
@@ -83,7 +83,7 @@ bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
     });
     return {
         proofData,
-        challenge: `0x${padLeft(challenge)}`,
+        challenge: `0x${padLeft(challenge.toString(16), 64)}`,
     };
 };
 
@@ -95,11 +95,11 @@ bilateralSwapProof.constructBilateralSwap = (notes, sender) => {
  * @param {big number instance} challenge - challenge variable used in zero-knowledge protocol 
  * @returns {number} - returns 1 if proof is validated, throws an error if not
  */
-bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
+proof.verifyBilateralSwap = (proofData, challenge, sender) => {
     const proofDataBn = helpers.toBnAndAppendPoints(proofData);
     const formattedChallenge = new BN(challenge.slice(2), 16);
 
-    const finalHash = new Hash();
+    const finalHash = new Keccak();
 
     finalHash.appendBN(new BN(sender.slice(2), 16));
 
@@ -111,7 +111,7 @@ bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
     const kBarArray = [];
 
     // Validate that the commitments lie on the bn128 curve
-    proofDataBn.map((proofElement) => {
+    proofDataBn.map((proofElement, i) => {
         helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
         helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
     });
@@ -148,9 +148,9 @@ bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
             B,
         };
     });
-    finalHash.keccak();
-    const recoveredChallenge = finalHash.toGroupScalar(groupReduction);
-    const finalChallenge = `0x${padLeft(recoveredChallenge)}`;
+    
+    const recoveredChallenge = finalHash.keccak(groupReduction);
+    const finalChallenge = `0x${padLeft(recoveredChallenge.toString(16), 64)}`;
 
     // Check if the recovered challenge, matches the original challenge. If so, proof construction is validated
     if (finalChallenge !== challenge) {
@@ -160,4 +160,4 @@ bilateralSwapProof.verifyBilateralSwap = (proofData, challenge, sender) => {
     }
 };
 
-module.exports = bilateralSwapProof;
+module.exports = proof;

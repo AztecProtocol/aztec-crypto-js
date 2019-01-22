@@ -2,8 +2,8 @@ const BN = require('bn.js');
 const { padLeft } = require('web3-utils');
 
 
-const Hash = require('../utils/keccak');
-const bn128 = require('../bn128/bn128');
+const Keccak = require('../../keccak');
+const bn128 = require('../../bn128');
 
 const { groupReduction } = bn128;
 
@@ -11,9 +11,9 @@ const { groupReduction } = bn128;
 /**
  * Constructs AZTEC dividend computations
  *
- * @module dividendComputation
+ * @module proof
 */
-const dividendComputation = {};
+const proof = {};
 
 /**
  * Construct AZTEC dividend computation proof transcript
@@ -22,9 +22,9 @@ const dividendComputation = {};
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-dividendComputation.constructPayment = (notes, za, zb, sender) => {
+proof.constructPayment = (notes, za, zb, sender) => {
     // finalHash is used to create final proof challenge
-    const rollingHash = new Hash();
+    const rollingHash = new Keccak();
 
     // Array to store bk values later
     const bkArray = [];
@@ -51,7 +51,7 @@ dividendComputation.constructPayment = (notes, za, zb, sender) => {
     });
 
     // finalHash is used to create final proof challenge
-    const finalHash = new Hash();
+    const finalHash = new Keccak();
     finalHash.appendBN(new BN(sender.slice(2), 16));
     finalHash.appendBN(zaBN);
     finalHash.appendBN(zbBN);
@@ -116,4 +116,4 @@ dividendComputation.constructPayment = (notes, za, zb, sender) => {
     };
 };
 
-module.exports = dividendComputation;
+module.exports = proof;

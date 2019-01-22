@@ -4,15 +4,15 @@ const chai = require('chai');
 const web3Utils = require('web3-utils');
 
 
-const bilateralProof = require('./bilateralSwapProof');
-const helpers = require('./helpers');
-const Hash = require('../utils/keccak');
+const bilateralProof = require('../../proof/bilateralSwap/index');
+const helpers = require('../../proof/bilateralSwap/helpers');
+const Keccak = require('../../keccak');
 
 
 const { expect } = chai;
 
 
-describe('Validating bilateral swap proof construction and verification algos', () => {
+describe.only('Validating bilateral swap proof construction and verification algos', () => {
     describe('Validate properties of the proof construction algo', () => {
         let testNotes;
         let sender;
@@ -25,7 +25,7 @@ describe('Validating bilateral swap proof construction and verification algos', 
         });
 
         it('validate that the bilateral swap blinding scalar relations are satisfied i.e. bk1 = bk3 and bk2 = bk4', () => {
-            const finalHash = new Hash();
+            const finalHash = new Keccak();
 
             testNotes.forEach((note) => {
                 finalHash.append(note.gamma);
@@ -93,7 +93,7 @@ describe('Validating bilateral swap proof construction and verification algos', 
             const proofDataBn = helpers.toBnAndAppendPoints(proofData);
             const formattedChallenge = new BN(challenge.slice(2), 16);
 
-            const finalHash = new Hash();
+            const finalHash = new Keccak();
 
             proofDataBn.forEach((proofElement) => {
                 finalHash.append(proofElement[6]);

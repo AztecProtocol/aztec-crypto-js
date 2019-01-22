@@ -3,9 +3,9 @@
 const chai = require('chai');
 const web3Utils = require('web3-utils');
 
-const dividendComputation = require('./dividendComputation');
+const dividendComputation = require('../../proof/dividendComputation');
 
-const helpers = require('./helpers');
+const helpers = require('../../proof/bilateralSwap/helpers');
 
 
 const { expect } = chai;
