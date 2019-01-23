@@ -34,7 +34,7 @@ function randomBytes(numBytes) {
 }
 
 
-describe.only('abiEncioder.bilateralSwap tests', () => {
+describe('abiEncioder.bilateralSwap tests', () => {
     let accounts = [];
     let notes = [];
     beforeEach(() => {
