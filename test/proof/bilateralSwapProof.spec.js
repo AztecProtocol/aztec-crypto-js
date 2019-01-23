@@ -12,7 +12,7 @@ const Keccak = require('../../keccak');
 const { expect } = chai;
 
 
-describe.only('Validating bilateral swap proof construction and verification algos', () => {
+describe('Validating bilateral swap proof construction and verification algos', () => {
     describe('Validate properties of the proof construction algo', () => {
         let testNotes;
         let sender;

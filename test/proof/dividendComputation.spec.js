@@ -27,7 +27,7 @@ describe('Validating dividend computation swap proof construction and verificati
             - zb = 100
             */
 
-            testNotes = helpers.makeTestNotes([1000], [50]);
+            testNotes = helpers.makeTestNotes([1000], [50, 4]);
             za = 5;
             zb = 100;
 
@@ -38,16 +38,9 @@ describe('Validating dividend computation swap proof construction and verificati
         it('validate that the proof data contains correct number of proof variables and is well formed', () => {
             const { proofData } = dividendComputation.constructProof(testNotes, za, zb, sender);
             expect(proofData.length).to.equal(3);
-            expect(proofData[0].length).to.equal(6);
-            expect(proofData[1].length).to.equal(6);
-            expect(proofData[2].length).to.equal(6);
-            expect(proofData[3].length).to.equal(6);
-        });
-
-        it('validate that the proof is correct, using the validation algo', () => {
-            const { proofData, challenge } = dividendComputation.constructProof(testNotes, za, zb, sender);
-            const result = dividendComputation.verifyProof(proofData, challenge, sender, za, zb);
-            expect(result).to.equal(1);
+            expect(Object.values(proofData[0]).length).to.equal(6);
+            expect(Object.values(proofData[1]).length).to.equal(6);
+            expect(Object.values(proofData[2]).length).to.equal(6);
         });
     });
 });

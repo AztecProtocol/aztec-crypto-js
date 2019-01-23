@@ -22,7 +22,7 @@ const proof = {};
  * @param {Array[Note]} notes array of AZTEC notes
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
-proof.constructPayment = (notes, za, zb, sender) => {
+proof.constructProof = (notes, za, zb, sender) => {
     // finalHash is used to create final proof challenge
     const rollingHash = new Keccak();
 
@@ -64,8 +64,8 @@ proof.constructPayment = (notes, za, zb, sender) => {
 
         if (i === 2) {
             // statement to set bk for the residual commitment
-            const zbRed = zb.toRed(groupReduction);
-            const zaRed = za.toRed(groupReduction);
+            const zbRed = zbBN.toRed(groupReduction);
+            const zaRed = zaBN.toRed(groupReduction);
 
             // bk_3 = (z_b)(bk_2) - (z_a)(bk_1)
             bk = (zbRed.redMul(bkArray[1])).redSub(zaRed.redMul(bkArray[0]));
@@ -77,7 +77,7 @@ proof.constructPayment = (notes, za, zb, sender) => {
         let x = new BN(0).toRed(groupReduction);
 
         if ((i) > 0) { // if it's an output note (defined as i = 1, i = 2)
-            x = rollingHash.toGroupScalar(groupReduction);     
+            x = rollingHash.keccak(groupReduction);     
             const xbk = bk.redMul(x); // xbk = bk*x
             const xba = ba.redMul(x); // xba = ba*x
             rollingHash.keccak();
@@ -95,19 +95,19 @@ proof.constructPayment = (notes, za, zb, sender) => {
             x,
         };
     });
-    finalHash.keccak();
-    const challenge = finalHash.toGroupScalar(groupReduction);
+    
+    const challenge = finalHash.keccak(groupReduction);
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
         const aBar = ((notes[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();
-        return [
-            `0x${padLeft(kBar.toString(16), 64)}`,
-            `0x${padLeft(aBar.toString(16), 64)}`,
-            `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
-            `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
-            `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
-            `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
-        ];
+        return {
+            kBar: `0x${padLeft(kBar.toString(16), 64)}`,
+            aBar: `0x${padLeft(aBar.toString(16), 64)}`,
+            gammaX: `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
+            gammaY: `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
+            sigmaX: `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
+            sigmaY: `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
+        };
     });
 
     return {
