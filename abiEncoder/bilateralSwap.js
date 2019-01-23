@@ -13,7 +13,9 @@ const abi = {
 };
 
 function encodeNote(notes) { 
-    return notes.map(note => padLeft(note.slice(2), 64)).join('');
+    const notesArray = Object.values(notes);
+    return notesArray.map(note => 
+        padLeft(note.slice(2), 64)).join('');
 }
 
 function encodeProofData(proofData) {

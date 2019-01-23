@@ -73,7 +73,7 @@ describe('abiEncioder.bilateralSwap tests', () => {
             challenge,
         } = bilateralProof.constructBilateralSwap([...inputNotes, ...outputNotes], senderAddress);
         const outputOwners = outputNotes.map(n => n.owner);
-
+        
         const result = new HexString(abiBilateralEncoder.encode(
             proofData,
             challenge,
@@ -87,7 +87,7 @@ describe('abiEncioder.bilateralSwap tests', () => {
         const recoveredProofData = new HexString(result.slice(offsetToProofData, offsetToProofData + (4 * 0xc0)));
         for (let i = 0; i < 4; i += 1) {
             const recoveredNote = recoveredProofData.slice((i * 0xc0), ((i * 0xc0) + 0xc0));
-            expect(recoveredNote).to.equal(proofData[i].map(p => p.slice(2)).join(''));
+            expect(recoveredNote).to.equal(Object.values(proofData[i]).map(p => p.slice(2)).join(''));
         }
 
         const offsetToOwners = parseInt(result.slice(0x40, 0x60), 16);
