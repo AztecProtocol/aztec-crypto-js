@@ -97,25 +97,25 @@ helpers.getBlindingFactorsAndChallenge = (noteArray, finalHash) => {
 helpers.toBnAndAppendPoints = (proofData) => {
     const proofDataBn = proofData.map((proofElement) => {
         // Reconstruct gamma
-        const xGamma = new BN(proofElement.gammaX.slice(2), 16).toRed(bn128.curve.red);
-        const yGamma = new BN(proofElement.gammaY.slice(2), 16).toRed(bn128.curve.red);
+        const xGamma = new BN(proofElement[2].slice(2), 16).toRed(bn128.curve.red);
+        const yGamma = new BN(proofElement[3].slice(2), 16).toRed(bn128.curve.red);
         const gamma = bn128.curve.point(xGamma, yGamma);
 
         // Reconstruct sigma
-        const xSigma = new BN(proofElement.sigmaX.slice(2), 16).toRed(bn128.curve.red);
-        const ySigma = new BN(proofElement.sigmaY.slice(2), 16).toRed(bn128.curve.red);
+        const xSigma = new BN(proofElement[4].slice(2), 16).toRed(bn128.curve.red);
+        const ySigma = new BN(proofElement[5].slice(2), 16).toRed(bn128.curve.red);
         const sigma = bn128.curve.point(xSigma, ySigma);
 
-        return {
-            kBar: new BN(proofElement.kBar.slice(2), 16).toRed(groupReduction), // kbar
-            aBar: new BN(proofElement.aBar.slice(2), 16).toRed(groupReduction), // aBar
-            gammaX: xGamma,
-            gammaY: yGamma,
-            sigmaX: xSigma,
-            sigmaY: ySigma,
-            gamma: gamma,
-            sigma: sigma,
-        };
+        return [
+            new BN(proofElement[0].slice(2), 16).toRed(groupReduction), // kbar
+            new BN(proofElement[1].slice(2), 16).toRed(groupReduction), // aBar
+            xGamma,
+            yGamma,
+            xSigma,
+            ySigma,
+            gamma,
+            sigma,
+        ];
     });
 
     return proofDataBn;
@@ -126,15 +126,15 @@ helpers.recoverBlindingFactorsAndChallenge = (proofDataBn, formattedChallenge, f
 
     // Validate that the commitments lie on the bn128 curve
     proofDataBn.map((proofElement) => {
-        helpers.validateOnCurve(proofElement.gammaX, proofElement.gammaY); // checking gamma point
-        helpers.validateOnCurve(proofElement.sigmaX, proofElement.sigmaY); // checking sigma point
+        helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
+        helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
     });
 
     const recoveredBlindingFactors = proofDataBn.map((proofElement, i) => {
-        let kBar = proofElement.kBar;
-        const aBar = proofElement.aBar;
-        const gamma = proofElement.gamma;
-        const sigma = proofElement.sigma;
+        let kBar = proofElement[0];
+        const aBar = proofElement[1];
+        const gamma = proofElement[6];
+        const sigma = proofElement[7];
         let B;
 
         /*

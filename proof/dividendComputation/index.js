@@ -100,14 +100,14 @@ proof.constructProof = (notes, za, zb, sender) => {
     const proofData = blindingFactors.map((blindingFactor, i) => {
         const kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
         const aBar = ((notes[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();
-        return {
-            kBar: `0x${padLeft(kBar.toString(16), 64)}`,
-            aBar: `0x${padLeft(aBar.toString(16), 64)}`,
-            gammaX: `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
-            gammaY: `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
-            sigmaX: `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
-            sigmaY: `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
-        };
+        return [
+            `0x${padLeft(kBar.toString(16), 64)}`,
+            `0x${padLeft(aBar.toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
+        ];
     });
 
     return {

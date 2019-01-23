@@ -21,8 +21,6 @@ const proof = {};
  * @returns {{proofData:Array[string]}, {challenge: string}} - proof data and challenge
  */
 proof.constructBilateralSwap = (notes, sender) => {
-    helpers.checkNumberNotes(notes, 4);
-
     // finalHash is used to create final proof challenge
     const finalHash = new Keccak();
 
@@ -72,14 +70,14 @@ proof.constructBilateralSwap = (notes, sender) => {
         const kBar = ((notes[i].k.redMul(challenge)).redAdd(blindingFactor.bk)).fromRed();
         const aBar = ((notes[i].a.redMul(challenge)).redAdd(blindingFactor.ba)).fromRed();
         
-        return {
-            kBar: `0x${padLeft(kBar.toString(16), 64)}`,
-            aBar: `0x${padLeft(aBar.toString(16), 64)}`,
-            gammaX: `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
-            gammaY: `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
-            sigmaX: `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
-            sigmaY: `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
-        };
+        return [
+            `0x${padLeft(kBar.toString(16), 64)}`,
+            `0x${padLeft(aBar.toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].gamma.y.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.x.fromRed().toString(16), 64)}`,
+            `0x${padLeft(notes[i].sigma.y.fromRed().toString(16), 64)}`,
+        ];
     });
     return {
         proofData,
@@ -104,23 +102,23 @@ proof.verifyBilateralSwap = (proofData, challenge, sender) => {
     finalHash.appendBN(new BN(sender.slice(2), 16));
 
     proofDataBn.forEach((proofElement) => {
-        finalHash.append(proofElement.gamma);
-        finalHash.append(proofElement.sigma);
+        finalHash.append(proofElement[6]);
+        finalHash.append(proofElement[7]);
     });
 
     const kBarArray = [];
 
     // Validate that the commitments lie on the bn128 curve
     proofDataBn.map((proofElement, i) => {
-        helpers.validateOnCurve(proofElement.gammaX, proofElement.gammaY); // checking gamma point
-        helpers.validateOnCurve(proofElement.sigmaX, proofElement.sigmaY); // checking sigma point
+        helpers.validateOnCurve(proofElement[2], proofElement[3]); // checking gamma point
+        helpers.validateOnCurve(proofElement[4], proofElement[5]); // checking sigma point
     });
 
     proofDataBn.map((proofElement, i) => {
-        let kBar = proofElement.kBar;
-        const aBar = proofElement.aBar;
-        const gamma = proofElement.gamma;
-        const sigma = proofElement.sigma;
+        let kBar = proofElement[0];
+        const aBar = proofElement[1];
+        const gamma = proofElement[6];
+        const sigma = proofElement[7];
         let B;
 
         /*

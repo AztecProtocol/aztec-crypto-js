@@ -46,11 +46,10 @@ describe('Validating bilateral swap proof construction and verification algos', 
         it('validate that the proof data contains correct number of proof variables and is well formed', () => {
             const { proofData } = bilateralProof.constructBilateralSwap(testNotes, sender);
             expect(proofData.length).to.equal(4);
-            expect(Object.keys(proofData[0]).length).to.equal(6);
-            expect(Object.keys(proofData[1]).length).to.equal(6)            // expect(proofData[2].length).to.equal(6);
-            expect(Object.keys(proofData[2]).length).to.equal(6) 
-            expect(Object.keys(proofData[3]).length).to.equal(6)        
-       
+            expect(proofData[0].length).to.equal(6);
+            expect(proofData[1].length).to.equal(6)            
+            expect(proofData[2].length).to.equal(6) 
+            expect(proofData[3].length).to.equal(6)        
         });
 
         it('validate that the proof is correct, using the validation algo', () => {
@@ -97,8 +96,8 @@ describe('Validating bilateral swap proof construction and verification algos', 
             const finalHash = new Keccak();
 
             proofDataBn.forEach((proofElement) => {
-                finalHash.append(proofElement.gamma);
-                finalHash.append(proofElement.sigma);
+                finalHash.append(proofElement[6]);
+                finalHash.append(proofElement[7]);
             });
 
             const { recoveredBlindingFactors } = helpers.recoverBlindingFactorsAndChallenge(proofDataBn, formattedChallenge, finalHash);
